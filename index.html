@@ -791,8 +791,8 @@
         const urlParams = new URLSearchParams(window.location.search);
         const invitedHouse = urlParams.get('house');
         if (invitedHouse) {
-            localStorage.setItem(STORAGE_HOUSE, invitedHouse.toLowerCase());
-            currentHouse = invitedHouse.toLowerCase();
+            localStorage.setItem(STORAGE_HOUSE, invitedHouse.toLowerCase().trim());
+            currentHouse = invitedHouse.toLowerCase().trim();
         }
 
         if (!currentHouse || !currentUser || !currentPin) {
@@ -873,15 +873,15 @@
         if (code) {
             let userName = prompt("הקישי את שמך הפרטי (כדייר חדש):");
             if (userName) {
-                localStorage.setItem(STORAGE_USER, userName);
-                localStorage.setItem(STORAGE_HOUSE, code.toLowerCase());
                 let houseAdminPin = prompt("הקישי את סיסמת הניהול של הבית:");
                 if (houseAdminPin) {
+                    localStorage.setItem(STORAGE_USER, userName);
+                    localStorage.setItem(STORAGE_HOUSE, code.toLowerCase().trim());
                     localStorage.setItem(STORAGE_PIN, houseAdminPin);
                     currentUser = userName;
-                    currentHouse = code.toLowerCase();
+                    currentHouse = code.toLowerCase().trim();
                     currentPin = houseAdminPin;
-                    startMainApp();
+                    showBankLoginScreen();
                 }
             }
         }
@@ -941,10 +941,10 @@
         alert("⚠️ זיהוי טביעת אצבע / פנים אינו זמין בדפדפן זה או שלא הוגדר במכשיר. השתמשי בסיסמת הניהול.");
     }
 
-    // פונקציית הקראה משודרגת ורציפה (Text-to-Speech)
+    // פונקציית הקראה קולית משודרגת
     function speakPageText() {
         if ('speechSynthesis' in window) {
-            window.speechSynthesis.cancel(); // עצירת הקראה קודמת
+            window.speechSynthesis.cancel();
             let activeTabContent = document.querySelector('.tab-content.active');
             let textToRead = "מרכז שליטה משפחתי וידאס הום. ";
             if (activeTabContent) {
@@ -961,7 +961,7 @@
         }
     }
 
-    // פונקציית הכתבה והקלטה קולית (Speech-to-Text)
+    // פונקציית הכתבה והקלטה קולית
     function startVoiceInput(targetInputId) {
         window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!window.SpeechRecognition) {
@@ -995,7 +995,7 @@
         let inviteLink = window.location.origin + window.location.pathname + "?house=" + encodeURIComponent(currentHouse);
         if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(inviteLink).then(() => {
-                alert("📋 הקישור הועתק בהצלחה ללוח!\nעכשיו אפשר להדביק אותו בוואטסאפ, הודעת טקסט או אימייל.");
+                alert("📋 הקישור הועתק בהצלחה ללוח!\nעכשיו אפשר להדביק אותו בוואטסאפ, הודעת טקסט או אימייל לבעלך.");
             }).catch(() => {
                 fallbackCopyTextToClipboard(inviteLink);
             });
@@ -1047,15 +1047,19 @@
 
         updateShabbatAndWeather();
 
-        if (rtdb) {
+        if (rtdb && currentHouse) {
+            // האזנה בזמן אמת לנתוני הבית הספציפי בענן
             rtdb.ref('houses/' + currentHouse).on('value', (snapshot) => {
                 let val = snapshot.val();
                 if (val) {
                     dbData = val;
                 } else {
+                    // אם הבית עוד לא קיים בענן, צור אותו עם הנתונים ההתחלתיים
                     rtdb.ref('houses/' + currentHouse).set(dbData);
                 }
                 renderAll();
+            }, (error) => {
+                console.error("Firebase sync error:", error);
             });
         } else {
             let localData = localStorage.getItem('vidass_master_data_' + currentHouse);
@@ -1094,7 +1098,9 @@
 
     function saveData() {
         if (rtdb && currentHouse) {
-            rtdb.ref('houses/' + currentHouse).set(dbData);
+            rtdb.ref('houses/' + currentHouse).set(dbData).catch((err) => {
+                console.error("Save error:", err);
+            });
         }
         localStorage.setItem('vidass_master_data_' + currentHouse, JSON.stringify(dbData));
         renderAll();
@@ -1355,7 +1361,6 @@
         }).join('') || "<p>הכספת ריקה.</p>";
     }
 
-    // עוזרת חכמה משודרגת עם מענה חכם לניהול בית ומשפחה
     function sendSmartAIQuery() {
         let input = document.getElementById('chatInput');
         let q = input.value.trim();
@@ -1373,7 +1378,7 @@
             aiReply = "כדאי להציץ בטאב 'קניות משותפות' כדי לראות אילו מוצרים חסרים ולעדכן בזמן אמת עבור כל בני הבית.";
         } else if (lowerQ.includes('שבת') || lowerQ.includes('זמנים')) {
             aiReply = "בטאב 'משימות ושבת' תוכלי למצוא את זמני כניסת ויציאת השבת המעודכנים לפי האזור שלך בארץ!";
-        } else if (lowerQ.includes('מתכון') || `אוכל`) {
+        } else if (lowerQ.includes('מתכון') || lowerQ.includes('אוכל')) {
             aiReply = "מומלץ להיכנס לספר המתכונים המשפחתי באפליקציה או להוסיף מתכון חדש בלחיצה קלה.";
         } else if (lowerQ.includes('תקציב') || lowerQ.includes('הוצאות')) {
             aiReply = "את יכולה לרשום כל הוצאה בטאב 'הוצאות ופרטיות' כדי לעקוב בדיוק אחרי התקציב המשפחתי החודשי.";
@@ -1383,13 +1388,13 @@
         saveData();
     }
 
-    function openTab(evt, tabName) {
+    function openTab(event, tabName) {
         let contents = document.getElementsByClassName("tab-content");
         for (let c of contents) c.classList.remove("active");
         let buttons = document.getElementsByClassName("tab-btn");
         for (let b of buttons) b.classList.remove("active");
         document.getElementById(tabName).classList.add("active");
-        evt.currentTarget.classList.add("active");
+        event.currentTarget.classList.add("active");
     }
 
     function renderAll() {
