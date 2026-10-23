@@ -215,15 +215,6 @@
             align-items: center;
             gap: 5px;
         }
-        .mic-btn.recording {
-            background-color: #e53e3e;
-            animation: pulse 1s infinite;
-        }
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
-        }
         .admin-invite-box {
             background: #ebf8ff;
             border: 2px solid #3182ce;
@@ -307,24 +298,21 @@
     </div>
 </div>
 
-<!-- 1. מסך הרשמה ראשוני ללקוחות חדשים -->
+<!-- 1. מסך הרשמה ראשוני עם יצירת קוד בית אוטומטי -->
 <div id="authScreen" class="auth-box" style="display:none;">
     <h2 id="authTitle">🏢 VIDASS Home - יצירת בית חדש</h2>
-    <p id="authDesc">הזיני את פרטיך ואת סיסמת הניהול האבטחתית שלך:</p>
+    <p id="authDesc">הזיני את פרטיך. המערכת תייצר עבורך אוטומטית מספר בית משותף מאובטח:</p>
     
     <label id="lblFullName">שם מלא (למשל: ויקי סיבוני):</label>
     <input type="text" id="inputFullName" placeholder="למשל: ויקי סיבוני">
 
-    <label id="lblHouseName">שם המשפחה / שם הבית (קוד הבית):</label>
-    <input type="text" id="inputHouseName" placeholder="למשל: vidass">
+    <label id="lblHouseCodeGenerated">מספר בית משותף (נוצר אוטומטית ע״י המערכת):</label>
+    <input type="text" id="inputHouseName" readonly style="background:#edf2f7; font-weight:bold; text-align:center; color:#2b6cb0; font-size:1.2em;">
 
     <label id="lblAddress">כתובת מגורים:</label>
     <input type="text" id="inputAddress" placeholder="למשל: נחל חיון 12, אילת">
 
-    <label id="lblIdNum">תעודת זהות:</label>
-    <input type="text" id="inputIdentity" placeholder="הקישי תעודת זהות...">
-
-    <label id="lblAdminPin">סיסמת ניהול ראשית (חובה לבחור סיסמה חזקה):</label>
+    <label id="lblAdminPin">סיסמת ניהול ראשית:</label>
     <div class="password-wrapper">
         <input type="password" id="inputAdminPin" placeholder="הקישי סיסמת ניהול מאובטחת...">
         <button type="button" class="monkey-toggle" onclick="togglePasswordVisibility('inputAdminPin', this)" title="הצג/הסתר סיסמה">🙈</button>
@@ -336,11 +324,11 @@
     <label id="lblCustomA">תשובה סודית אישית:</label>
     <input type="text" id="inputCustomAnswer" placeholder="הקישי את התשובה הסודית שלך...">
 
-    <button class="action-btn" id="btnCreateHouse" onclick="createPrivateHouse()">🏠 צור בית חדש בענן</button>
-    <button class="logout-btn" style="margin-top:10px; width:100%; background:#718096;" onclick="showJoinHouseModal()" id="btnJoinMode">🔗 התחבר לבית קיים עם קוד</button>
+    <button class="action-btn" id="btnCreateHouse" onclick="createPrivateHouse()">🏠 צור בית חדש בענן והתחל</button>
+    <button class="logout-btn" style="margin-top:10px; width:100%; background:#718096;" onclick="showJoinHouseModal()" id="btnJoinMode">🔗 התחבר לבית קיים עם קוד קיים</button>
 </div>
 
-<!-- מסך כניסה מאובטח (למשתמשים קיימים / דיירים שהוזמנו) -->
+<!-- מסך כניסה מאובטח -->
 <div id="bankLoginScreen" class="bank-login-box" style="display:none;">
     <h2 id="bankGreetingTitle" style="color:var(--primary-color);">🌅 בוקר טוב!</h2>
     <p id="bankLoginSub">כניסה מאובטחת למרכז השליטה:</p>
@@ -354,9 +342,8 @@
     </div>
 
     <button class="action-btn" onclick="verifyAdminLogin()" id="btnLoginSys">🔓 היכנס למערכת בבטחה</button>
-    <button class="action-btn" style="background:#319795; margin-top:8px;" onclick="authenticateBiometric()" id="btnBiometric">👆/👤 כניסה מהירה בטביעת אצבע / פנים</button>
     <button class="logout-btn" style="margin-top:10px; width:100%; background:#3182ce;" onclick="triggerPasswordRecovery()" id="btnForgotPin">🔄 שכחתי סיסמה / שחזור קוד</button>
-    <button class="logout-btn" style="margin-top:10px; width:100%;" onclick="fullLogout()" id="btnResetDevice">🔄 איפוס מכשיר והרשמה מחדש (לקוח חדש)</button>
+    <button class="logout-btn" style="margin-top:10px; width:100%;" onclick="fullLogout()" id="btnResetDevice">🔄 איפוס מכשיר והרשמה מחדש</button>
 </div>
 
 <!-- 3. מסך ראשי של האפליקציה -->
@@ -364,7 +351,7 @@
     <div class="top-bar">
         <div>
             <h1>🏢 VIDASS Home</h1>
-            <p><span id="txtUserLabel">משתמש</span>: <span id="activeUserName" style="color:var(--primary-color); font-weight:bold;"></span> | <span id="txtHouseLabel">בית</span>: <span id="activeHouseName" style="font-weight:bold;"></span></p>
+            <p><span id="txtUserLabel">משתמש</span>: <span id="activeUserName" style="color:var(--primary-color); font-weight:bold;"></span> | <span id="txtHouseLabel">מספר בית</span>: <span id="activeHouseName" style="font-weight:bold;"></span></p>
         </div>
         <div style="display:flex; gap:15px; align-items:center; flex-wrap:wrap;">
             <div class="status-indicator" id="statusCloud">🟢 ענן מאובטח ומסונכרן</div>
@@ -381,7 +368,7 @@
     <!-- אזור ניהול קבוצת הבית והעתקת קישור הזמנה -->
     <div class="admin-invite-box">
         <h3 id="hAdminGroup">👑 ניהול דיירי הבית והפצת האפליקציה</h3>
-        <p id="pAdminDesc">כמנהלת הבית, את יכולה להעתיק בקלות את קישור ההזמנה ולשלוח אותו לכל דייר או חבר שתרצי לצרף לניהול המשותף:</p>
+        <p id="pAdminDesc">שלחי את קישור ההזמנה לבעלך. ברגע שילחץ עליו, הוא יצורף אוטומטית לאותו מספר בית ותתחילו לסנכרן הכל בזמן אמת:</p>
         <button class="action-btn" style="background:#3182ce; margin:0;" onclick="copyInviteLink()" id="btnCopyInvite">📋 העתק קישור הזמנה לבית</button>
     </div>
 
@@ -562,12 +549,12 @@
 </div>
 
 <script>
-    const STORAGE_USER = 'vidass_master_user_v17';
-    const STORAGE_HOUSE = 'vidass_master_house_v17';
-    const STORAGE_PIN = 'vidass_master_pin_v17';
-    const STORAGE_Q = 'vidass_master_q_v17';
-    const STORAGE_A = 'vidass_master_a_v17';
-    const STORAGE_VAULT_PIN = 'vidass_master_vault_v17';
+    const STORAGE_USER = 'vidass_master_user_v19';
+    const STORAGE_HOUSE = 'vidass_master_house_v19';
+    const STORAGE_PIN = 'vidass_master_pin_v19';
+    const STORAGE_Q = 'vidass_master_q_v19';
+    const STORAGE_A = 'vidass_master_a_v19';
+    const STORAGE_VAULT_PIN = 'vidass_master_vault_v19';
 
     let currentUser = localStorage.getItem(STORAGE_USER);
     let currentHouse = localStorage.getItem(STORAGE_HOUSE);
@@ -594,17 +581,16 @@
     const translations = {
         he: {
             lblAccTitle: "♿ נגישות ושפות:", contrast: "🌓 ניגודיות", speech: "🗣️ הקראת עמוד",
-            authTitle: "🏢 VIDASS Home - יצירת בית חדש", authDesc: "הזיני את פרטיך ואת סיסמת הניהול האבטחתית שלך:",
-            lblFullName: "שם מלא (למשל: ויקי סיבוני):", lblHouseName: "שם המשפחה / שם הבית (קוד הבית):",
-            lblAddress: "כתובת מגורים:", lblIdNum: "תעודת זהות:", lblAdminPin: "סיסמת ניהול ראשית (חובה לבחור סיסמה חזקה):",
+            authTitle: "🏢 VIDASS Home - יצירת בית חדש", authDesc: "הזיני את פרטיך. המערכת תייצר עבורך אוטומטית מספר בית משותף מאובטח:",
+            lblFullName: "שם מלא (למשל: ויקי סיבוני):", lblHouseCodeGenerated: "מספר בית משותף (נוצר אוטומטית ע״י המערכת):",
+            lblAddress: "כתובת מגורים:", lblAdminPin: "סיסמת ניהול ראשית:",
             lblCustomQ: "שאלה סודית אישית (לשחזור):", lblCustomA: "תשובה סודית אישית:",
-            btnCreateHouse: "🏠 צור בית חדש בענן", btnJoinMode: "🔗 התחבר לבית קיים עם קוד",
+            btnCreateHouse: "🏠 צור בית חדש בענן והתחל", btnJoinMode: "🔗 התחבר לבית קיים עם קוד קיים",
             bankLoginSub: "כניסה מאובטחת למרכז השליטה:", lblLoginPin: "הקישי את סיסמת הניהול האבטחתית:",
-            btnLoginSys: "🔓 היכנס למערכת בבטחה", btnBiometric: "👆/👤 כניסה מהירה בטביעת אצבע / פנים",
-            btnForgotPin: "🔄 שכחתי סיסמה / שחזור קוד", btnResetDevice: "🔄 איפוס מכשיר והרשמה מחדש (לקוח חדש)",
+            btnLoginSys: "🔓 היכנס למערכת בבטחה", btnForgotPin: "🔄 שכחתי סיסמה / שחזור קוד", btnResetDevice: "🔄 איפוס מכשיר והרשמה מחדש",
             statusCloud: "🟢 ענן מאובטח ומסונכרן", btnLock: "🔒 נעילה",
             hAdminGroup: "👑 ניהול דיירי הבית והפצת האפליקציה",
-            pAdminDesc: "כמנהלת הבית, את יכולה להעתיק בקלות את קישור ההזמנה ולשלוח אותו לכל דייר או חבר שתרצי לצרף לניהול המשותף:",
+            pAdminDesc: "שלחי את קישור ההזמנה לבעלך. ברגע שילחץ עליו, הוא יצורף אוטומטית לאותו מספר בית ותתחילו לסנכרן הכל בזמן אמת:",
             btnCopyInvite: "📋 העתק קישור הזמנה לבית",
             linkCal: "📅 פתח יומן", linkWa: "💬 פתח וואטסאפ", linkMail: "📧 פתח אימייל",
             tabBtnNotes: "📝 פתקיות ויומן", tabBtnFin: "💰 הוצאות ופרטיות", tabBtnDev: "🔌 מכשירים חכמים", tabBtnTrips: "🚗 נסיעות ויעדים",
@@ -623,21 +609,20 @@
             hMusic: "🎵 מוזיקה (קישורים מכל אפליקציה בטלפון)", btnAddMusic: "➕ הוסף שיר",
             hVault: "🔐 כספת נתונים מוצפנת ומאובטחת", hVaultUnlock: "🔑 פתיחת הכספת המאובטחת (הגדירי סיסמת כספת):", btnUnlockVault: "🔓 פתח כספת",
             btnAddVaultItem: "➕ שמור נתון מוצפן בכספת", btnLockVault: "🔒 נעול כספת", vaultStatusOpen: "🟢 הכספת פתוחה ומאובטחת",
-            hAI: "🤖 העוזרת החכמה שלך", btnAIChat: "שאל את העוזרת החכמה", txtUserLabel: "משתמש", txtHouseLabel: "בית"
+            hAI: "🤖 העוזרת החכמה שלך", btnAIChat: "שאל את העוזרת החכמה", txtUserLabel: "משתמש", txtHouseLabel: "מספר בית"
         },
         en: {
             lblAccTitle: "♿ Accessibility & Languages:", contrast: "🌓 Contrast", speech: "🗣️ Read Page",
-            authTitle: "🏢 VIDASS Home - New House Setup", authDesc: "Enter details and secure admin password:",
-            lblFullName: "Full Name:", lblHouseName: "Family Name / House Code:",
-            lblAddress: "Address:", lblIdNum: "ID Number:", lblAdminPin: "Admin Password:",
+            authTitle: "🏢 VIDASS Home - New House Setup", authDesc: "Enter details. System will auto-generate secure house code:",
+            lblFullName: "Full Name:", lblHouseCodeGenerated: "Shared House Code (Auto-Generated):",
+            lblAddress: "Address:", lblAdminPin: "Admin Password:",
             lblCustomQ: "Security Question:", lblCustomA: "Security Answer:",
-            btnCreateHouse: "🏠 Create New House in Cloud", btnJoinMode: "🔗 Join Existing House with Code",
+            btnCreateHouse: "🏠 Create New House in Cloud", btnJoinMode: "🔗 Join Existing House",
             bankLoginSub: "Secure login to control center:", lblLoginPin: "Enter Secure Admin Password:",
-            btnLoginSys: "🔓 Secure Login", btnBiometric: "👆/👤 Biometric Login",
-            btnForgotPin: "🔄 Forgot Password", btnResetDevice: "🔄 Reset Device (New Customer)",
+            btnLoginSys: "🔓 Secure Login", btnForgotPin: "🔄 Forgot Password", btnResetDevice: "🔄 Reset Device",
             statusCloud: "🟢 Secure Cloud Synced", btnLock: "🔒 Lock",
             hAdminGroup: "👑 Manage Residents & Invite",
-            pAdminDesc: "Copy invite link to share:",
+            pAdminDesc: "Send invite link to your spouse to sync in real-time:",
             btnCopyInvite: "📋 Copy House Invite Link",
             linkCal: "📅 Open Calendar", linkWa: "💬 Open WhatsApp", linkMail: "📧 Open Email",
             tabBtnNotes: "📝 Notes & Calendar", tabBtnFin: "💰 Expenses & Privacy", tabBtnDev: "🔌 Smart Devices", tabBtnTrips: "🚗 Trips",
@@ -656,21 +641,20 @@
             hMusic: "🎵 Music (Links from any phone app)", btnAddMusic: "➕ Add Song",
             hVault: "🔐 Encrypted Secure Data Vault", hVaultUnlock: "🔑 Unlock Secure Vault (Set Vault Password):", btnUnlockVault: "🔓 Unlock Vault",
             btnAddVaultItem: "➕ Save Encrypted Data", btnLockVault: "🔒 Lock Vault", vaultStatusOpen: "🟢 Vault is Open & Secure",
-            hAI: "🤖 Your Smart Assistant", btnAIChat: "Ask Smart Assistant", txtUserLabel: "User", txtHouseLabel: "House"
+            hAI: "🤖 Your Smart Assistant", btnAIChat: "Ask Smart Assistant", txtUserLabel: "User", txtHouseLabel: "House Code"
         },
         ar: {
             lblAccTitle: "♿ إمكانية الوصول واللغات:", contrast: "🌓 تباين", speech: "🗣️ قراءة الصفحة",
-            authTitle: "🏢 VIDASS Home - إنشاء بيت جديد", authDesc: "أدخل التفاصيل وكلمة المرور الآمنة:",
-            lblFullName: "الاسم الكامل:", lblHouseName: "اسم العائلة / رمز البيت:",
-            lblAddress: "العنوان:", lblIdNum: "رقم الهوية:", lblAdminPin: "كلمة مرور الإدارة:",
+            authTitle: "🏢 VIDASS Home - إنشاء بيت جديد", authDesc: "أدخل التفاصيل. سيتم إنشاء رمز בית משותף تلقائياً:",
+            lblFullName: "الاسم الكامل:", lblHouseCodeGenerated: "رمز البيت المشترك (تلقائي):",
+            lblAddress: "العنوان:", lblAdminPin: "كلمة مرور الإدارة:",
             lblCustomQ: "سؤال الأمان:", lblCustomA: "إجابة الأمان:",
             btnCreateHouse: "🏠 إنشاء בית חדש בענן", btnJoinMode: "🔗 الانضمام لבית קיים",
             bankLoginSub: "تسجيل الدخول الآمن:", lblLoginPin: "أدخل كلمة المرور الآمنة:",
-            btnLoginSys: "🔓 تسجيل دخول آمن", btnBiometric: "👆/👤 بصمة الإصبع / الوجه",
-            btnForgotPin: "🔄 نسيت كلمة المرور", btnResetDevice: "🔄 إعادة ضبط الجهاز",
+            btnLoginSys: "🔓 تسجيل دخول آمن", btnForgotPin: "🔄 نسيت كلمة المرور", btnResetDevice: "🔄 إعادة ضبط الجهاز",
             statusCloud: "🟢 سحابة آمنة ومتزامنة", btnLock: "🔒 قفل",
             hAdminGroup: "👑 إدارة السكان والدعوة",
-            pAdminDesc: "انسخ رابط الدعوة لمشاركته:",
+            pAdminDesc: "أرسل رابط الدعوة لزوجك/זותك للمزامنة الفورية:",
             btnCopyInvite: "📋 نسخ رابط دعوة البيت",
             linkCal: "📅 فتح التقويم", linkWa: "💬 فتح واتساب", linkMail: "📧 فتح البريد",
             tabBtnNotes: "📝 الملاحظات والتقويم", tabBtnFin: "💰 المصروفات والخصوصية", tabBtnDev: "🔌 الأجهزة الذكية", tabBtnTrips: "🚗 الرحلات",
@@ -689,21 +673,20 @@
             hMusic: "🎵 الموسيقى والروابط", btnAddMusic: "➕ إضافة أغنية",
             hVault: "🔐 خزنة بيانات مشفرة ومؤمنة", hVaultUnlock: "🔑 فتح الخزنة الآمنة (تعيين كلمة مرور):", btnUnlockVault: "🔓 فتح الخزنة",
             btnAddVaultItem: "➕ حفظ بيانات مشفرة", btnLockVault: "🔒 قفل الخزنة", vaultStatusOpen: "🟢 الخزنة مفتوحة ومؤمنة",
-            hAI: "🤖 مساعدك الذكي", btnAIChat: "اسأل المساعد الذكي", txtUserLabel: "المستخدم", txtHouseLabel: "البيت"
+            hAI: "🤖 مساعدك الذكي", btnAIChat: "اسأل المساعد الذكي", txtUserLabel: "المستخدم", txtHouseLabel: "رمز البيت"
         },
         fr: {
             lblAccTitle: "♿ Accessibilité et Langues:", contrast: "🌓 Contraste", speech: "🗣️ Lire la page",
-            authTitle: "🏢 VIDASS Home - Nouvelle Maison", authDesc: "Entrez vos détails et mot de passe admin:",
-            lblFullName: "Nom complet:", lblHouseName: "Nom de famille / Code Maison:",
-            lblAddress: "Adresse:", lblIdNum: "Numéro d'identité:", lblAdminPin: "Mot de passe Admin:",
+            authTitle: "🏢 VIDASS Home - Nouvelle Maison", authDesc: "Entrez vos détails. Code maison auto-généré:",
+            lblFullName: "Nom complet:", lblHouseCodeGenerated: "Code Maison (Généré automatiquement):",
+            lblAddress: "Adresse:", lblAdminPin: "Mot de passe Admin:",
             lblCustomQ: "Question de sécurité:", lblCustomA: "Réponse:",
             btnCreateHouse: "🏠 Créer une nouvelle maison", btnJoinMode: "🔗 Rejoindre avec code",
             bankLoginSub: "Connexion sécurisée:", lblLoginPin: "Entrez le mot de passe Admin:",
-            btnLoginSys: "🔓 Connexion Sécurisée", btnBiometric: "👆/👤 Biométrique",
-            btnForgotPin: "🔄 Mot de passe oublié", btnResetDevice: "🔄 Réinitialiser",
+            btnLoginSys: "🔓 Connexion Sécurisée", btnForgotPin: "🔄 Mot de passe oublié", btnResetDevice: "🔄 Réinitialiser",
             statusCloud: "🟢 Cloud Sécurisé", btnLock: "🔒 Verrouiller",
             hAdminGroup: "👑 Gestion des résidents",
-            pAdminDesc: "Copiez le lien d'invitation:",
+            pAdminDesc: "Envoyez le lien d'invitation à votre conjoint pour synchroniser:",
             btnCopyInvite: "📋 Copier le lien d'invitation",
             linkCal: "📅 Ouvrir Calendrier", linkWa: "💬 Ouvrir WhatsApp", linkMail: "📧 Ouvrir Email",
             tabBtnNotes: "📝 Notes & Agenda", tabBtnFin: "💰 Dépenses & Privacy", tabBtnDev: "🔌 Appareils", tabBtnTrips: "🚗 Voyages",
@@ -722,40 +705,39 @@
             hMusic: "🎵 Musique et liens", btnAddMusic: "➕ Ajouter Morceau",
             hVault: "🔐 Coffre-fort chiffré", hVaultUnlock: "🔑 Ouvrir le coffre (Définir mot de passe):", btnUnlockVault: "🔓 Ouvrir",
             btnAddVaultItem: "➕ Enregistrer Donnée", btnLockVault: "🔒 Verrouiller", vaultStatusOpen: "🟢 Coffre ouvert et sécurisé",
-            hAI: "🤖 Votre Assistant", btnAIChat: "Demander à l'assistant", txtUserLabel: "Utilisateur", txtHouseLabel: "Maison"
+            hAI: "🤖 Votre Assistant", btnAIChat: "Demander à l'assistant", txtUserLabel: "Utilisateur", txtHouseLabel: "Code Maison"
         },
         ru: {
             lblAccTitle: "♿ Доступность и языки:", contrast: "🌓 Контраст", speech: "🗣️ Читать страницу",
-            authTitle: "🏢 VIDASS Home - Новый дом", authDesc: "Введите ваши данные и надежный пароль:",
-            lblFullName: "Полное имя:", lblHouseName: "Имя семьи / Код дома:",
-            lblAddress: "Адрес:", lblIdNum: "Номер удостоверения личности:", lblAdminPin: "Пароль администратора:",
+            authTitle: "🏢 VIDASS Home - Новый дом", authDesc: "Введите данные. Код дома генерируется автоматически:",
+            lblFullName: "Полное имя:", lblHouseCodeGenerated: "Код дома (Авто-генерация):",
+            lblAddress: "Адрес:", lblAdminPin: "Пароль администратора:",
             lblCustomQ: "Секретный вопрос:", lblCustomA: "Секретный ответ:",
             btnCreateHouse: "🏠 Создать новый дом", btnJoinMode: "🔗 Присоединиться по коду",
             bankLoginSub: "Безопасный вход:", lblLoginPin: "Введите пароль администратора:",
-            btnLoginSys: "🔓 Безопасный вход", btnBiometric: "👆/👤 Биометрия",
-            btnForgotPin: "🔄 Забыли пароль", btnResetDevice: "🔄 Сброс устройства",
+            btnLoginSys: "🔓 Безопасный вход", btnForgotPin: "🔄 Забыли пароль", btnResetDevice: "🔄 Сброс устройства",
             statusCloud: "🟢 Защищенное облако", btnLock: "🔒 Блокировать",
             hAdminGroup: "👑 Управление жильцами",
-            pAdminDesc: "Скопируйте ссылку-приглашение:",
+            pAdminDesc: "Отправьте ссылку мужу/жене для синхронизации в реальном времени:",
             btnCopyInvite: "📋 Копировать ссылку приглашения",
             linkCal: "📅 Календарь", linkWa: "💬 WhatsApp", linkMail: "📧 Email",
             tabBtnNotes: "📝 Заметки", tabBtnFin: "💰 Расходы", tabBtnDev: "🔌 Устройства", tabBtnTrips: "🚗 Поездки",
             tabBtnTasks: "📌 Задачи и Шаббат", tabBtnShop: "🛒 Покупки", tabBtnInv: "📦 Инвентарь", tabBtnRec: "🍲 Рецепты",
             tabBtnMusic: "🎵 Музыка", tabBtnVault: "🔐 Сейф данных", tabBtnAI: "🤖 ИИ Помощник",
             hNotes: "📝 Личные заметки и советы", btnAddNote: "➕ Добавить заметку",
-            hCalendar: "🕒 Расписание и календарь", btnAddEvent: "➕ Добавить в календарь",
+            hCalendar: "🕒 Расписание и календарь", btnAddEvent: "➕ добавить в календарь",
             hFinances: "💰 Управление расходами", btnAddExp: "➕ Добавить расход",
             hDevices: "🔌 Управление устройствами", btnAddDev: "➕ Добавить устройство",
             hTrips: "🚗 Поездки и направления", btnAddTrip: "➕ Добавить поездку",
-            hTasks: "📌 Задачи, Шаббат и погода", lblSelectRegion: "Выберите регион для Шаббата и погоды:", btnAddActivity: "➕ Добавить задачу",
+            hTasks: "📌 Задачи, Шаббат и погода", lblSelectRegion: "Выберите регион:", btnAddActivity: "➕ Добавить задачу",
             hShop: "🛒 Список покупок в реальном времени", btnAddShop: "➕ Добавить товар",
             hInv: "📦 Управление инвентарем", btnAddFolder: "📁 Создать ящик",
-            selectedFolderTitle: "📂 Выберите ящик для просмотра инвентаря", btnAddInvItem: "➕ Добавить в этот ящик",
+            selectedFolderTitle: "📂 Выберите ящик для инвентаря", btnAddInvItem: "➕ Добавить в ящик",
             hRec: "🍲 Семейная книга рецептов", btnAddRecipe: "🍲 Опубликовать рецепт",
-            hMusic: "🎵 Музыка (Ссылки из приложений)", btnAddMusic: "➕ Добавить песню",
-            hVault: "🔐 Защищенный сейф данных", hVaultUnlock: "🔑 Открыть сейф (Задайте пароль):", btnUnlockVault: "🔓 Открыть сейф",
+            hMusic: "🎵 Музыка (Ссылки)", btnAddMusic: "➕ Добавить песню",
+            hVault: "🔐 Защищенный сейф данных", hVaultUnlock: "🔑 Открыть сейф:", btnUnlockVault: "🔓 Открыть сейф",
             btnAddVaultItem: "➕ Сохранить зашифрованные данные", btnLockVault: "🔒 Заблокировать сейф", vaultStatusOpen: "🟢 Сейф открыт и защищен",
-            hAI: "🤖 Ваш умный помощник", btnAIChat: "Спросить помощника", txtUserLabel: "Пользователь", txtHouseLabel: "Доם"
+            hAI: "🤖 Ваш умный помощник", btnAIChat: "Спросить помощника", txtUserLabel: "Пользователь", txtHouseLabel: "Код дома"
         }
     };
 
@@ -793,6 +775,15 @@
         if (invitedHouse) {
             localStorage.setItem(STORAGE_HOUSE, invitedHouse.toLowerCase().trim());
             currentHouse = invitedHouse.toLowerCase().trim();
+        }
+
+        let houseField = document.getElementById('inputHouseName');
+        if (houseField) {
+            let existingHouse = localStorage.getItem(STORAGE_HOUSE);
+            if (!existingHouse) {
+                existingHouse = 'vidass_' + Math.floor(1000 + Math.random() * 9000);
+            }
+            houseField.value = existingHouse;
         }
 
         if (!currentHouse || !currentUser || !currentPin) {
@@ -869,7 +860,7 @@
     }
 
     function showJoinHouseModal() {
-        let code = prompt("הקישי את שם הבית / קוד הבית שקיבלת:");
+        let code = prompt("הקישי את קוד הבית שקיבלת:");
         if (code) {
             let userName = prompt("הקישי את שמך הפרטי (כדייר חדש):");
             if (userName) {
@@ -900,7 +891,7 @@
         else greeting = "🌙 לילה טוב!";
 
         document.getElementById('bankGreetingTitle').innerText = greeting;
-        document.getElementById('displayLoginHouse').innerText = "🏠 בית: " + currentHouse;
+        document.getElementById('displayLoginHouse').innerText = "🏠 מספר בית: " + currentHouse;
         document.getElementById('displayLoginUser').innerText = currentUser;
         document.getElementById('loginPinInput').value = '';
     }
@@ -915,45 +906,31 @@
         }
     }
 
-    async function authenticateBiometric() {
-        if (window.PublicKeyCredential) {
-            try {
-                let available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
-                if (available) {
-                    let credential = await navigator.credentials.get({
-                        publicKey: {
-                            challenge: new Uint8Array([1,2,3,4,5,6,7,8]),
-                            timeout: 60000,
-                            userVerification: "required"
-                        }
-                    });
-                    if (credential) {
-                        alert("✅ זיהוי ביומטרי אושר בהצלחה!");
-                        document.getElementById('bankLoginScreen').style.display = 'none';
-                        startMainApp();
-                        return;
-                    }
-                }
-            } catch (err) {
-                console.log("Biometric canceled or not set up:", err);
-            }
-        }
-        alert("⚠️ זיהוי טביעת אצבע / פנים אינו זמין בדפדפן זה או שלא הוגדר במכשיר. השתמשי בסיסמת הניהול.");
-    }
-
-    // פונקציית הקראה קולית משודרגת
+    // פונקציית הקראה רב-לשונית משודרגת
     function speakPageText() {
         if ('speechSynthesis' in window) {
             window.speechSynthesis.cancel();
+            let langSelect = document.getElementById('langSelect');
+            let currentLang = langSelect ? langSelect.value : 'he';
+            
+            let langCodes = {
+                he: 'he-IL',
+                en: 'en-US',
+                ar: 'ar-SA',
+                fr: 'fr-FR',
+                ru: 'ru-RU'
+            };
+
             let activeTabContent = document.querySelector('.tab-content.active');
-            let textToRead = "מרכז שליטה משפחתי וידאס הום. ";
+            let textToRead = currentLang === 'he' ? "מרכז שליטה משפחתי וידאס הום. " : "VIDASS Home Control Center. ";
             if (activeTabContent) {
                 textToRead += activeTabContent.innerText;
             } else {
-                textToRead += "ברוכים הבאים למערכת.";
+                textToRead += "Welcome.";
             }
+
             let utterance = new SpeechSynthesisUtterance(textToRead);
-            utterance.lang = 'he-IL';
+            utterance.lang = langCodes[currentLang] || 'he-IL';
             utterance.rate = 1.0;
             window.speechSynthesis.speak(utterance);
         } else {
@@ -961,7 +938,6 @@
         }
     }
 
-    // פונקציית הכתבה והקלטה קולית
     function startVoiceInput(targetInputId) {
         window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!window.SpeechRecognition) {
@@ -970,7 +946,11 @@
         }
 
         let recognition = new SpeechRecognition();
-        recognition.lang = 'he-IL';
+        let langSelect = document.getElementById('langSelect');
+        let currentLang = langSelect ? langSelect.value : 'he';
+        let langCodes = { he: 'he-IL', en: 'en-US', ar: 'ar-SA', fr: 'fr-FR', ru: 'ru-RU' };
+
+        recognition.lang = langCodes[currentLang] || 'he-IL';
         recognition.interimResults = false;
         recognition.maxAlternatives = 1;
 
@@ -995,7 +975,7 @@
         let inviteLink = window.location.origin + window.location.pathname + "?house=" + encodeURIComponent(currentHouse);
         if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(inviteLink).then(() => {
-                alert("📋 הקישור הועתק בהצלחה ללוח!\nעכשיו אפשר להדביק אותו בוואטסאפ, הודעת טקסט או אימייל לבעלך.");
+                alert("📋 הקישור הועתק בהצלחה ללוח!\nעכשיו שלחי אותו לבעלך בוואטסאפ. ברגע שילחץ עליו, הוא יחובר אוטומטית לבית שלך.");
             }).catch(() => {
                 fallbackCopyTextToClipboard(inviteLink);
             });
@@ -1048,13 +1028,11 @@
         updateShabbatAndWeather();
 
         if (rtdb && currentHouse) {
-            // האזנה בזמן אמת לנתוני הבית הספציפי בענן
             rtdb.ref('houses/' + currentHouse).on('value', (snapshot) => {
                 let val = snapshot.val();
                 if (val) {
                     dbData = val;
                 } else {
-                    // אם הבית עוד לא קיים בענן, צור אותו עם הנתונים ההתחלתיים
                     rtdb.ref('houses/' + currentHouse).set(dbData);
                 }
                 renderAll();
@@ -1305,62 +1283,6 @@
     }
     function deleteMusic(i) { dbData.music.splice(i, 1); saveData(); }
 
-    function unlockVault() {
-        let pass = document.getElementById('vaultPasswordInput').value.trim();
-        if(!pass) { alert("נא להזין סיסמת כספת."); return; }
-        
-        let savedPin = localStorage.getItem(STORAGE_VAULT_PIN);
-        if(!savedPin) {
-            localStorage.setItem(STORAGE_VAULT_PIN, pass);
-            savedPin = pass;
-        }
-
-        if(pass === savedPin) {
-            isVaultUnlocked = true;
-            document.getElementById('vaultUnlockSection').style.display = 'none';
-            document.getElementById('vaultContentSection').style.display = 'block';
-            document.getElementById('vaultPasswordInput').value = '';
-            renderVaultItems();
-        } else {
-            alert("❌ סיסמת הכספת שגויה.");
-        }
-    }
-    function lockVault() {
-        isVaultUnlocked = false;
-        document.getElementById('vaultUnlockSection').style.display = 'block';
-        document.getElementById('vaultContentSection').style.display = 'none';
-    }
-    function addVaultItem() {
-        let title = document.getElementById('vaultItemTitle').value.trim();
-        let data = document.getElementById('vaultItemData').value.trim();
-        if(title && data) {
-            if(!dbData.vault) dbData.vault=[];
-            let encrypted = btoa(encodeURIComponent(data));
-            dbData.vault.push({title, data: encrypted});
-            document.getElementById('vaultItemTitle').value=''; document.getElementById('vaultItemData').value='';
-            saveData();
-            renderVaultItems();
-        }
-    }
-    function deleteVaultItem(i) { dbData.vault.splice(i, 1); saveData(); renderVaultItems(); }
-    function renderVaultItems() {
-        let listContainer = document.getElementById('vaultItemsList');
-        if(!isVaultUnlocked) { listContainer.innerHTML = ""; return; }
-        listContainer.innerHTML = (dbData.vault || []).map((v, i) => {
-            let decrypted = "";
-            try { decrypted = decodeURIComponent(atob(v.data)); } catch(e) { decrypted = v.data; }
-            return `
-                <div class="card" style="background:#fffaf0; border-color:#dd6b20;">
-                    <div>
-                        <h4 style="color:#dd6b20; margin:0;">🔐 ${v.title}</h4>
-                        <p style="margin:5px 0; font-family:monospace; background:#fff; padding:6px; border-radius:4px;">${decrypted}</p>
-                    </div>
-                    <button class="logout-btn" onclick="deleteVaultItem(${i})">🗑️ מחק</button>
-                </div>
-            `;
-        }).join('') || "<p>הכספת ריקה.</p>";
-    }
-
     function sendSmartAIQuery() {
         let input = document.getElementById('chatInput');
         let q = input.value.trim();
@@ -1454,8 +1376,6 @@
         });
         let box = document.getElementById('chatHistory');
         if(box) { box.innerHTML = chatHTML; box.scrollTop = box.scrollHeight; }
-
-        if(isVaultUnlocked) renderVaultItems();
     }
 </script>
 
