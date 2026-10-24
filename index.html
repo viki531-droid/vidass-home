@@ -310,7 +310,7 @@
     <input type="text" id="inputHouseName" readonly style="background:#edf2f7; font-weight:bold; text-align:center; color:#2b6cb0; font-size:1.2em;">
 
     <label id="lblAddress">כתובת מגורים:</label>
-    <input type="text" id="inputAddress" placeholder="למשל: נחל חיון 12, אילת">
+    <input type="text" id="inputAddress" placeholder="למשל: נחל חיון 3, אילת">
 
     <label id="lblAdminPin">סיסמת ניהול ראשית:</label>
     <div class="password-wrapper">
@@ -436,10 +436,10 @@
 
     <!-- טאב נסיעות -->
     <div id="tab-trips" class="tab-content">
-        <h3 id="hTrips">🚗 ניהול נסיעות ויעדים</h3>
-        <input type="text" id="tripName" placeholder="יעד הנסיעה (למשל: מעון הבוקר)">
-        <input type="text" id="tripDest" placeholder="כתובת / מיקום">
-        <button class="action-btn" onclick="addTrip()" id="btnAddTrip">➕ הוסף נסיעה</button>
+        <h3 id="hTrips">🚗 ניהול נסיעות ויעדים וקישור לניווט</h3>
+        <input type="text" id="tripName" placeholder="יעד הנסיעה (למשל: מעון הבוקר / סופר)">
+        <input type="text" id="tripDest" placeholder="כתובת מדויקת או מיקום (למשל: נחל חיון 3, אילת)">
+        <button class="action-btn" onclick="addTrip()" id="btnAddTrip">➕ הוסף נסיעה לענן</button>
         <div id="tripsList" style="margin-top: 15px;"></div>
     </div>
 
@@ -538,10 +538,10 @@
     <!-- טאב עזרה חכמה משודרג -->
     <div id="tab-ai" class="tab-content">
         <h3 id="hAI">🤖 העוזרת החכמה שלך (VIDASS AI)</h3>
-        <p style="font-size:14px; color:#666;">שאלי את העוזרת על ניהול הבית, מתכונים, תקציב, או כל רעיון שתרצי:</p>
+        <p style="font-size:14px; color:#666;">שאלי את העוזרת על ניהול הבית, קניות, הוצאות, או כל רעיון שתרצי:</p>
         <div id="chatHistory" style="background:var(--card-bg); padding:15px; border-radius:8px; border:1px solid var(--button-bg); height:250px; overflow-y:auto; margin-bottom:15px;"></div>
         <div style="display:flex; gap:10px; flex-wrap:wrap;">
-            <input type="text" id="chatInput" placeholder="שאלי את העוזרת כל דבר..." style="flex:2; margin:0;" onkeypress="if(event.key==='Enter') sendSmartAIQuery()">
+            <input type="text" id="chatInput" placeholder="שאלי את העוזרת כל דבר (למשל: מה יש ברשימת הקניות?)..." style="flex:2; margin:0;" onkeypress="if(event.key==='Enter') sendSmartAIQuery()">
             <button class="action-btn" style="width:auto; margin:0;" onclick="sendSmartAIQuery()" id="btnAIChat">שאל את העוזרת</button>
             <button class="mic-btn" onclick="startVoiceInput('chatInput')">🎤 הקלטה</button>
         </div>
@@ -600,7 +600,7 @@
             hCalendar: "🕒 יומן שעות ולוח זמנים יומי", btnAddEvent: "➕ הוסף ליומן",
             hFinances: "💰 ניהול הוצאות ובחירת פרטיות", btnAddExp: "➕ הוסף הוצאה לענן",
             hDevices: "🔌 ניהול מכשירים חכמים", btnAddDev: "➕ הוסף מכשיר",
-            hTrips: "🚗 ניהול נסיעות ויעדים", btnAddTrip: "➕ הוסף נסיעה",
+            hTrips: "🚗 ניהול נסיעות ויעדים וקישור לניווט", btnAddTrip: "➕ הוסף נסיעה לענן",
             hTasks: "📌 משימות, זמני שבת ומזג אוויר", lblSelectRegion: "בחרי אזור בארץ לעדכון זמני שבת ומזג אוויר:", btnAddActivity: "➕ הוסף משימה",
             hShop: "🛒 רשימת קניות משותפת בזמן אמת", btnAddShop: "➕ הוסף מוצר",
             hInv: "📦 ניהול מלאי מגירות ומעקב מדף", btnAddFolder: "📁 צור מגירה",
@@ -754,7 +754,7 @@
         folders: ["מזווה", "מגירת תרופות"],
         inventory: [],
         recipes: [],
-        chat: [{role: 'ai', text: "שלום ויקי! אני העוזרת החכמה שלך מבית VIDASS. אני כאן לעזור לך לנהל את הבית, לרשום מתכונים, לעקוב אחר הוצאות או לענות על כל שאלה. איך אוכל לעזור לך היום?"}]
+        chat: [{role: 'ai', text: "שלום ויקי! אני העוזרת החכמה שלך מבית VIDASS. אני מחוברת ישירות לנתוני הבית שלך ויכולה לעזור לך בכל מה שתצטרכי. איך אוכל לעזור לך היום?"}]
     };
 
     let rtdb = null;
@@ -906,7 +906,6 @@
         }
     }
 
-    // פונקציית הקראה רב-לשונית משודרגת
     function speakPageText() {
         if ('speechSynthesis' in window) {
             window.speechSynthesis.cancel();
@@ -1178,7 +1177,8 @@
         if(name) {
             if(!dbData.devices) dbData.devices=[];
             dbData.devices.push({name, type});
-            document.getElementById('deviceName').value=''; document.getElementById('deviceType').value='';
+            document.getElementById('deviceName').value=''; 
+            document.getElementById('deviceType').value='';
             saveData();
         }
     }
@@ -1190,7 +1190,8 @@
         if(name) {
             if(!dbData.trips) dbData.trips=[];
             dbData.trips.push({name, dest});
-            document.getElementById('tripName').value=''; document.getElementById('tripDest').value='';
+            document.getElementById('tripName').value=''; 
+            document.getElementById('tripDest').value='';
             saveData();
         }
     }
@@ -1277,12 +1278,75 @@
         if(title) {
             if(!dbData.music) dbData.music=[];
             dbData.music.push({title, link});
-            document.getElementById('musicTitle').value=''; document.getElementById('musicLink').value='';
+            document.getElementById('musicTitle').value=''; 
+            document.getElementById('musicLink').value='';
             saveData();
         }
     }
     function deleteMusic(i) { dbData.music.splice(i, 1); saveData(); }
 
+    function unlockVault() {
+        let pinInput = document.getElementById('vaultPasswordInput').value.trim();
+        let savedVaultPin = localStorage.getItem(STORAGE_VAULT_PIN);
+
+        if (!savedVaultPin) {
+            if (pinInput.length < 4) {
+                alert("נא להגדיר סיסמת כספת חדשה באורך 4 תווים לפחות.");
+                return;
+            }
+            localStorage.setItem(STORAGE_VAULT_PIN, pinInput);
+            savedVaultPin = pinInput;
+            alert("✅ סיסמת הכספת הוגדרה וננעלה בהצלחה!");
+        }
+
+        if (pinInput === savedVaultPin) {
+            isVaultUnlocked = true;
+            document.getElementById('vaultUnlockSection').style.display = 'none';
+            document.getElementById('vaultContentSection').style.display = 'block';
+            renderVaultItems();
+        } else {
+            alert("❌ סיסמת כספת שגויה.");
+        }
+    }
+
+    function lockVault() {
+        isVaultUnlocked = false;
+        document.getElementById('vaultPasswordInput').value = '';
+        document.getElementById('vaultContentSection').style.display = 'none';
+        document.getElementById('vaultUnlockSection').style.display = 'block';
+    }
+
+    function addVaultItem() {
+        let title = document.getElementById('vaultItemTitle').value.trim();
+        let data = document.getElementById('vaultItemData').value.trim();
+        if(title && data) {
+            if(!dbData.vault) dbData.vault=[];
+            dbData.vault.push({title, data});
+            document.getElementById('vaultItemTitle').value='';
+            document.getElementById('vaultItemData').value='';
+            saveData();
+            renderVaultItems();
+        }
+    }
+    function deleteVaultItem(i) {
+        dbData.vault.splice(i, 1);
+        saveData();
+        renderVaultItems();
+    }
+    function renderVaultItems() {
+        let listContainer = document.getElementById('vaultItemsList');
+        listContainer.innerHTML = (dbData.vault || []).map((v, i) => `
+            <div class="card">
+                <div>
+                    <h4 style="margin:0; color:var(--primary-color);">🔒 ${v.title}</h4>
+                    <p style="margin:5px 0 0 0;">${v.data}</p>
+                </div>
+                <button class="logout-btn" onclick="deleteVaultItem(${i})">🗑️ מחק</button>
+            </div>
+        `).join('') || "<p>אין נתונים שמורים בכספת.</p>";
+    }
+
+    // עוזרת חכמה משודרגת המחוברת לנתוני הענן של הבית
     function sendSmartAIQuery() {
         let input = document.getElementById('chatInput');
         let q = input.value.trim();
@@ -1292,18 +1356,28 @@
         input.value = '';
 
         let lowerQ = q.toLowerCase();
-        let aiReply = "כעוזרת הבית שלך, אני ממליצה לבדוק את טאב המשימות וההוצאות כדי לסדר את הכל בצורה מושלמת!";
+        let aiReply = "כעוזרת הבית שלך, אני כאן כדי לעזור! תוכלי לשאול אותי על רשימת הקניות, ההוצאות או המשימות.";
 
         if (lowerQ.includes('שלום') || lowerQ.includes('היי')) {
-            aiReply = `שלום ${currentUser}! איזה כיף לדבר איתך. איך אני יכולה לעזור לך בניהול הבית היום?`;
-        } else if (lowerQ.includes('קניות') || lowerQ.includes('סופר')) {
-            aiReply = "כדאי להציץ בטאב 'קניות משותפות' כדי לראות אילו מוצרים חסרים ולעדכן בזמן אמת עבור כל בני הבית.";
+            aiReply = `שלום ${currentUser}! איזה כיף לדבר איתך. הבית ${currentHouse} מנוהל בצורה מושלמת. איך אוכל לעזור לך היום?`;
+        } else if (lowerQ.includes('קניות') || lowerQ.includes('סופר') || lowerQ.includes('מה חסר')) {
+            let shopItems = Object.keys(dbData.shopping || {});
+            if (shopItems.length > 0) {
+                aiReply = `🛒 רשימת הקניות המשותפת שלך כוללת כרגע את המוצרים הבאים: ${shopItems.join(', ')}.`;
+            } else {
+                aiReply = "🛒 רשימת הקניות ריקה כרגע. אפשר להוסיף מוצרים בטאב הקניות!";
+            }
+        } else if (lowerQ.includes('הוצאות') || lowerQ.includes('תקציב') || lowerQ.includes('כמה הוצ')) {
+            let totalExp = (dbData.expenses || []).reduce((sum, e) => sum + e.amount, 0);
+            aiReply = `💰 סך כל ההוצאות הרשומות בענן עומד על ₪${totalExp}. תוכלי לראות פירוט מלא בטאב ההוצאות.`;
         } else if (lowerQ.includes('שבת') || lowerQ.includes('זמנים')) {
-            aiReply = "בטאב 'משימות ושבת' תוכלי למצוא את זמני כניסת ויציאת השבת המעודכנים לפי האזור שלך בארץ!";
+            aiReply = "🕯️ זמני השבת ומזג האויר המעודכנים מופיעים ישירות בטאב 'משימות ושבת' לפי האזור שבחרת.";
         } else if (lowerQ.includes('מתכון') || lowerQ.includes('אוכל')) {
-            aiReply = "מומלץ להיכנס לספר המתכונים המשפחתי באפליקציה או להוסיף מתכון חדש בלחיצה קלה.";
-        } else if (lowerQ.includes('תקציב') || lowerQ.includes('הוצאות')) {
-            aiReply = "את יכולה לרשום כל הוצאה בטאב 'הוצאות ופרטיות' כדי לעקוב בדיוק אחרי התקציב המשפחתי החודשי.";
+            let recipesCount = (dbData.recipes || []).length;
+            aiReply = `🍲 יש לך במערכת ${recipesCount} מתכונים שמורים בספר המתכונים המשפחתי.`;
+        } else if (lowerQ.includes('משימות') || lowerQ.includes('תור')) {
+            let tasksCount = (dbData.tasks || []).length;
+            aiReply = `📌 ישנם ${tasksCount} משימות פתוחות ברשימה המשותפת שלכם.`;
         }
 
         dbData.chat.push({role: 'ai', text: aiReply});
@@ -1349,9 +1423,23 @@
             `<div class="card"><span>🔌 ${d.name} (${d.type})</span><button class="logout-btn" onclick="deleteDevice(${i})">🗑️</button></div>`
         ).join('') || "<p>אין מכשירים.</p>";
 
-        document.getElementById('tripsList').innerHTML = (dbData.trips || []).map((t, i) => 
-            `<div class="card"><span>🚗 ${t.name} (${t.dest})</span><button class="logout-btn" onclick="deleteTrip(${i})">🗑️</button></div>`
-        ).join('') || "<p>אין נסיעות.</p>";
+        document.getElementById('tripsList').innerHTML = (dbData.trips || []).map((t, i) => {
+            let wazeUrl = `https://waze.com/ul?q=${encodeURIComponent(t.dest || t.name)}&navigate=yes`;
+            let googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(t.dest || t.name)}`;
+            return `
+                <div class="card">
+                    <div>
+                        <h4 style="margin:0; color:var(--primary-color);">🚗 ${t.name}</h4>
+                        <p style="margin:5px 0 0 0;">📍 כתובת: ${t.dest || 'לא צוינה כתובת'}</p>
+                    </div>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <a href="${wazeUrl}" target="_blank" class="quick-link-btn" style="background:#3182ce; padding:6px 10px; border-radius:6px; color:white; text-decoration:none; font-size:13px;">🧭 נווט ב-Waze</a>
+                        <a href="${googleMapsUrl}" target="_blank" class="quick-link-btn" style="background:#4285F4; padding:6px 10px; border-radius:6px; color:white; text-decoration:none; font-size:13px;">🗺️ גוגל מפות</a>
+                        <button class="logout-btn" onclick="deleteTrip(${i})" style="padding:6px 10px;">🗑️ מחק</button>
+                    </div>
+                </div>
+            `;
+        }).join('') || "<p>אין נסיעות מוגדרות.</p>";
 
         document.getElementById('tasksList').innerHTML = (dbData.tasks || []).map((t, i) => 
             `<div class="card"><span>📌 ${t.text}</span><button class="logout-btn" onclick="deleteTask(${i})">🗑️</button></div>`
@@ -1369,6 +1457,10 @@
         document.getElementById('musicListContainer').innerHTML = (dbData.music || []).map((m, i) => 
             `<div class="card"><div><h4>🎵 ${m.title}</h4>${m.link ? `<a href="${m.link}" target="_blank">פתח קישור</a>` : ''}</div><button class="logout-btn" onclick="deleteMusic(${i})">🗑️ מחק</button></div>`
         ).join('') || "<p>אין שירים.</p>";
+
+        if (isVaultUnlocked) {
+            renderVaultItems();
+        }
 
         let chatHTML = "";
         (dbData.chat || []).forEach(m => {
