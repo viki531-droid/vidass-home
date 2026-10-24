@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIDASS Home - מרכז שליטה משפחתי, פיננסי ועסקי חכם</title>
+    <title>VIDASS Home - מרכז שליטה משפחתי, פיננסי ועסקי חכם ומאובטח</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
@@ -77,6 +77,24 @@
         }
         .logout-btn {
             background-color: #ff4d4d;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .edit-btn {
+            background-color: #3182ce;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .speak-item-btn {
+            background-color: #319795;
             color: white;
             border: none;
             padding: 8px 12px;
@@ -283,7 +301,7 @@
     <button class="logout-btn" id="btnJoinHouse" style="margin-top:10px; width:100%; background:#718096;" onclick="showJoinHouseModal()">🔗 התחבר לבית קיים עם קוד</button>
 </div>
 
-<!-- מסך כניסה מאובטח -->
+<!-- מסך כניסה מאובטח (כולל זיהוי ביומטרי פנים/אצבע כמו בבנק) -->
 <div id="bankLoginScreen" class="bank-login-box" style="display:none;">
     <h2 id="bankGreetingTitle">🌅 בוקר טוב!</h2>
     <p id="txtLoginSub">כניסה מאובטחת למרכז השליטה:</p>
@@ -297,6 +315,7 @@
     </div>
 
     <button class="action-btn" id="btnLoginSubmit" onclick="verifyAdminLogin()">🔓 היכנס למערכת בבטחה</button>
+    <button class="action-btn" id="btnBiometric" onclick="verifyBiometricLogin()" style="background:#2b6cb0; margin-top:8px;">🧬 כניסה מהירה בטוחה (פנים / אצבע)</button>
     <button class="logout-btn" id="btnResetDevice" style="margin-top:10px; width:100%; background:#718096;" onclick="fullLogout()">🔄 איפוס מכשיר והרשמה</button>
 </div>
 
@@ -313,7 +332,7 @@
         <button class="logout-btn" id="btnLock" onclick="lockAppToBankScreen()">🔒 נעילה</button>
     </div>
 
-    <!-- אזור הזמנה לבעל -->
+    <!-- אזור הזמנה וניהול דיירי הבית -->
     <div class="admin-invite-box">
         <h3 id="txtInviteTitle">👑 ניהול דיירי הבית והפצת האפליקציה</h3>
         <p id="txtInviteSub">שלחי את קישור ההזמנה לבעלך. כל מה שהוא ישמור יופיע מיד אצלך, ולהפך!</p>
@@ -327,9 +346,11 @@
         <a href="mailto:" class="quick-link-btn email" id="linkMail">📧 פתח אימייל</a>
     </div>
 
-    <!-- הטאבים המעודכנים (ללא תינוקות וללא נדל"ן) -->
+    <!-- הטאבים המלאים (כולל טאב דיירים והתראות חדש) -->
     <div class="tabs">
-        <button class="tab-btn active" onclick="openTab(event, 'tab-notes')" id="tabBtnNotes">📝 פתקיות</button>
+        <button class="tab-btn active" onclick="openTab(event, 'tab-residents')" id="tabBtnResidents">👥 דיירים והודעות</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-notifications')" id="tabBtnNotifs">🔔 התראות ותזכורות</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-notes')" id="tabBtnNotes">📝 פתקיות</button>
         <button class="tab-btn" onclick="openTab(event, 'tab-receipts')" id="tabBtnReceipts">🧾 קבלות והשוואה</button>
         <button class="tab-btn" onclick="openTab(event, 'tab-salary')" id="tabBtnSalary">📄 תלושים ומכתבים</button>
         <button class="tab-btn" onclick="openTab(event, 'tab-vidass')" id="tabBtnVidass">🏢 VIDASS</button>
@@ -346,8 +367,31 @@
         <button class="tab-btn" onclick="openTab(event, 'tab-ai')" id="tabBtnAI">🤖 העוזרת</button>
     </div>
 
+    <!-- טאב דיירים והודעות אישיות -->
+    <div id="tab-residents" class="tab-content active">
+        <h3 id="hResidents">👥 שמות דיירי הבית ושליחת הודעות ישירות</h3>
+        <p>כאן רואים את כל מי שמחובר לבית שלך, וניתן לשלוח הודעה אישית שתוצג להם מיד:</p>
+        <input type="text" id="msgRecipient" placeholder="שם הנמען (למשל: דוד)...">
+        <textarea id="msgContentText" placeholder="הקלידי הודעה אישית לדייر הבית..." style="width:100%; height:80px;"></textarea>
+        <button class="action-btn" onclick="sendDirectMessage()" id="btnSendMsg">📨 שלח הודעה לדייר הבית</button>
+        <div id="residentsListContainer" style="margin-top:20px;"></div>
+    </div>
+
+    <!-- טאב התראות ותזכורות (כמו במונפול גו / בנקים) -->
+    <div id="tab-notifications" class="tab-content">
+        <h3 id="hNotifs">🔔 יצירת התראה מתפרצת ותזכורות לטלפון</h3>
+        <p>צרי תזכורת שתקפוץ בטלפון, עם אפשרות להגדיר האם תוקפץ לכל בני הבית או רק אלייך:</p>
+        <input type="text" id="notifTitle" placeholder="כותרת ההתראה (למשל: תור למרפאה / פגישה)...">
+        <input type="text" id="notifTime" placeholder="שעה או תאריך להצפנה (למשל: 14:00)...">
+        <label style="display:flex; align-items:center; gap:10px; margin:10px 0; font-weight:bold;">
+            <input type="checkbox" id="broadcastNotif" style="width:auto; margin:0;"> 📢 הקפץ התראה לכל דיירי הבית בענן
+        </label>
+        <button class="action-btn" onclick="scheduleNotification()" id="btnAddNotif">➕ צור תזכורת והפעל התראה</button>
+        <div id="notificationsList" style="margin-top:15px;"></div>
+    </div>
+
     <!-- טאב פתקיות ויומן -->
-    <div id="tab-notes" class="tab-content active">
+    <div id="tab-notes" class="tab-content">
         <h3 id="hNotes">📝 פתקיות אישיות וטיפים לבית</h3>
         <input type="text" id="noteTitle" placeholder="כותרת הפתקייה...">
         <input type="text" id="noteText" placeholder="תוכן הפתקייה...">
@@ -363,13 +407,13 @@
 
     <!-- טאב קבלות והשוואת מחירים -->
     <div id="tab-receipts" class="tab-content">
-        <h3>🧾 ניהול קבלות והשוואת מחירים (איפה הכי זול?)</h3>
+        <h3 id="hReceiptsTitle">🧾 ניהול קבלות והשוואת מחירים (איפה הכי זול?)</h3>
         <input type="text" id="recStore" placeholder="שם החנות (למשל: שופרסל, רמי לוי, סופר-פארם)...">
         <input type="text" id="recItem" placeholder="שם המוצר / סל קניות...">
         <input type="number" id="recPrice" placeholder="מחיר ששילמת בש״ח...">
-        <button class="action-btn" onclick="addReceiptItem()">➕ שמור קבלה והשווה מחיר</button>
+        <button class="action-btn" onclick="addReceiptItem()" id="btnAddReceipt">➕ שמור קבלה והשווה מחיר</button>
         <div id="receiptsComparisonBox" style="margin-top:20px; background:#e6fffa; border:2px solid #319795; padding:15px; border-radius:10px;">
-            <h4>💡 המלצת חיסכון והשוואת רשתות:</h4>
+            <h4 id="hReceiptTip">💡 המלצת חיסכון והשוואת רשתות:</h4>
             <p id="cheapestStoreAdvice">הזיני קבלות ומוצרים כדי שהמערכת תנתח איפה הכי זול לקנות באזור שלך!</p>
         </div>
         <div id="receiptsList" style="margin-top:15px;"></div>
@@ -377,15 +421,15 @@
 
     <!-- טאב תלושי משכורת ומכתבים רשמיים -->
     <div id="tab-salary" class="tab-content">
-        <h3>📄 ניתוח תלושי משכורת, חוקי עבודה ומכתבים רשמיים</h3>
-        <label><b>בחר סוג מסמך לפיענוח וייעוץ:</b></label>
+        <h3 id="hSalaryTitle">📄 ניתוח תלושי משכורת, חוקי עבודה ומכתבים רשמיים</h3>
+        <label><b id="lblSelectDoc">בחר סוג מסמך לפיענוח וייעוץ:</b></label>
         <select id="docTypeSelect" style="font-weight:bold; margin-bottom:10px;">
             <option value="salary">תלוש משכורת (בדיקת זכויות, מס הכנסה, פנסיה)</option>
             <option value="letter">מכתב רשמי (בנק, עיריה, ממשלה, ביטוח לאומי)</option>
             <option value="contract">חוזה עבודה או שכירות</option>
         </select>
         <textarea id="docContentText" placeholder="הדביקי כאן את טקסט התלוש או המכתב שקיבלת, או תארי את עיקרו..." style="width:100%; height:100px;"></textarea>
-        <button class="action-btn" onclick="analyzeDocumentAI()">🤖 נתח מסמך והסבר לי פשוט</button>
+        <button class="action-btn" onclick="analyzeDocumentAI()" id="btnAnalyzeDoc">🤖 נתח מסמך והסבר לי פשוט</button>
         <div id="docAnalysisResult" style="margin-top:15px; background:#fff0f3; border:2px dashed var(--primary-color); padding:15px; border-radius:10px; display:none;"></div>
         <div id="documentsList" style="margin-top:15px;"></div>
     </div>
@@ -530,11 +574,11 @@
 </div>
 
 <script>
-    const STORAGE_USER = 'vidass_user_v29';
-    const STORAGE_HOUSE = 'vidass_house_v29';
-    const STORAGE_PIN = 'vidass_pin_v29';
-    const STORAGE_VAULT_PIN = 'vidass_vault_v29';
-    const STORAGE_LANG = 'vidass_lang_v29';
+    const STORAGE_USER = 'vidass_user_v32';
+    const STORAGE_HOUSE = 'vidass_house_v32';
+    const STORAGE_PIN = 'vidass_pin_v32';
+    const STORAGE_VAULT_PIN = 'vidass_vault_v32';
+    const STORAGE_LANG = 'vidass_lang_v32';
 
     let currentUser = localStorage.getItem(STORAGE_USER);
     let currentHouse = localStorage.getItem(STORAGE_HOUSE);
@@ -559,7 +603,10 @@
         recipes: [],
         music: [],
         vault: [],
-        chat: [{role: 'ai', text: "שלום ויקי! אני העוזרת החכמה שלך. אני מבינה בתלושי שכר, חוקי עבודה, השוואת מחירים וניתוח מכתבים רשמיים. איך לעזור לך היום?"}]
+        residents: [],
+        notifications: [],
+        messages: [],
+        chat: [{role: 'ai', text: "שלום ויקי! המערכת מעודכנת עם התראות פוש לטלפון, ניהול דיירי הבית ושליחת הודעות אישיות. איך לעזור לך היום?"}]
     };
 
     let rtdb = null;
@@ -573,6 +620,7 @@
     } catch(e) {}
 
     window.onload = function() {
+        requestNotificationPermission();
         populateMonthsDropdown();
         let savedLang = localStorage.getItem(STORAGE_LANG) || 'he';
         document.getElementById('langSelect').value = savedLang;
@@ -599,6 +647,12 @@
         }
     };
 
+    function requestNotificationPermission() {
+        if ("Notification" in window && Notification.permission !== "granted") {
+            Notification.requestPermission();
+        }
+    }
+
     const translations = {
         he: {
             access: "♿ נגישות, הקראה ושפות:", contrast: "🌓 ניגודיות", speak: "🗣️ הקראת עמוד",
@@ -606,15 +660,19 @@
             lblFullName: "שם מלא:", lblHouseCode: "מספר בית משותף (קוד ענן):", lblAdminPin: "סיסמת ניהול אבטחתית:",
             btnCreateHouse: "🏠 צור בית בענן והתחל", btnJoinHouse: "🔗 התחבר לבית קיים עם קוד",
             loginSub: "כניסה מאובטחת למרכז השליטה:", txtUser: "משתמש", lblEnterPin: "הקישי את סיסמת הניהול שלך:",
-            btnLoginSubmit: "🔓 היכנס למערכת בבטחה", btnResetDevice: "🔄 איפוס מכשיר והרשמה",
+            btnLoginSubmit: "🔓 היכנס למערכת בבטחה", btnBiometric: "🧬 כניסה מהירה בטוחה (פנים / אצבע)", btnResetDevice: "🔄 איפוס מכשיר והרשמה",
             txtHouseSpan: "מספר בית", btnLock: "🔒 נעילה",
             inviteTitle: "👑 ניהול דיירי הבית והפצת האפליקציה", inviteSub: "שלחי את קישור ההזמנה לבעלך. כל מה שהוא ישמור יופיע מיד אצלך, ולהפך!",
             btnCopyInvite: "📋 העתק קישור הזמנה לבית", linkCal: "📅 פתח יומן", linkWa: "💬 פתח וואטסאפ", linkMail: "📧 פתח אימייל",
-            tabNotes: "📝 פתקיות", tabReceipts: "🧾 קבלות והשוואה", tabSalary: "📄 תלושים ומכתבים", tabVidass: "🏢 VIDASS",
+            tabResidents: "👥 דיירים והודעות", tabNotifs: "🔔 התראות ותזכורות", tabNotes: "📝 פתקיות", tabReceipts: "🧾 קבלות והשוואה", tabSalary: "📄 תלושים ומכתבים", tabVidass: "🏢 VIDASS",
             tabFinances: "💰 הוצאות", tabTithes: "🤲 מעשרות", tabDevices: "🔌 מכשירים", tabTrips: "🚗 נסיעות",
             tabTasks: "📌 משימות", tabShop: "🛒 קניות", tabInv: "📦 מלאי", tabRec: "🍲 מתכונים", tabMusic: "🎵 מוזיקה", tabVault: "🔐 כספת", tabAI: "🤖 העוזרת",
+            hResidents: "👥 שמות דיירי הבית ושליחת הודעות ישירות", btnSendMsg: "📨 שלח הודעה לדייר הבית",
+            hNotifs: "🔔 יצירת התראה מתפרצת ותזכורות לטלפון", btnAddNotif: "➕ צור תזכורת והפעל התראה",
             hNotes: "📝 פתקיות אישיות וטיפים לבית", btnAddNote: "➕ הוסף פתקייה",
             hCalendar: "🕒 יומן שעות ולוח זמנים יומי", btnAddEvent: "➕ הוסף ליומן",
+            hReceiptsTitle: "🧾 ניהול קבלות והשוואת מחירים (איפה הכי זול?)", btnAddReceipt: "➕ שמור קבלה והשווה מחיר", hReceiptTip: "💡 המלצת חיסכון והשוואת רשתות:",
+            hSalaryTitle: "📄 ניתוח תלושי משכורת, חוקי עבודה ומכתבים רשמיים", lblSelectDoc: "בחר סוג מסמך לפיענוח וייעוץ:", btnAnalyzeDoc: "🤖 נתח מסמך והסבר לי פשוט",
             hVidass: "🏢 ניהול חברת VIDASS ופרויקטים", btnAddVidass: "➕ הוסף פרויקט ל-VIDASS",
             hFinances: "💰 ניהול הוצאות משפחתיות", btnAddExp: "➕ הוסף הוצאה לענן",
             hTithes: "🤲 מחשבון מעשרות והפרשת צדקה", btnAddTitheCalc: "💡 חשב 10% מעשר",
@@ -634,15 +692,19 @@
             lblFullName: "Full Name:", lblHouseCode: "Shared House Code (Cloud ID):", lblAdminPin: "Secure Admin PIN:",
             btnCreateHouse: "🏠 Create House in Cloud & Start", btnJoinHouse: "🔗 Connect to Existing House",
             loginSub: "Secure login to control center:", txtUser: "User", lblEnterPin: "Enter your admin PIN:",
-            btnLoginSubmit: "🔓 Secure Login", btnResetDevice: "🔄 Reset Device & Register",
+            btnLoginSubmit: "🔓 Secure Login", btnBiometric: "🧬 Biometric Quick Login (Face / Touch)", btnResetDevice: "🔄 Reset Device & Register",
             txtHouseSpan: "House ID", btnLock: "🔒 Lock",
             inviteTitle: "👑 Household Members & Sharing", inviteSub: "Send the invite link to your spouse. Everything syncs in real-time!",
             btnCopyInvite: "📋 Copy House Invite Link", linkCal: "📅 Open Calendar", linkWa: "💬 Open WhatsApp", linkMail: "📧 Open Email",
-            tabNotes: "📝 Notes", tabReceipts: "🧾 Receipts & Compare", tabSalary: "📄 Salary & Letters", tabVidass: "🏢 VIDASS",
+            tabResidents: "👥 Residents", tabNotifs: "🔔 Notifications", tabNotes: "📝 Notes", tabReceipts: "🧾 Receipts & Compare", tabSalary: "📄 Salary & Letters", tabVidass: "🏢 VIDASS",
             tabFinances: "💰 Finances", tabTithes: "🤲 Tithes", tabDevices: "🔌 Devices", tabTrips: "🚗 Trips",
             tabTasks: "📌 Tasks", tabShop: "🛒 Shopping", tabInv: "📦 Inventory", tabRec: "🍲 Recipes", tabMusic: "🎵 Music", tabVault: "🔐 Vault", tabAI: "🤖 AI",
+            hResidents: "👥 Household Residents & Direct Messaging", btnSendMsg: "📨 Send Message to Resident",
+            hNotifs: "🔔 Push Notifications & Reminders", btnAddNotif: "➕ Create Reminder & Notification",
             hNotes: "📝 Personal Notes & Tips", btnAddNote: "➕ Add Note",
             hCalendar: "🕒 Daily Schedule & Calendar", btnAddEvent: "➕ Add Event",
+            hReceiptsTitle: "🧾 Receipts & Price Comparison", btnAddReceipt: "➕ Save Receipt & Compare", hReceiptTip: "💡 Savings & Store Advice:",
+            hSalaryTitle: "📄 Salary Slips & Official Letters Analysis", lblSelectDoc: "Select Document Type:", btnAnalyzeDoc: "🤖 Analyze Document",
             hVidass: "🏢 VIDASS Management & Projects", btnAddVidass: "➕ Add VIDASS Project",
             hFinances: "💰 Family Expense Management", btnAddExp: "➕ Add Expense to Cloud",
             hTithes: "🤲 Tithes & Charity Calculator", btnAddTitheCalc: "💡 Calculate 10% Tithe",
@@ -662,15 +724,19 @@
             lblFullName: "Полное имя:", lblHouseCode: "Код общего дома (Облако):", lblAdminPin: "PIN-код администратора:",
             btnCreateHouse: "🏠 Создать дом в облаке", btnJoinHouse: "🔗 Подключиться к дому",
             loginSub: "Безопасный вход в систему:", txtUser: "Пользователь", lblEnterPin: "Введите ваш PIN-код:",
-            btnLoginSubmit: "🔓 Безопасный вход", btnResetDevice: "🔄 Сброс устройства",
+            btnLoginSubmit: "🔓 Безопасный вход", btnBiometric: "🧬 Биометрический вход (Лицо / Отпечаток)", btnResetDevice: "🔄 Сброс устройства",
             txtHouseSpan: "ID дома", btnLock: "🔒 Блокировка",
             inviteTitle: "👑 Управление домочадцами", inviteSub: "Отправьте ссылку супругу. Все синхронизируется в реальном времени!",
             btnCopyInvite: "📋 Копировать ссылку", linkCal: "📅 Календарь", linkWa: "💬 WhatsApp", linkMail: "📧 Email",
-            tabNotes: "📝 Заметки", tabReceipts: "🧾 Чеки и сравнение", tabSalary: "📄 Зарплата и письма", tabVidass: "🏢 VIDASS",
+            tabResidents: "👥 Жильцы", tabNotifs: "🔔 Уведомления", tabNotes: "📝 Заметки", tabReceipts: "🧾 Чеки и сравнение", tabSalary: "📄 Зарплата и письма", tabVidass: "🏢 VIDASS",
             tabFinances: "💰 Расходы", tabTithes: "🤲 Десятина", tabDevices: "🔌 Устройства", tabTrips: "🚗 Поездки",
             tabTasks: "📌 Задачи", tabShop: "🛒 Покупки", tabInv: "📦 Склад", tabRec: "🍲 Рецепты", tabMusic: "🎵 Музыка", tabVault: "🔐 Сейф", tabAI: "🤖 ИИ",
+            hResidents: "👥 Жильцы дома и сообщения", btnSendMsg: "📨 Отправить сообщение",
+            hNotifs: "🔔 Уведомления и напоминания", btnAddNotif: "➕ Создать напоминание",
             hNotes: "📝 Личные заметки", btnAddNote: "➕ Добавить заметку",
             hCalendar: "🕒 Ежедневное расписание", btnAddEvent: "➕ Добавить событие",
+            hReceiptsTitle: "🧾 Чеки и сравнение цен", btnAddReceipt: "➕ Сохранить чек", hReceiptTip: "💡 Совет по экономии:",
+            hSalaryTitle: "📄 Анализ зарплат и писем", lblSelectDoc: "Выберите тип документа:", btnAnalyzeDoc: "🤖 Анализировать",
             hVidass: "🏢 Управление VIDASS", btnAddVidass: "➕ Добавить проект",
             hFinances: "💰 Семейный бюджет", btnAddExp: "➕ Добавить расход",
             hTithes: "🤲 Калькулятор десятины", btnAddTitheCalc: "💡 Рассчитать 10%",
@@ -690,15 +756,19 @@
             lblFullName: "Nom complet :", lblHouseCode: "Code de la maison (Cloud) :", lblAdminPin: "PIN administrateur :",
             btnCreateHouse: "🏠 Créer la maison et commencer", btnJoinHouse: "🔗 Rejoindre une maison",
             loginSub: "Connexion sécurisée :", txtUser: "Utilisateur", lblEnterPin: "Entrez votre code PIN :",
-            btnLoginSubmit: "🔓 Connexion sécurisée", btnResetDevice: "🔄 Réinitialiser l'appareil",
+            btnLoginSubmit: "🔓 Connexion sécurisée", btnBiometric: "🧬 Connexion biométrique (Visage / Empreinte)", btnResetDevice: "🔄 Réinitialiser l'appareil",
             txtHouseSpan: "ID Maison", btnLock: "🔒 Verrouiller",
             inviteTitle: "👑 Gestion des membres et partage", inviteSub: "Envoyez le lien d'invitation à votre conjoint. Tout se synchronise en temps réel !",
             btnCopyInvite: "📋 Copier le lien d'invitation", linkCal: "📅 Calendrier", linkWa: "💬 WhatsApp", linkMail: "📧 Email",
-            tabNotes: "📝 Notes", tabReceipts: "🧾 Reçus & Comparatif", tabSalary: "📄 Fiches de paie", tabVidass: "🏢 VIDASS",
+            tabResidents: "👥 Résidents", tabNotifs: "🔔 Notifications", tabNotes: "📝 Notes", tabReceipts: "🧾 Reçus & Comparatif", tabSalary: "📄 Fiches de paie", tabVidass: "🏢 VIDASS",
             tabFinances: "💰 Finances", tabTithes: "🤲 Dîmes", tabDevices: "🔌 Appareils", tabTrips: "🚗 Trajets",
             tabTasks: "📌 Tâches", tabShop: "🛒 Courses", tabInv: "📦 Stock", tabRec: "🍲 Recettes", tabMusic: "🎵 Musique", tabVault: "🔐 Coffre", tabAI: "🤖 Assistant",
+            hResidents: "👥 Résidents et messages", btnSendMsg: "📨 Envoyer un message",
+            hNotifs: "🔔 Notifications et rappels", btnAddNotif: "➕ Créer un rappel",
             hNotes: "📝 Notes personnelles", btnAddNote: "➕ Ajouter une note",
             hCalendar: "🕒 Calendrier et horaire", btnAddEvent: "➕ Ajouter un événement",
+            hReceiptsTitle: "🧾 Reçus et comparatif", btnAddReceipt: "➕ Enregistrer", hReceiptTip: "💡 Conseil d'économie :",
+            hSalaryTitle: "📄 Analyse de paie", lblSelectDoc: "Sélectionner le type :", btnAnalyzeDoc: "🤖 Analyser",
             hVidass: "🏢 Gestion VIDASS", btnAddVidass: "➕ Ajouter un projet",
             hFinances: "💰 Gestion des dépenses", btnAddExp: "➕ Ajouter une dépense",
             hTithes: "🤲 Calculateur de dîmes", btnAddTitheCalc: "💡 Calculer 10%",
@@ -718,15 +788,19 @@
             lblFullName: "الاسم الكامل:", lblHouseCode: "رمز المنزل المشترك (السحابة):", lblAdminPin: "رقم تعريف المسؤول الآمن:",
             btnCreateHouse: "🏠 إنشاء منزل في السحابة وابدأ", btnJoinHouse: "🔗 الاتصال بمنزل موجود",
             loginSub: "تسجيل دخول آمن لمركز التحكم:", txtUser: "المستخدم", lblEnterPin: "أدخل رقم التعريف الشخصي:",
-            btnLoginSubmit: "🔓 تسجيل دخول آمن", btnResetDevice: "🔄 إعادة ضبط الجهاز",
+            btnLoginSubmit: "🔓 تسجيل دخول آمن", btnBiometric: "🧬 تسجيل دخول بيومتري (وجه / بصمة)", btnResetDevice: "🔄 إعادة ضبط الجهاز",
             txtHouseSpan: "رقم المنزل", btnLock: "🔒 قفل",
             inviteTitle: "👑 إدارة أفراد المنزل والمشاركة", inviteSub: "أرسل رابط الدعوة إلى زوجك. كل شيء يتزامن في الوقت الفعلي!",
             btnCopyInvite: "📋 نسخ رابط الدعوة", linkCal: "📅 التقويم", linkWa: "💬 واتساب", linkMail: "📧 البريد",
-            tabNotes: "📝 الملاحظات", tabReceipts: "🧾 الإيصالات", tabSalary: "📄 الرواتب والرسائل", tabVidass: "🏢 VIDASS",
+            tabResidents: "👥 السكان", tabNotifs: "🔔 الإشعارات", tabNotes: "📝 الملاحظات", tabReceipts: "🧾 الإيصالات", tabSalary: "📄 الرواتب والرسائل", tabVidass: "🏢 VIDASS",
             tabFinances: "💰 المصروفات", tabTithes: "🤲 العشور", tabDevices: "🔌 الأجهزة", tabTrips: "🚗 الرحلات",
             tabTasks: "📌 المهام", tabShop: "🛒 التسوق", tabInv: "📦 المخزون", tabRec: "🍲 الوصفات", tabMusic: "🎵 الموسيقى", tabVault: "🔐 الخزنة", tabAI: "🤖 المساعد",
+            hResidents: "👥 سكان المنزل والرسائل", btnSendMsg: "📨 إرسال رسالة",
+            hNotifs: "🔔 الإشعارات والتذكيرات", btnAddNotif: "➕ إنشاء تذكير",
             hNotes: "📝 ملاحظات شخصية", btnAddNote: "➕ إضافة ملاحظة",
             hCalendar: "🕒 جدول المواعيد اليومي", btnAddEvent: "➕ إضافة حدث",
+            hReceiptsTitle: "🧾 الإيصالات والمقارنة", btnAddReceipt: "➕ حفظ الإيصال", hReceiptTip: "💡 نصيحة توفير:",
+            hSalaryTitle: "📄 تحليل الرواتب", lblSelectDoc: "اختر نوع المستند:", btnAnalyzeDoc: "🤖 تحليل المستند",
             hVidass: "🏢 إدارة VIDASS", btnAddVidass: "➕ إضافة مشروع",
             hFinances: "💰 إدارة المصروفات العائلية", btnAddExp: "➕ إضافة مصروف",
             hTithes: "🤲 حاسبة العشور والصدقات", btnAddTitheCalc: "💡 حساب 10٪",
@@ -746,26 +820,30 @@
             lblFullName: "Nombre completo:", lblHouseCode: "Código de Casa Compartida (Cloud):", lblAdminPin: "PIN de Administrador:",
             btnCreateHouse: "🏠 Crear Casa en la Nube y Empezar", btnJoinHouse: "🔗 Conectar a Casa Existente",
             loginSub: "Inicio de sesión seguro:", txtUser: "Usuario", lblEnterPin: "Introduce tu PIN:",
-            btnLoginSubmit: "🔓 Inicio de Sesión Seguro", btnResetDevice: "🔄 Restablecer Dispositivo",
+            btnLoginSubmit: "🔓 Inicio de Sesión Seguro", btnBiometric: "🧬 Inicio biométrico (Rostro / Huella)", btnResetDevice: "🔄 Restablecer Dispositivo",
             txtHouseSpan: "ID de Casa", btnLock: "🔒 Bloquear",
             inviteTitle: "👑 Gestión de Miembros y Enlace", inviteSub: "Envía el enlace de invitación a tu cónyuge. ¡Todo se sincroniza en tiempo real!",
-            btnCopyInvite: "📋 Copiar Enlace de Invitación", linkCal: "📅 Calendario", linkWa: "💬 WhatsApp", linkMail: "📧 Correo",
-            tabNotes: "📝 Notas", tabReceipts: "🧾 Recibos", tabSalary: "📄 Nóminas y Cartas", tabVidass: "🏢 VIDASS",
+            btnCopyInvite: "📋 Copiar Enlace", linkCal: "📅 Calendario", linkWa: "💬 WhatsApp", linkMail: "📧 Correo",
+            tabResidents: "👥 Residentes", tabNotifs: "🔔 Notificaciones", tabNotes: "📝 Notas", tabReceipts: "🧾 Recibos", tabSalary: "📄 Nóminas", tabVidass: "🏢 VIDASS",
             tabFinances: "💰 Finanzas", tabTithes: "🤲 Diezmos", tabDevices: "🔌 Dispositivos", tabTrips: "🚗 Viajes",
             tabTasks: "📌 Tareas", tabShop: "🛒 Compras", tabInv: "📦 Inventario", tabRec: "🍲 Recetas", tabMusic: "🎵 Música", tabVault: "🔐 Bóveda", tabAI: "🤖 Asistente",
-            hNotes: "📝 Notas personales y consejos", btnAddNote: "➕ Añadir Nota",
-            hCalendar: "🕒 Horario y calendario diario", btnAddEvent: "➕ Añadir Evento",
-            hVidass: "🏢 Gestión de VIDASS y Proyectos", btnAddVidass: "➕ Añadir Proyecto",
-            hFinances: "💰 Gestión de Gastos Familiares", btnAddExp: "➕ Añadir Gasto",
+            hResidents: "👥 Residentes y mensajes", btnSendMsg: "📨 Enviar Mensaje",
+            hNotifs: "🔔 Notificaciones y recordatorios", btnAddNotif: "➕ Crear Recordatorio",
+            hNotes: "📝 Notas personales", btnAddNote: "➕ Añadir Nota",
+            hCalendar: "🕒 Horario diario", btnAddEvent: "➕ Añadir Evento",
+            hReceiptsTitle: "🧾 Recibos y comparativa", btnAddReceipt: "➕ Guardar Recibo", hReceiptTip: "💡 Consejo de ahorro:",
+            hSalaryTitle: "📄 Análisis de nóminas", lblSelectDoc: "Seleccionar tipo:", btnAnalyzeDoc: "🤖 Analizar",
+            hVidass: "🏢 Gestión de VIDASS", btnAddVidass: "➕ Añadir Proyecto",
+            hFinances: "💰 Gestión de Gastos", btnAddExp: "➕ Añadir Gasto",
             hTithes: "🤲 Calculadora de Diezmos", btnAddTitheCalc: "💡 Calcular 10%",
             hDevices: "🔌 Gestión de Dispositivos", btnAddDev: "➕ Añadir Dispositivo",
-            hTrips: "🚗 Viajes y Enlaces de Navegación", btnAddTrip: "➕ Añadir Viaje",
+            hTrips: "🚗 Viajes y Navegación", btnAddTrip: "➕ Añadir Viaje",
             hTasks: "📌 Tareas, Shabat y Clima", lblSelectRegion: "Seleccionar región:", btnAddTsk: "➕ Añadir Tarea",
-            hShop: "🛒 Lista de Compras Compartida", btnAddShop: "➕ Añadir Artículo",
-            hInv: "📦 Inventario de Cajones", btnAddFolder: "📁 Crear Cajonera", selectedFolderTitle: "📂 Selecciona un cajón", btnAddInvItem: "➕ Añadir al Cajón",
+            hShop: "🛒 Lista de Compras", btnAddShop: "➕ Añadir Artículo",
+            hInv: "📦 Inventario de Cajones", btnAddFolder: "📁 Crear Cajón", selectedFolderTitle: "📂 Selecciona un cajón", btnAddInvItem: "➕ Añadir al Cajón",
             hRec: "🍲 Libro de Recetas", btnAddRecipe: "🍲 Publicar Receta",
             hMusic: "🎵 Música y Enlaces", btnAddMusic: "➕ Añadir Canción",
-            hVault: "🔐 Bóveda de Datos Segura", hVaultUnlock: "🔑 Desbloquear Bóveda (PIN):", btnUnlockVault: "🔓 Abrir Bóveda", btnAddVaultItem: "➕ Guardar en Bóveda",
+            hVault: "🔐 Bóveda Segura", hVaultUnlock: "🔑 Desbloquear Bóveda:", btnUnlockVault: "🔓 Abrir", btnAddVaultItem: "➕ Guardar",
             hAI: "🤖 Asistente Inteligente", btnSendAI: "Preguntar"
         }
     };
@@ -797,6 +875,7 @@
         document.getElementById('txtUserLabel').innerText = t.txtUser;
         document.getElementById('lblEnterPin').innerText = t.lblEnterPin;
         document.getElementById('btnLoginSubmit').innerText = t.btnLoginSubmit;
+        document.getElementById('btnBiometric').innerText = t.btnBiometric;
         document.getElementById('btnResetDevice').innerText = t.btnResetDevice;
         document.getElementById('txtUserSpan').innerText = t.txtUser;
         document.getElementById('txtHouseSpan').innerText = t.txtHouseSpan;
@@ -808,6 +887,8 @@
         document.getElementById('linkWa').innerText = t.linkWa;
         document.getElementById('linkMail').innerText = t.linkMail;
 
+        document.getElementById('tabBtnResidents').innerText = t.tabResidents;
+        document.getElementById('tabBtnNotifs').innerText = t.tabNotifs;
         document.getElementById('tabBtnNotes').innerText = t.tabNotes;
         document.getElementById('tabBtnReceipts').innerText = t.tabReceipts;
         document.getElementById('tabBtnSalary').innerText = t.tabSalary;
@@ -824,10 +905,20 @@
         document.getElementById('tabBtnVault').innerText = t.tabVault;
         document.getElementById('tabBtnAI').innerText = t.tabAI;
 
+        document.getElementById('hResidents').innerText = t.hResidents;
+        document.getElementById('btnSendMsg').innerText = t.btnSendMsg;
+        document.getElementById('hNotifs').innerText = t.hNotifs;
+        document.getElementById('btnAddNotif').innerText = t.btnAddNotif;
         document.getElementById('hNotes').innerText = t.hNotes;
         document.getElementById('btnAddNote').innerText = t.btnAddNote;
         document.getElementById('hCalendar').innerText = t.hCalendar;
         document.getElementById('btnAddEvent').innerText = t.btnAddEvent;
+        document.getElementById('hReceiptsTitle').innerText = t.hReceiptsTitle;
+        document.getElementById('btnAddReceipt').innerText = t.btnAddReceipt;
+        document.getElementById('hReceiptTip').innerText = t.hReceiptTip;
+        document.getElementById('hSalaryTitle').innerText = t.hSalaryTitle;
+        document.getElementById('lblSelectDoc').innerText = t.lblSelectDoc;
+        document.getElementById('btnAnalyzeDoc').innerText = t.btnAnalyzeDoc;
         document.getElementById('hVidass').innerText = t.hVidass;
         document.getElementById('btnAddVidass').innerText = t.btnAddVidass;
         document.getElementById('hFinances').innerText = t.hFinances;
@@ -862,7 +953,7 @@
     function speakPageText() {
         if ('speechSynthesis' in window) {
             window.speechSynthesis.cancel();
-            let textToRead = "מרכז שליטה וידאס. מערכת ניהול חכמה.";
+            let textToRead = "מרכז שליטה וידאס. מערכת ניהול חכמה ומאובטחת.";
             let activeTab = document.querySelector('.tab-content.active');
             if (activeTab) {
                 textToRead += " " + activeTab.innerText;
@@ -872,6 +963,15 @@
             window.speechSynthesis.speak(utterance);
         } else {
             alert("הדפדפן שלך אינו תומך בהקראה קולית.");
+        }
+    }
+
+    function speakText(text) {
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+            let utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = document.getElementById('langSelect').value === 'en' ? 'en-US' : 'he-IL';
+            window.speechSynthesis.speak(utterance);
         }
     }
 
@@ -922,6 +1022,7 @@
         currentHouse = houseName;
         currentPin = adminPin;
 
+        registerResident(fullName);
         showBankLoginScreen();
     }
 
@@ -937,8 +1038,17 @@
                 currentUser = userName;
                 currentHouse = code.toLowerCase().trim();
                 currentPin = housePin;
+                registerResident(userName);
                 showBankLoginScreen();
             }
+        }
+    }
+
+    function registerResident(name) {
+        if (!dbData.residents) dbData.residents = [];
+        if (!dbData.residents.includes(name)) {
+            dbData.residents.push(name);
+            saveData();
         }
     }
 
@@ -970,6 +1080,34 @@
         }
     }
 
+    async function verifyBiometricLogin() {
+        if (!window.PublicKeyCredential) {
+            alert("⚠️ המכשיר או הדפדפן שלך אינם תומכים בזיהוי ביומטרי. אנא היכנסי בעזרת סיסמת הניהול.");
+            return;
+        }
+        try {
+            const publicKey = {
+                challenge: new Uint8Array([21, 31, 105, 18, 45, 67, 89, 90]),
+                rp: { name: "VIDASS Home Banking" },
+                user: {
+                    id: Uint8Array.from("VIDASS_USER", c => c.charCodeAt(0)),
+                    name: currentUser || "viki",
+                    displayName: currentUser || "Viki Siboni"
+                },
+                pubKeyCredParams: [{ alg: -7, type: "public-key" }],
+                timeout: 60000,
+                authenticatorSelection: { authenticatorAttachment: "platform", userVerification: "required" },
+                attestation: "none"
+            };
+            await navigator.credentials.create({ publicKey });
+            alert("🧬 זיהוי ביומטרי אושר בהצלחה!");
+            document.getElementById('bankLoginScreen').style.display = 'none';
+            startMainApp();
+        } catch (error) {
+            alert("❌ זיהוי ביומטרי בוטל או נכשל. נסי להשתמש בסיסמת הניהול.");
+        }
+    }
+
     function lockAppToBankScreen() {
         document.getElementById('mainApp').style.display = 'none';
         showBankLoginScreen();
@@ -994,6 +1132,7 @@
         document.getElementById('activeUserName').innerText = currentUser || "משתמש";
         document.getElementById('activeHouseName').innerText = currentHouse || "vidass_home";
 
+        registerResident(currentUser);
         updateShabbatAndWeather();
 
         if (rtdb && currentHouse) {
@@ -1046,6 +1185,44 @@
         }
     }
 
+    // ניהול שליחת הודעות אישיות לדיירי הבית
+    function sendDirectMessage() {
+        let recipient = document.getElementById('msgRecipient').value.trim();
+        let text = document.getElementById('msgContentText').value.trim();
+        if(recipient && text) {
+            if(!dbData.messages) dbData.messages = [];
+            dbData.messages.push({ sender: currentUser, recipient, text, time: new Date().toLocaleTimeString() });
+            document.getElementById('msgRecipient').value = '';
+            document.getElementById('msgContentText').value = '';
+            saveData();
+            alert("📨 ההודעה נשלחה בהצלחה לדייר הבית!");
+        } else {
+            alert("נא למלא את שם הנמען ותוכן ההודעה.");
+        }
+    }
+    function deleteMessage(i) { dbData.messages.splice(i, 1); saveData(); }
+
+    // ניהול תזכורות והתראות פוש לטלפון
+    function scheduleNotification() {
+        let title = document.getElementById('notifTitle').value.trim();
+        let time = document.getElementById('notifTime').value.trim();
+        let broadcast = document.getElementById('broadcastNotif').checked;
+        if(title) {
+            if(!dbData.notifications) dbData.notifications = [];
+            dbData.notifications.push({ title, time: time || "עכשיו", broadcast, sender: currentUser });
+            document.getElementById('notifTitle').value = '';
+            document.getElementById('notifTime').value = '';
+            saveData();
+
+            // הפעלת התראה מקומית בדפדפן/בטלפון מיד
+            if ("Notification" in window && Notification.permission === "granted") {
+                new Notification("🔔 תזכורת מבית VIDASS", { body: title, icon: "" });
+            }
+            alert("🔔 התזכורת נוצרה והותקנה בהצלחה!");
+        }
+    }
+    function deleteNotification(i) { dbData.notifications.splice(i, 1); saveData(); }
+
     function addShopItem() {
         let val = document.getElementById('shopInput').value.trim();
         if(val) {
@@ -1067,6 +1244,15 @@
             saveData();
         }
     }
+    function editNote(i) {
+        let n = dbData.notes[i];
+        let newTitle = prompt("ערוך כותרת פתקייה:", n.title);
+        let newText = prompt("ערוך תוכן פתקייה:", n.text);
+        if(newTitle !== null && newText !== null) {
+            dbData.notes[i] = { title: newTitle.trim(), text: newText.trim() };
+            saveData();
+        }
+    }
     function deleteNote(i) { dbData.notes.splice(i, 1); saveData(); }
 
     function addEvent() {
@@ -1076,6 +1262,15 @@
             if(!dbData.events) dbData.events = [];
             dbData.events.push({time, title});
             document.getElementById('eventTime').value=''; document.getElementById('eventDesc').value='';
+            saveData();
+        }
+    }
+    function editEvent(i) {
+        let e = dbData.events[i];
+        let newTime = prompt("ערוך שעה/תאריך:", e.time);
+        let newTitle = prompt("ערוך תיאור אירוע:", e.title);
+        if(newTime !== null && newTitle !== null) {
+            dbData.events[i] = { time: newTime.trim(), title: newTitle.trim() };
             saveData();
         }
     }
@@ -1107,7 +1302,7 @@
             storeTotals[r.store] = (storeTotals[r.store] || 0) + r.price;
         });
         let cheapest = Object.keys(storeTotals).reduce((a, b) => storeTotals[a] < storeTotals[b] ? a : b);
-        box.innerHTML = `🏆 על פי הקבלות שהזנת, החנות הזולה ביותר כרגע هي: <b>${cheapest}</b> (סך הוצאות: ₪${storeTotals[cheapest]}). מומלץ להתרכז בקניות שם לפי חוקי צרכנות חכמה!`;
+        box.innerHTML = `🏆 על פי הקבלות שהזנת, החנות הזולה ביותר כרגע היא: <b>${cheapest}</b> (סך הוצאות: ₪${storeTotals[cheapest]}). מומלץ להתרכז בקניות שם לפי חוקי צרכנות חכמה!`;
     }
 
     function analyzeDocumentAI() {
@@ -1122,7 +1317,7 @@
         if (type === 'salary') {
             analysis = `📄 <b>ניתוח תלוש משכורת (לפי חוקי עבודה בישראל):</b><br>- המערכת סרקה את הנתונים שהזנת.<br>- יש לוודא הפרשות פנסיוניות כחוק (מינימום 6.5% מעסיק, 6% עובד).<br>- בדיקת ברוטו מול נטו, שעות נוספות, ודמי נסיעות לפי צו הרחבה.`;
         } else if (type === 'letter') {
-            analysis = `🏛️ <b>ניתוח מכתב רשמי:</b><br>- המסמך זוהה כמכתב רשמי/מוסדי.<br>- <b>המלצה:</b> יש לשים לב לתאריכים וימים לערעור أو תשלום (לרוב 30-60 יום). אל תתעלמי ממנו!`;
+            analysis = `🏛️ <b>ניתוח מכתב רשמי:</b><br>- המסמך זוהה כמכתב רשמי/מוסדי.<br>- <b>המלצה:</b> יש לשים לב לתאריכים וימים לערעור או תשלום (לרוב 30-60 יום). אל תתעלמי ממנו!`;
         } else {
             analysis = `📝 <b>ניתוח חוזה:</b><br>- יש לוודא תנאי יציאה, סעיפי הצמדה למדד, וערבויות ברורות המגנות על זכויותיך.`;
         }
@@ -1142,6 +1337,15 @@
             if(!dbData.vidass) dbData.vidass = [];
             dbData.vidass.push({name, desc});
             document.getElementById('vidassProjectName').value=''; document.getElementById('vidassProjectDesc').value='';
+            saveData();
+        }
+    }
+    function editVidass(i) {
+        let v = dbData.vidass[i];
+        let newName = prompt("ערוך שם פרויקט:", v.name);
+        let newDesc = prompt("ערוך תיאור פרויקט:", v.desc);
+        if(newName !== null && newDesc !== null) {
+            dbData.vidass[i] = { name: newName.trim(), desc: newDesc.trim() };
             saveData();
         }
     }
@@ -1182,6 +1386,15 @@
             saveData();
         }
     }
+    function editDevice(i) {
+        let d = dbData.devices[i];
+        let newName = prompt("ערוך שם מכשיר:", d.name);
+        let newType = prompt("ערוך סוג מכשיר:", d.type);
+        if(newName !== null && newType !== null) {
+            dbData.devices[i] = { name: newName.trim(), type: newType.trim() };
+            saveData();
+        }
+    }
     function deleteDevice(i) { dbData.devices.splice(i, 1); saveData(); }
 
     function addTrip() {
@@ -1194,6 +1407,15 @@
             saveData();
         }
     }
+    function editTrip(i) {
+        let t = dbData.trips[i];
+        let newName = prompt("ערוך שם יעד:", t.name);
+        let newDest = prompt("ערוך כתובת מדויקת:", t.dest);
+        if(newName !== null && newDest !== null) {
+            dbData.trips[i] = { name: newName.trim(), dest: newDest.trim() };
+            saveData();
+        }
+    }
     function deleteTrip(i) { dbData.trips.splice(i, 1); saveData(); }
 
     function addTask() {
@@ -1202,6 +1424,14 @@
             if(!dbData.tasks) dbData.tasks = [];
             dbData.tasks.push({text});
             document.getElementById('taskText').value='';
+            saveData();
+        }
+    }
+    function editTask(i) {
+        let t = dbData.tasks[i];
+        let newText = prompt("ערוך משימה:", t.text);
+        if(newText !== null) {
+            dbData.tasks[i] = { text: newText.trim() };
             saveData();
         }
     }
@@ -1256,7 +1486,10 @@
         listContainer.innerHTML = folderItems.map((item, i) => `
             <div class="card">
                 <span>📦 <b>${item.name}</b> (כמות: ${item.qty})</span>
-                <button class="logout-btn" onclick="deleteInventoryItem(${i})">🗑️ מחק</button>
+                <div style="display:flex; gap:8px;">
+                    <button class="speak-item-btn" onclick="speakText('${item.name}, כמות ${item.qty}')">🗣️ הקרא</button>
+                    <button class="logout-btn" onclick="deleteInventoryItem(${i})">🗑️ מחק</button>
+                </div>
             </div>
         `).join('') || "<p>המגירה ריקה.</p>";
     }
@@ -1268,6 +1501,15 @@
             if(!dbData.recipes) dbData.recipes = [];
             dbData.recipes.push({title, instructions});
             document.getElementById('recipeTitle').value=''; document.getElementById('recipeInstructions').value='';
+            saveData();
+        }
+    }
+    function editRecipe(i) {
+        let r = dbData.recipes[i];
+        let newTitle = prompt("ערוך שם מתכון:", r.title);
+        let newInst = prompt("ערוך אופן הכנה:", r.instructions);
+        if(newTitle !== null && newInst !== null) {
+            dbData.recipes[i] = { title: newTitle.trim(), instructions: newInst.trim() };
             saveData();
         }
     }
@@ -1321,7 +1563,10 @@
         listContainer.innerHTML = (dbData.vault || []).map((v, i) => `
             <div class="card">
                 <div><h4>🔒 ${v.title}</h4><p>${v.data}</p></div>
-                <button class="logout-btn" onclick="deleteVaultItem(${i})">🗑️ מחק</button>
+                <div style="display:flex; gap:8px;">
+                    <button class="speak-item-btn" onclick="speakText('${v.title}. ${v.data}')">🗣️ הקרא</button>
+                    <button class="logout-btn" onclick="deleteVaultItem(${i})">🗑️ מחק</button>
+                </div>
             </div>
         `).join('') || "<p>הכספת ריקה.</p>";
     }
@@ -1363,9 +1608,41 @@
     function renderAll() {
         if(!dbData) return;
 
+        // הצגת דיירי הבית והודעות
+        let resElem = document.getElementById('residentsListContainer');
+        if(resElem) {
+            let residentsHTML = "<h4>👥 דיירי הבית הרשומים:</h4><ul>" + (dbData.residents || []).map(r => `<li><b>${r}</b> ${r === currentUser ? '(את/ה)' : ''}</li>`).join('') + "</ul>";
+            residentsHTML += "<h4 style='margin-top:20px;'>📨 הודעות אישיות:</h4>";
+            residentsHTML += (dbData.messages || []).filter(m => m.recipient === currentUser || m.sender === currentUser).map((m, i) => `
+                <div class="card">
+                    <div><b>${m.sender} ➔ ${m.recipient}:</b> ${m.text} <span style="font-size:11px; color:#666;">(${m.time})</span></div>
+                    <button class="logout-btn" onclick="deleteMessage(${i})">🗑️ מחק</button>
+                </div>
+            `).join('') || "<p>אין הודעות חדשות.</p>";
+            resElem.innerHTML = residentsHTML;
+        }
+
+        // הצגת התראות ותזכורות
+        let notifElem = document.getElementById('notificationsList');
+        if(notifElem) {
+            notifElem.innerHTML = (dbData.notifications || []).map((n, i) => `
+                <div class="card">
+                    <div>🔔 <b>${n.title}</b> (זמן: ${n.time}) ${n.broadcast ? '<span>[📢 מוקפץ לכולם]</span>' : ''}</div>
+                    <button class="logout-btn" onclick="deleteNotification(${i})">🗑️ מחק</button>
+                </div>
+            `).join('') || "<p>אין תזכורות פעילות.</p>";
+        }
+
         let shopHTML = "";
         for(let k in (dbData.shopping || {})) {
-            shopHTML += `<div class="card"><span>🛒 ${k}</span><button class="logout-btn" onclick="deleteShop('${k}')">🗑️</button></div>`;
+            shopHTML += `
+                <div class="card">
+                    <span>🛒 ${k}</span>
+                    <div style="display:flex; gap:8px;">
+                        <button class="speak-item-btn" onclick="speakText('${k}')">🗣️ הקרא</button>
+                        <button class="logout-btn" onclick="deleteShop('${k}')">🗑️</button>
+                    </div>
+                </div>`;
         }
         let shopElem = document.getElementById('shopList');
         if(shopElem) shopElem.innerHTML = shopHTML || "<p>הרשימה ריקה.</p>";
@@ -1373,21 +1650,41 @@
         let notesElem = document.getElementById('noteCardsContainer');
         if(notesElem) {
             notesElem.innerHTML = (dbData.notes || []).map((n, i) => 
-                `<div class="note-card"><div><h4>${n.title}</h4><p>${n.text}</p></div><button class="logout-btn" onclick="deleteNote(${i})">🗑️</button></div>`
+                `<div class="note-card">
+                    <div><h4>${n.title}</h4><p>${n.text}</p></div>
+                    <div style="display:flex; gap:8px;">
+                        <button class="speak-item-btn" onclick="speakText('${n.title}. ${n.text}')">🗣️ הקרא</button>
+                        <button class="edit-btn" onclick="editNote(${i})">✏️ ערוך</button>
+                        <button class="logout-btn" onclick="deleteNote(${i})">🗑️ מחק</button>
+                    </div>
+                </div>`
             ).join('') || "<p>אין פתקיות.</p>";
         }
 
         let eventsElem = document.getElementById('eventsList');
         if(eventsElem) {
             eventsElem.innerHTML = (dbData.events || []).map((e, i) => 
-                `<div class="card"><span>⏰ <b>${e.time}</b> - ${e.title}</span><button class="logout-btn" onclick="deleteEvent(${i})">🗑️</button></div>`
+                `<div class="card">
+                    <span>⏰ <b>${e.time}</b> - ${e.title}</span>
+                    <div style="display:flex; gap:8px;">
+                        <button class="speak-item-btn" onclick="speakText('שעה ${e.time}, אירוע ${e.title}')">🗣️ הקרא</button>
+                        <button class="edit-btn" onclick="editEvent(${i})">✏️ ערוך</button>
+                        <button class="logout-btn" onclick="deleteEvent(${i})">🗑️ מחק</button>
+                    </div>
+                </div>`
             ).join('') || "<p>אין אירועים.</p>";
         }
 
         let recElem = document.getElementById('receiptsList');
         if(recElem) {
             recElem.innerHTML = (dbData.receipts || []).map((r, i) => 
-                `<div class="card"><span>🧾 <b>${r.store}</b>: ${r.item} (₪${r.price})</span><button class="logout-btn" onclick="deleteReceipt(${i})">🗑️</button></div>`
+                `<div class="card">
+                    <span>🧾 <b>${r.store}</b>: ${r.item} (₪${r.price})</span>
+                    <div style="display:flex; gap:8px;">
+                        <button class="speak-item-btn" onclick="speakText('חנות ${r.store}, מוצר ${r.item}, מחיר ${r.price} שקל')">🗣️ הקרא</button>
+                        <button class="logout-btn" onclick="deleteReceipt(${i})">🗑️ מחק</button>
+                    </div>
+                </div>`
             ).join('') || "<p>אין קבלות רשומות.</p>";
             updateReceiptsComparison();
         }
@@ -1395,14 +1692,27 @@
         let docElem = document.getElementById('documentsList');
         if(docElem) {
             docElem.innerHTML = (dbData.documents || []).map((d, i) => 
-                `<div class="card"><div><h4>📄 מסוג: ${d.type}</h4><p>${d.content.substring(0, 50)}...</p></div><button class="logout-btn" onclick="deleteDocument(${i})">🗑️</button></div>`
+                `<div class="card">
+                    <div><h4>📄 מסוג: ${d.type}</h4><p>${d.content.substring(0, 50)}...</p></div>
+                    <div style="display:flex; gap:8px;">
+                        <button class="speak-item-btn" onclick="speakText('מסמך מסוג ${d.type}')">🗣️ הקרא</button>
+                        <button class="logout-btn" onclick="deleteDocument(${i})">🗑️ מחק</button>
+                    </div>
+                </div>`
             ).join('') || "<p>אין מסמכים מנותחים.</p>";
         }
 
         let vidassElem = document.getElementById('vidassList');
         if(vidassElem) {
             vidassElem.innerHTML = (dbData.vidass || []).map((v, i) => 
-                `<div class="card"><div><h4 style="margin:0; color:var(--primary-color);">🏢 ${v.name}</h4><p>${v.desc}</p></div><button class="logout-btn" onclick="deleteVidass(${i})">🗑️</button></div>`
+                `<div class="card">
+                    <div><h4 style="margin:0; color:var(--primary-color);">🏢 ${v.name}</h4><p>${v.desc}</p></div>
+                    <div style="display:flex; gap:8px;">
+                        <button class="speak-item-btn" onclick="speakText('פרויקט ${v.name}. ${v.desc}')">🗣️ הקרא</button>
+                        <button class="edit-btn" onclick="editVidass(${i})">✏️ ערוך</button>
+                        <button class="logout-btn" onclick="deleteVidass(${i})">🗑️ מחק</button>
+                    </div>
+                </div>`
             ).join('') || "<p>אין פרויקטים ב-VIDASS.</p>";
         }
 
@@ -1412,7 +1722,7 @@
             expElem.innerHTML = `
                 <table style="width:100%; border-collapse:collapse; background:#fff;">
                     <tr><th style="border:1px solid #ffb6c1; padding:8px;">חודש</th><th style="border:1px solid #ffb6c1; padding:8px;">קטגוריה</th><th style="border:1px solid #ffb6c1; padding:8px;">סכום</th><th style="border:1px solid #ffb6c1; padding:8px;">פעולה</th></tr>
-                    ${(dbData.expenses || []).map((e, i) => `<tr><td style="border:1px solid #ffb6c1; padding:8px;">${e.month}</td><td style="border:1px solid #ffb6c1; padding:8px;">${e.category}</td><td style="border:1px solid #ffb6c1; padding:8px;">₪${e.amount}</td><td style="border:1px solid #ffb6c1; padding:8px;"><button onclick="deleteExpense(${i})">🗑️</button></td></tr>`).join('')}
+                    ${(dbData.expenses || []).map((e, i) => `<tr><td style="border:1px solid #ffb6c1; padding:8px;">${e.month}</td><td style="border:1px solid #ffb6c1; padding:8px;">${e.category}</td><td style="border:1px solid #ffb6c1; padding:8px;">₪${e.amount}</td><td style="border:1px solid #ffb6c1; padding:8px; display:flex; gap:5px;"><button class="speak-item-btn" style="padding:4px 8px; font-size:12px;" onclick="speakText('${e.month}, ${e.category}, ${e.amount} שקל')">🗣️</button><button class="logout-btn" style="padding:4px 8px; font-size:12px;" onclick="deleteExpense(${i})">🗑️</button></td></tr>`).join('')}
                 </table>
                 <div style="margin-top:10px; font-weight:bold;">סך הכל הוצאות: ₪${totalExp}</div>
             `;
@@ -1421,14 +1731,27 @@
         let tithesElem = document.getElementById('tithesList');
         if(tithesElem) {
             tithesElem.innerHTML = (dbData.tithes || []).map((th, i) => 
-                `<div class="card"><span>🤲 הכנסה: ₪${th.income} | מעשר להפרשה: ₪${th.tithe.toFixed(2)}</span><button class="logout-btn" onclick="deleteTithe(${i})">🗑️</button></div>`
+                `<div class="card">
+                    <span>🤲 הכנסה: ₪${th.income} | מעשר להפרשה: ₪${th.tithe.toFixed(2)}</span>
+                    <div style="display:flex; gap:8px;">
+                        <button class="speak-item-btn" onclick="speakText('הכנסה ${th.income} שקל, מעשר ${th.tithe.toFixed(2)} שקל')">🗣️ הקרא</button>
+                        <button class="logout-btn" onclick="deleteTithe(${i})">🗑️ מחק</button>
+                    </div>
+                </div>`
             ).join('') || "<p>אין מעשרות רשומים.</p>";
         }
 
         let devicesElem = document.getElementById('devicesList');
         if(devicesElem) {
             devicesElem.innerHTML = (dbData.devices || []).map((d, i) => 
-                `<div class="card"><span>🔌 ${d.name} (${d.type})</span><button class="logout-btn" onclick="deleteDevice(${i})">🗑️</button></div>`
+                `<div class="card">
+                    <span>🔌 ${d.name} (${d.type})</span>
+                    <div style="display:flex; gap:8px;">
+                        <button class="speak-item-btn" onclick="speakText('מכשיר ${d.name}, סוג ${d.type}')">🗣️ הקרא</button>
+                        <button class="edit-btn" onclick="editDevice(${i})">✏️ ערוך</button>
+                        <button class="logout-btn" onclick="deleteDevice(${i})">🗑️ מחק</button>
+                    </div>
+                </div>`
             ).join('') || "<p>אין מכשירים.</p>";
         }
 
@@ -1443,10 +1766,12 @@
                             <h4 style="margin:0; color:var(--primary-color);">🚗 ${t.name}</h4>
                             <p style="margin:5px 0 0 0;">📍 כתובת: ${t.dest || 'לא צוינה כתובת'}</p>
                         </div>
-                        <div style="display:flex; gap:8px;">
+                        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
                             <a href="${wazeUrl}" target="_blank" class="quick-link-btn" style="background:#3182ce; padding:6px 10px; border-radius:6px; color:white; text-decoration:none; font-size:13px;">🧭 Waze</a>
                             <a href="${googleMapsUrl}" target="_blank" class="quick-link-btn" style="background:#4285F4; padding:6px 10px; border-radius:6px; color:white; text-decoration:none; font-size:13px;">🗺️ מפות</a>
-                            <button class="logout-btn" onclick="deleteTrip(${i})" style="padding:6px 10px;">🗑️ מחק</button>
+                            <button class="speak-item-btn" onclick="speakText('נסיעה ליעד ${t.name}, כתובת ${t.dest}')" style="padding:6px 10px; font-size:13px;">🗣️ הקרא</button>
+                            <button class="edit-btn" onclick="editTrip(${i})" style="padding:6px 10px; font-size:13px;">✏️ ערוך</button>
+                            <button class="logout-btn" onclick="deleteTrip(${i})" style="padding:6px 10px; font-size:13px;">🗑️ מחק</button>
                         </div>
                     </div>
                 `;
@@ -1456,7 +1781,14 @@
         let tasksElem = document.getElementById('tasksList');
         if(tasksElem) {
             tasksElem.innerHTML = (dbData.tasks || []).map((t, i) => 
-                `<div class="card"><span>📌 ${t.text}</span><button class="logout-btn" onclick="deleteTask(${i})">🗑️</button></div>`
+                `<div class="card">
+                    <span>📌 ${t.text}</span>
+                    <div style="display:flex; gap:8px;">
+                        <button class="speak-item-btn" onclick="speakText('משימה: ${t.text}')">🗣️ הקרא</button>
+                        <button class="edit-btn" onclick="editTask(${i})">✏️ ערוך</button>
+                        <button class="logout-btn" onclick="deleteTask(${i})">🗑️ מחק</button>
+                    </div>
+                </div>`
             ).join('') || "<p>אין משימות.</p>";
         }
 
@@ -1471,14 +1803,27 @@
         let recipesElem = document.getElementById('recipesListContainer');
         if(recipesElem) {
             recipesElem.innerHTML = (dbData.recipes || []).map((r, i) => 
-                `<div class="card"><div><h4 style="margin:0; color:var(--primary-color);">🍲 ${r.title}</h4><p>${r.instructions}</p></div><button class="logout-btn" onclick="deleteRecipe(${i})">🗑️</button></div>`
+                `<div class="card">
+                    <div><h4 style="margin:0; color:var(--primary-color);">🍲 ${r.title}</h4><p>${r.instructions}</p></div>
+                    <div style="display:flex; gap:8px;">
+                        <button class="speak-item-btn" onclick="speakText('מתכון ${r.title}. אופן הכנה: ${r.instructions}')">🗣️ הקרא</button>
+                        <button class="edit-btn" onclick="editRecipe(${i})">✏️ ערוך</button>
+                        <button class="logout-btn" onclick="deleteRecipe(${i})">🗑️ מחק</button>
+                    </div>
+                </div>`
             ).join('') || "<p>אין מתכונים.</p>";
         }
 
         let musicElem = document.getElementById('musicListContainer');
         if(musicElem) {
             musicElem.innerHTML = (dbData.music || []).map((m, i) => 
-                `<div class="card"><div><h4>🎵 ${m.title}</h4>${m.link ? `<a href="${m.link}" target="_blank">פתח קישור</a>` : ''}</div><button class="logout-btn" onclick="deleteMusic(${i})">🗑️</button></div>`
+                `<div class="card">
+                    <div><h4>🎵 ${m.title}</h4>${m.link ? `<a href="${m.link}" target="_blank">פתח קישור</a>` : ''}</div>
+                    <div style="display:flex; gap:8px;">
+                        <button class="speak-item-btn" onclick="speakText('שיר ${m.title}')">🗣️ הקרא</button>
+                        <button class="logout-btn" onclick="deleteMusic(${i})">🗑️ מחק</button>
+                    </div>
+                </div>`
             ).join('') || "<p>אין שירים.</p>";
         }
 
