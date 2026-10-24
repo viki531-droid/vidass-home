@@ -44,6 +44,38 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
         .auth-box, .bank-login-box { max-width: 520px; margin-top: 20px; border: 2px solid var(--button-bg); text-align: center; }
+        
+        /* טבלת בחירת צבעים והתאמה אישית תמידית */
+        .color-control-panel {
+            background: rgba(0,0,0,0.04);
+            border: 2px solid var(--primary-color);
+            padding: 12px 18px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .color-palette-grid {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .color-theme-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 3px solid white;
+            cursor: pointer;
+            display: inline-block;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.25);
+            transition: transform 0.2s;
+        }
+        .color-theme-btn:hover { transform: scale(1.15); }
+
         .accessibility-bar {
             display: flex;
             justify-content: space-between;
@@ -60,19 +92,10 @@
             background: var(--primary-color);
             color: white;
             border: none;
-            padding: 5px 10px;
-            border-radius: 5px;
+            padding: 6px 12px;
+            border-radius: 6px;
             cursor: pointer;
             font-weight: bold;
-        }
-        .color-theme-btn {
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            border: 2px solid white;
-            cursor: pointer;
-            display: inline-block;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
         .top-bar {
             display: flex;
@@ -290,17 +313,10 @@
 </head>
 <body id="appBody" dir="rtl">
 
-<!-- סרגל נגישות, צבעים, הקראה ושפות -->
+<!-- סרגל נגישות ושפות -->
 <div class="accessibility-bar" role="region">
-    <span id="lblAccess">♿ נגישות, צבעים ושפות:</span>
+    <span id="lblAccess">♿ נגישות ושפות:</span>
     <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-        <div style="display:flex; gap:4px; align-items:center; background:rgba(0,0,0,0.04); padding:3px 6px; border-radius:6px;">
-            <span style="font-size:12px; font-weight:bold;">🎨</span>
-            <span class="color-theme-btn" style="background:#d1496b;" onclick="setTheme('pink')" title="ורוד"></span>
-            <span class="color-theme-btn" style="background:#276749;" onclick="setTheme('green')" title="ירוק"></span>
-            <span class="color-theme-btn" style="background:#3182ce;" onclick="setTheme('blue')" title="כחול"></span>
-            <span class="color-theme-btn" style="background:#6b46c1;" onclick="setTheme('purple')" title="סגול"></span>
-        </div>
         <button class="accessibility-btn" onclick="changeFontSize(2)">A+</button>
         <button class="accessibility-btn" onclick="changeFontSize(-2)">A-</button>
         <button class="accessibility-btn" onclick="toggleContrast()" id="btnContrast">🌓 ניגודיות</button>
@@ -313,6 +329,23 @@
             <option value="ar">العربية</option>
             <option value="es">Español</option>
         </select>
+    </div>
+</div>
+
+<!-- טבלת בקרת צבעים והתאמה אישית תמידית -->
+<div class="color-control-panel">
+    <div>
+        <h4 style="margin:0 0 4px 0;">🎨 בחירת צבעים וערכת נושא תמידית</h4>
+        <p style="margin:0; font-size:13px; opacity:0.85;">בחרי את הצבע האהוב עליך למערכת. הבחירה נשמרת באופן קבוע!</p>
+    </div>
+    <div class="color-palette-grid">
+        <span class="color-theme-btn" style="background:#d1496b;" onclick="setTheme('pink')" title="ורוד קלאסי"></span>
+        <span class="color-theme-btn" style="background:#276749;" onclick="setTheme('green')" title="ירוק טבע"></span>
+        <span class="color-theme-btn" style="background:#3182ce;" onclick="setTheme('blue')" title="כחול עמוק"></span>
+        <span class="color-theme-btn" style="background:#6b46c1;" onclick="setTheme('purple')" title="סגול מלכותי"></span>
+        <span class="color-theme-btn" style="background:#d69e2e;" onclick="setTheme('gold')" title="זהב חם"></span>
+        <span class="color-theme-btn" style="background:#e53e3e;" onclick="setTheme('red')" title="אדום בולט"></span>
+        <span class="color-theme-btn" style="background:#2d3748;" onclick="setTheme('dark')" title="אפור כהה אלגנטי"></span>
     </div>
 </div>
 
@@ -675,13 +708,14 @@
 </div>
 
 <script>
-    const STORAGE_USER = 'vidass_stable_user_v41';
-    const STORAGE_HOUSE = 'vidass_stable_house_v41';
-    const STORAGE_PIN = 'vidass_stable_pin_v41';
-    const STORAGE_RECOVERY = 'vidass_stable_rec_v41';
-    const STORAGE_VAULT_PIN = 'vidass_stable_vault_v41';
-    const STORAGE_LANG = 'vidass_stable_lang_v41';
-    const STORAGE_THEME = 'vidass_stable_theme_v41';
+    const STORAGE_USER = 'vidass_persistent_user_v43';
+    const STORAGE_HOUSE = 'vidass_persistent_house_v43';
+    const STORAGE_PIN = 'vidass_persistent_pin_v43';
+    const STORAGE_RECOVERY = 'vidass_persistent_rec_v43';
+    const STORAGE_VAULT_PIN = 'vidass_persistent_vault_v43';
+    const STORAGE_LANG = 'vidass_persistent_lang_v43';
+    const STORAGE_THEME = 'vidass_persistent_theme_v43';
+    const STORAGE_DATA = 'vidass_persistent_local_backup_v43';
 
     let currentUser = localStorage.getItem(STORAGE_USER);
     let currentHouse = localStorage.getItem(STORAGE_HOUSE);
@@ -691,7 +725,7 @@
     let isFinancesUnlocked = false;
     let activeFolder = '';
 
-    let dbData = {
+    let defaultDbData = {
         shopping: {},
         notes: [],
         events: [],
@@ -711,8 +745,11 @@
         residents: [],
         notifications: [],
         messages: [],
-        chat: [{role: 'ai', text: "שלום! המערכת מסונכרנת ומאובטחת עם בקרת שיתוף אישית. איך לעזור לך היום?"}]
+        chat: [{role: 'ai', text: "שלום! הנתונים וההגדרות שלך נשמרים באופן קבוע ומאובטח. איך לעזור לך היום?"}]
     };
+
+    let localBackup = localStorage.getItem(STORAGE_DATA);
+    let dbData = localBackup ? JSON.parse(localBackup) : defaultDbData;
 
     let rtdb = null;
     try {
@@ -766,18 +803,44 @@
             root.style.setProperty('--bg-color', '#fff5f8');
             root.style.setProperty('--primary-color', '#d1496b');
             root.style.setProperty('--button-bg', '#ffb6c1');
+            root.style.setProperty('--card-bg', '#ffffff');
+            root.style.setProperty('--text-color', '#333333');
         } else if (themeName === 'green') {
             root.style.setProperty('--bg-color', '#f0fff4');
             root.style.setProperty('--primary-color', '#276749');
             root.style.setProperty('--button-bg', '#9ae6b4');
+            root.style.setProperty('--card-bg', '#ffffff');
+            root.style.setProperty('--text-color', '#2d3748');
         } else if (themeName === 'blue') {
             root.style.setProperty('--bg-color', '#ebf8ff');
             root.style.setProperty('--primary-color', '#3182ce');
             root.style.setProperty('--button-bg', '#90cdf4');
+            root.style.setProperty('--card-bg', '#ffffff');
+            root.style.setProperty('--text-color', '#2d3748');
         } else if (themeName === 'purple') {
             root.style.setProperty('--bg-color', '#faf5ff');
             root.style.setProperty('--primary-color', '#6b46c1');
             root.style.setProperty('--button-bg', '#d6bcfa');
+            root.style.setProperty('--card-bg', '#ffffff');
+            root.style.setProperty('--text-color', '#2d3748');
+        } else if (themeName === 'gold') {
+            root.style.setProperty('--bg-color', '#fffaf0');
+            root.style.setProperty('--primary-color', '#d69e2e');
+            root.style.setProperty('--button-bg', '#fbd38d');
+            root.style.setProperty('--card-bg', '#ffffff');
+            root.style.setProperty('--text-color', '#2d3748');
+        } else if (themeName === 'red') {
+            root.style.setProperty('--bg-color', '#fff5f5');
+            root.style.setProperty('--primary-color', '#e53e3e');
+            root.style.setProperty('--button-bg', '#feb2b2');
+            root.style.setProperty('--card-bg', '#ffffff');
+            root.style.setProperty('--text-color', '#2d3748');
+        } else if (themeName === 'dark') {
+            root.style.setProperty('--bg-color', '#1a202c');
+            root.style.setProperty('--primary-color', '#63b3ed');
+            root.style.setProperty('--button-bg', '#4a5568');
+            root.style.setProperty('--card-bg', '#2d3748');
+            root.style.setProperty('--text-color', '#f7fafc');
         }
     }
 
@@ -789,7 +852,7 @@
 
     const translations = {
         he: {
-            access: "♿ נגישות, צבעים ושפות:", contrast: "🌓 ניגודיות", speak: "🗣️ הקראת עמוד",
+            access: "♿ נגישות ושפות:", contrast: "🌓 ניגודיות", speak: "🗣️ הקראת עמוד",
             authTitle: "🏢 VIDASS Home - הרשמת דייר למערכת", authSub: "הזיני את שמך, בחרי סיסמה אישית וקוד שחזור:",
             lblFullName: "שם הדייר/ת שלך:", lblHouseCode: "קוד הבית המשותף (ענן):", lblAdminPin: "סיסמה אישית לכניסה:", lblRecoveryPin: "קוד שחזור סודי (לשחזור במקרה של שכחה):",
             btnCreateHouse: "🏠 שמור פרטים והכנס למערכת",
@@ -815,13 +878,13 @@
             hTasks: "📌 משימות, זמני שבת ומזג אוויר", lblSelectRegion: "בחרי אזור בארץ לעדכון זמני שבת ומזג אוויר:", btnAddTsk: "➕ הוסף משימה",
             hShop: "🛒 רשימת קניות משותפת בזמן אמת", btnAddShop: "➕ הוסף מוצר",
             hInv: "📦 ניהול מלאי מגירות ומעקב מדף", btnAddFolder: "📁 צור מגירה", selectedFolderTitle: "📂 בחר מגירה לצפייה במלאי והוספת פריטים", btnAddInvItem: "➕ הוסף למגירה זו",
-            hRec: "🍲 ספר מתכונים משפحתי", btnAddRecipe: "🍲 פרסם מתכון",
+            hRec: "🍲 ספר מתכונים משפחתי", btnAddRecipe: "🍲 פרסם מתכון",
             hMusic: "🎵 מוזיקה וקישורים", btnAddMusic: "➕ הוסף שיר",
             hVault: "🔐 כספת נתונים מוצפנת", hVaultUnlock: "🔑 פתיחת כספת (הגדירי סיסמה):", btnUnlockVault: "🔓 פתח כספת", btnAddVaultItem: "➕ שמור בכספת",
             hAI: "🤖 העוזרת החכמה (מחוברת לענן)", btnSendAI: "שאל"
         },
         en: {
-            access: "♿ Access, Colors & Lang:", contrast: "🌓 Contrast", speak: "🗣️ Speak Page",
+            access: "♿ Access & Lang:", contrast: "🌓 Contrast", speak: "🗣️ Speak Page",
             authTitle: "🏢 VIDASS Home - Resident Registration", authSub: "Enter your name, personal PIN and recovery code:",
             lblFullName: "Your Name:", lblHouseCode: "Shared House Code (Cloud):", lblAdminPin: "Personal Login PIN:", lblRecoveryPin: "Secret Recovery Code:",
             btnCreateHouse: "🏠 Save & Enter System",
@@ -853,7 +916,7 @@
             hAI: "🤖 Smart Assistant (Cloud Connected)", btnSendAI: "Ask"
         },
         ru: {
-            access: "♿ Доступ, цвета и язык:", contrast: "🌓 Контраст", speak: "🗣️ Читать",
+            access: "♿ Доступ и язык:", contrast: "🌓 Контраст", speak: "🗣️ Читать",
             authTitle: "🏢 VIDASS Home - Регистрация жильца", authSub: "Введите имя, личный PIN-код и код восстановления:",
             lblFullName: "Ваше имя:", lblHouseCode: "Код общего дома:", lblAdminPin: "Личный PIN-код:", lblRecoveryPin: "Секретный код восстановления:",
             btnCreateHouse: "🏠 Сохранить и войти",
@@ -885,7 +948,7 @@
             hAI: "🤖 ИИ", btnSendAI: "Спросить"
         },
         fr: {
-            access: "♿ Accès, Couleurs & Langue :", contrast: "🌓 Contraste", speak: "🗣️ Lire",
+            access: "♿ Accès & Langue :", contrast: "🌓 Contraste", speak: "🗣️ Lire",
             authTitle: "🏢 VIDASS Home - Enregistrement", authSub: "Entrez votre nom, PIN et code de récupération :",
             lblFullName: "Votre nom :", lblHouseCode: "Code de la maison :", lblAdminPin: "PIN personnel :", lblRecoveryPin: "Code de récupération secret :",
             btnCreateHouse: "🏠 Enregistrer et entrer",
@@ -917,7 +980,7 @@
             hAI: "🤖 IA", btnSendAI: "Demander"
         },
         ar: {
-            access: "♿ إمكانية الوصول، الألوان واللغة:", contrast: "🌓 التباين", speak: "🗣️ قراءة الصفحة",
+            access: "♿ إمكانية الوصول واللغة:", contrast: "🌓 التباين", speak: "🗣️ قراءة الصفحة",
             authTitle: "🏢 VIDASS Home - تسجيل مقيم جديد", authSub: "أدخل اسمك، رقم التعريف الشخصي ورمز الاسترداد:",
             lblFullName: "اسمك الكامل:", lblHouseCode: "رمز المنزل المشترك:", lblAdminPin: "رقم التعريف الشخصي:", lblRecoveryPin: "رمز الاسترداد السري:",
             btnCreateHouse: "🏠 حفظ والدخول",
@@ -949,7 +1012,7 @@
             hAI: "🤖 المساعد", btnSendAI: "اسأل"
         },
         es: {
-            access: "♿ Accesibilidad, Colores e Idioma:", contrast: "🌓 Contraste", speak: "🗣️ Leer",
+            access: "♿ Accesibilidad e Idioma:", contrast: "🌓 Contraste", speak: "🗣️ Leer",
             authTitle: "🏢 VIDASS Home - Registro de Residente", authSub: "Introduce tu nombre, PIN y código de recuperación:",
             lblFullName: "Tu nombre:", lblHouseCode: "Código de Casa:", lblAdminPin: "PIN personal:", lblRecoveryPin: "Código de recuperación secreto:",
             btnCreateHouse: "🏠 Guardar y Entrar",
@@ -1263,7 +1326,7 @@
             document.getElementById('financesContentBox').style.display = 'block';
             renderAll();
         } else {
-            alert("❌ סיסמה שגויה. ננא להקיש את הסיסמה האישית שלך.");
+            alert("❌ סיסמה שגויה. נא להקיש את הסיסמה האישית שלך.");
         }
     }
 
@@ -1300,8 +1363,9 @@
             rtdb.ref('houses/' + currentHouse).on('value', (snapshot) => {
                 let val = snapshot.val();
                 if (val) {
-                    dbData = Object.assign({}, dbData, val);
+                    dbData = Object.assign({}, defaultDbData, val);
                     registerResident(currentUser);
+                    saveDataLocally();
                 } else {
                     dbData.residents = [currentUser];
                     rtdb.ref('houses/' + currentHouse).set(dbData);
@@ -1341,15 +1405,22 @@
         if(weather) weather.innerHTML = `🌤️ תחזית מזג אוויר מעודכנת עבור ${currentRegionData.name} (משתמש: ${currentUser || 'אורח'}): ${currentRegionData.temp}`;
     }
 
+    function saveDataLocally() {
+        localStorage.setItem(STORAGE_DATA, JSON.stringify(dbData));
+    }
+
     function saveData() {
+        saveDataLocally();
         if (rtdb && currentHouse) {
             rtdb.ref('houses/' + currentHouse).set(dbData).catch((err) => {
                 console.log("שגיאת שמירה בענן.");
             });
         }
+        renderAll();
     }
 
     function isItemVisible(item) {
+        if (!item) return true;
         if (item.shared) return true;
         return item.owner === currentUser;
     }
@@ -1359,7 +1430,7 @@
         let text = document.getElementById('msgContentText').value.trim();
         if(recipient && text) {
             if(!dbData.messages) dbData.messages = [];
-            dbData.messages.push({ sender: currentUser, recipient, text, time: new Date().toLocaleTimeString(), shared: true });
+            dbData.messages.push({ sender: currentUser, recipient, text, time: new Date().toLocaleTimeString(), shared: true, owner: currentUser });
             document.getElementById('msgRecipient').value = '';
             document.getElementById('msgContentText').value = '';
             saveData();
@@ -1894,7 +1965,7 @@
             let expElem = document.getElementById('expensesSummaryContainer');
             if(expElem) {
                 expElem.innerHTML = `
-                    <table style="width:100%; border-collapse:collapse; background:#fff;">
+                    <table style="width:100%; border-collapse:collapse; background:var(--card-bg);">
                         <tr><th style="border:1px solid var(--button-bg); padding:8px;">חודש</th><th style="border:1px solid var(--button-bg); padding:8px;">קטגוריה</th><th style="border:1px solid var(--button-bg); padding:8px;">סכום</th><th style="border:1px solid var(--button-bg); padding:8px;">שיתוף</th><th style="border:1px solid var(--button-bg); padding:8px;">פעולה</th></tr>
                         ${visibleExpenses.map((e, i) => `<tr><td style="border:1px solid var(--button-bg); padding:8px;">${e.month}</td><td style="border:1px solid var(--button-bg); padding:8px;">${e.category}</td><td style="border:1px solid var(--button-bg); padding:8px;">₪${e.amount}</td><td style="border:1px solid var(--button-bg); padding:8px; text-align:center;">${e.shared ? '🌐' : '🔒'}</td><td style="border:1px solid var(--button-bg); padding:8px; display:flex; gap:5px;"><button class="speak-item-btn" style="padding:4px 8px; font-size:12px;" onclick="speakText('${e.month}, ${e.category}, ${e.amount} שקל')">🗣️</button><button class="logout-btn" style="padding:4px 8px; font-size:12px;" onclick="deleteExpense(${i})">🗑️</button></td></tr>`).join('')}
                     </table>
