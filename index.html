@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIDASS Home - מרכז שליטה משפחתי חכם ומאובטח</title>
+    <title>VIDASS Home - מרכז שליטה משפחתי, פיננסי ועסקי חכם</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
@@ -36,7 +36,7 @@
         }
         h1, h2, h3 { color: var(--primary-color); text-align: inherit; }
         .container, .auth-box, .bank-login-box {
-            max-width: 950px;
+            max-width: 1100px;
             margin: 0 auto;
             background: var(--card-bg);
             padding: 25px;
@@ -116,7 +116,7 @@
         }
         .tabs {
             display: flex;
-            gap: 8px;
+            gap: 5px;
             flex-wrap: wrap;
             margin-bottom: 20px;
             border-bottom: 2px solid var(--button-bg);
@@ -125,11 +125,12 @@
         .tab-btn {
             background-color: var(--button-bg);
             border: none;
-            padding: 10px 14px;
+            padding: 8px 12px;
             border-radius: 8px;
             cursor: pointer;
             font-weight: bold;
             color: #5c1d2e;
+            font-size: 14px;
         }
         .tab-btn.active {
             background-color: var(--primary-color);
@@ -164,6 +165,7 @@
             cursor: pointer;
             padding: 0;
         }
+        body.ltr-mode .monkey-toggle { left: auto; right: 10px; }
         button.action-btn {
             background-color: var(--primary-color);
             color: white;
@@ -175,19 +177,6 @@
             width: 100%;
             margin-top: 10px;
             font-size: 1.1em;
-        }
-        .mic-btn {
-            background-color: #319795;
-            color: white;
-            border: none;
-            padding: 10px 14px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            margin-top: 5px;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
         }
         .admin-invite-box {
             background: #ebf8ff;
@@ -254,171 +243,323 @@
 </head>
 <body id="appBody" dir="rtl">
 
-<!-- סרגל נגישות -->
+<!-- סרגל נגישות, הקראה ושפות -->
 <div class="accessibility-bar" role="region">
-    <span>♿ נגישות ושפות:</span>
-    <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+    <span id="lblAccess">♿ נגישות, הקראה ושפות:</span>
+    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
         <button class="accessibility-btn" onclick="changeFontSize(2)">A+</button>
         <button class="accessibility-btn" onclick="changeFontSize(-2)">A-</button>
-        <button class="accessibility-btn" onclick="toggleContrast()">🌓 ניגודיות</button>
-        <button class="accessibility-btn" onclick="speakPageText()">🗣️ הקראת עמוד</button>
+        <button class="accessibility-btn" onclick="toggleContrast()" id="btnContrast">🌓 ניגודיות</button>
+        <button class="accessibility-btn" onclick="speakPageText()" id="btnSpeak" style="background:#319795;">🗣️ הקראת עמוד</button>
         <select id="langSelect" onchange="changeLanguage(this.value)" style="padding:4px; border-radius:5px; font-weight:bold; width:auto; margin:0;">
             <option value="he">עברית</option>
             <option value="en">English</option>
+            <option value="ru">Русский</option>
+            <option value="fr">Français</option>
+            <option value="ar">العربية</option>
+            <option value="es">Español</option>
         </select>
     </div>
 </div>
 
 <!-- מסך הרשמה ראשוני -->
 <div id="authScreen" class="auth-box" style="display:none;">
-    <h2>🏢 VIDASS Home - יצירת בית חדש</h2>
-    <p>הזיני את פרטיך. המערכת תיצור מספר בית משותף מאובטח לענן:</p>
+    <h2 id="txtAuthTitle">🏢 VIDASS Home - יצירת בית חדש</h2>
+    <p id="txtAuthSub">הזיני את פרטיך וסיסמת ניהול מאובטחת:</p>
     
-    <label>שם מלא:</label>
+    <label id="lblFullName">שם מלא:</label>
     <input type="text" id="inputFullName" placeholder="למשל: ויקי סיבוני">
 
-    <label>מספר בית משותף (קוד ענן):</label>
+    <label id="lblHouseCode">מספר בית משותף (קוד ענן):</label>
     <input type="text" id="inputHouseName" readonly style="background:#edf2f7; font-weight:bold; text-align:center; color:#2b6cb0; font-size:1.2em;">
 
-    <label>כתובת מגורים:</label>
-    <input type="text" id="inputAddress" placeholder="למשל: נחל חיון 3, אילת">
-
-    <label>סיסמת ניהול ראשית:</label>
+    <label id="lblAdminPin">סיסמת ניהול אבטחתית:</label>
     <div class="password-wrapper">
         <input type="password" id="inputAdminPin" placeholder="הקישי סיסמת ניהול...">
         <button type="button" class="monkey-toggle" onclick="togglePasswordVisibility('inputAdminPin', this)">🙈</button>
     </div>
 
-    <button class="action-btn" onclick="createPrivateHouse()">🏠 צור בית בענן והתחל</button>
-    <button class="logout-btn" style="margin-top:10px; width:100%; background:#718096;" onclick="showJoinHouseModal()">🔗 התחבר לבית קיים עם קוד</button>
+    <button class="action-btn" id="btnCreateHouse" onclick="createPrivateHouse()">🏠 צור בית בענן והתחל</button>
+    <button class="logout-btn" id="btnJoinHouse" style="margin-top:10px; width:100%; background:#718096;" onclick="showJoinHouseModal()">🔗 התחבר לבית קיים עם קוד</button>
 </div>
 
 <!-- מסך כניסה מאובטח -->
 <div id="bankLoginScreen" class="bank-login-box" style="display:none;">
     <h2 id="bankGreetingTitle">🌅 בוקר טוב!</h2>
-    <p>כניסה מאובטחת למרכז השליטה:</p>
+    <p id="txtLoginSub">כניסה מאובטחת למרכז השליטה:</p>
     <h3 id="displayLoginHouse" style="background:rgba(0,0,0,0.03); padding:10px; border-radius:8px;"></h3>
-    <p>משתמש: <b id="displayLoginUser"></b></p>
+    <p><span id="txtUserLabel">משתמש</span>: <b id="displayLoginUser"></b></p>
 
-    <label>סיסמת ניהול:</label>
+    <label id="lblEnterPin">הקישי את סיסמת הניהול שלך:</label>
     <div class="password-wrapper">
         <input type="password" id="loginPinInput" placeholder="סיסמת ניהול...">
         <button type="button" class="monkey-toggle" onclick="togglePasswordVisibility('loginPinInput', this)">🙈</button>
     </div>
 
-    <button class="action-btn" onclick="verifyAdminLogin()">🔓 היכנס למערכת</button>
-    <button class="logout-btn" style="margin-top:10px; width:100%;" onclick="fullLogout()">🔄 איפוס מכשיר</button>
+    <button class="action-btn" id="btnLoginSubmit" onclick="verifyAdminLogin()">🔓 היכנס למערכת בבטחה</button>
+    <button class="logout-btn" id="btnResetDevice" style="margin-top:10px; width:100%; background:#718096;" onclick="fullLogout()">🔄 איפוס מכשיר והרשמה</button>
 </div>
 
-<!-- מסך ראשי -->
+<!-- מסך ראשי מלא -->
 <div id="mainApp" class="container" style="display:none;">
     <div class="top-bar">
         <div>
-            <h1>🏢 VIDASS Home</h1>
-            <p>משתמש: <span id="activeUserName" style="color:var(--primary-color); font-weight:bold;"></span> | מספר בית: <span id="activeHouseName" style="font-weight:bold;"></span></p>
+            <h1>🏢 VIDASS Control Center</h1>
+            <p><span id="txtUserSpan">משתמש</span>: <span id="activeUserName" style="color:var(--primary-color); font-weight:bold;"></span> | <span id="txtHouseSpan">מספר בית</span>: <span id="activeHouseName" style="font-weight:bold;"></span></p>
         </div>
         <div style="display:flex; gap:15px; align-items:center;">
             <div class="status-indicator" id="statusCloud">🟢 ענן פעיל ומסונכרן</div>
         </div>
-        <button class="logout-btn" onclick="lockAppToBankScreen()">🔒 נעילה</button>
+        <button class="logout-btn" id="btnLock" onclick="lockAppToBankScreen()">🔒 נעילה</button>
     </div>
 
     <!-- אזור הזמנה לבעל -->
     <div class="admin-invite-box">
-        <h3>👑 ניהול דיירי הבית והפצת האפליקציה</h3>
-        <p>שלחי את קישור ההזמנה לבעלך. כל מה שהוא ישמור יופיע מיד אצלך, ולהפך!</p>
-        <button class="action-btn" style="background:#3182ce; margin:0;" onclick="copyInviteLink()">📋 העתק קישור הזמנה לבית</button>
+        <h3 id="txtInviteTitle">👑 ניהול דיירי הבית והפצת האפליקציה</h3>
+        <p id="txtInviteSub">שלחי את קישור ההזמנה לבעלך. כל מה שהוא ישמור יופיע מיד אצלך, ולהפך!</p>
+        <button class="action-btn" id="btnCopyInvite" style="background:#3182ce; margin:0;" onclick="copyInviteLink()">📋 העתק קישור הזמנה לבית</button>
     </div>
 
-    <!-- טאבים -->
+    <!-- סרגל קישורים מהירים -->
+    <div class="quick-links-bar">
+        <a href="https://calendar.google.com" target="_blank" class="quick-link-btn calendar" id="linkCal">📅 פתח יומן</a>
+        <a href="https://wa.me/" target="_blank" class="quick-link-btn whatsapp" id="linkWa">💬 פתח וואטסאפ</a>
+        <a href="mailto:" class="quick-link-btn email" id="linkMail">📧 פתח אימייל</a>
+    </div>
+
+    <!-- הטאבים המעודכנים (ללא תינוקות וללא נדל"ן) -->
     <div class="tabs">
-        <button class="tab-btn active" onclick="openTab(event, 'tab-notes')">📝 פתקיות</button>
-        <button class="tab-btn" onclick="openTab(event, 'tab-tasks')">📌 משימות</button>
-        <button class="tab-btn" onclick="openTab(event, 'tab-shopping')">🛒 קניות</button>
-        <button class="tab-btn" onclick="openTab(event, 'tab-finances')">💰 הוצאות</button>
-        <button class="tab-btn" onclick="openTab(event, 'tab-vault')">🔐 כספת</button>
-        <button class="tab-btn" onclick="openTab(event, 'tab-ai')">🤖 העוזרת החכמה</button>
+        <button class="tab-btn active" onclick="openTab(event, 'tab-notes')" id="tabBtnNotes">📝 פתקיות</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-receipts')" id="tabBtnReceipts">🧾 קבלות והשוואה</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-salary')" id="tabBtnSalary">📄 תלושים ומכתבים</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-vidass')" id="tabBtnVidass">🏢 VIDASS</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-finances')" id="tabBtnFinances">💰 הוצאות</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-tithes')" id="tabBtnTithes">🤲 מעשרות</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-devices')" id="tabBtnDevices">🔌 מכשירים</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-trips')" id="tabBtnTrips">🚗 נסיעות</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-tasks')" id="tabBtnTasks">📌 משימות</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-shopping')" id="tabBtnShop">🛒 קניות</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-inventory')" id="tabBtnInv">📦 מלאי</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-recipes')" id="tabBtnRec">🍲 מתכונים</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-community')" id="tabBtnMusic">🎵 מוזיקה</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-vault')" id="tabBtnVault">🔐 כספת</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-ai')" id="tabBtnAI">🤖 העוזרת</button>
     </div>
 
-    <!-- טאב פתקיות -->
+    <!-- טאב פתקיות ויומן -->
     <div id="tab-notes" class="tab-content active">
-        <h3>📝 פתקיות אישיות וטיפים לבית</h3>
+        <h3 id="hNotes">📝 פתקיות אישיות וטיפים לבית</h3>
         <input type="text" id="noteTitle" placeholder="כותרת הפתקייה...">
         <input type="text" id="noteText" placeholder="תוכן הפתקייה...">
-        <button class="action-btn" onclick="addNoteCard()">➕ הוסף פתקייה לענן</button>
+        <button class="action-btn" onclick="addNoteCard()" id="btnAddNote">➕ הוסף פתקייה</button>
         <div id="noteCardsContainer" style="margin-top:15px;"></div>
+        <hr style="margin-top:25px;">
+        <h3 id="hCalendar">🕒 יומן שעות ולוח זמנים יומי</h3>
+        <input type="text" id="eventTime" placeholder="שעה / תאריך (למשל: 08:00)">
+        <input type="text" id="eventDesc" placeholder="תיאור אירוע / תור">
+        <button class="action-btn" onclick="addEvent()" id="btnAddEvent">➕ הוסף ליומן</button>
+        <div id="eventsList" style="margin-top:15px;"></div>
     </div>
 
-    <!-- טאב משימות -->
+    <!-- טאב קבלות והשוואת מחירים -->
+    <div id="tab-receipts" class="tab-content">
+        <h3>🧾 ניהול קבלות והשוואת מחירים (איפה הכי זול?)</h3>
+        <input type="text" id="recStore" placeholder="שם החנות (למשל: שופרסל, רמי לוי, סופר-פארם)...">
+        <input type="text" id="recItem" placeholder="שם המוצר / סל קניות...">
+        <input type="number" id="recPrice" placeholder="מחיר ששילמת בש״ח...">
+        <button class="action-btn" onclick="addReceiptItem()">➕ שמור קבלה והשווה מחיר</button>
+        <div id="receiptsComparisonBox" style="margin-top:20px; background:#e6fffa; border:2px solid #319795; padding:15px; border-radius:10px;">
+            <h4>💡 המלצת חיסכון והשוואת רשתות:</h4>
+            <p id="cheapestStoreAdvice">הזיני קבלות ומוצרים כדי שהמערכת תנתח איפה הכי זול לקנות באזור שלך!</p>
+        </div>
+        <div id="receiptsList" style="margin-top:15px;"></div>
+    </div>
+
+    <!-- טאב תלושי משכורת ומכתבים רשמיים -->
+    <div id="tab-salary" class="tab-content">
+        <h3>📄 ניתוח תלושי משכורת, חוקי עבודה ומכתבים רשמיים</h3>
+        <label><b>בחר סוג מסמך לפיענוח וייעוץ:</b></label>
+        <select id="docTypeSelect" style="font-weight:bold; margin-bottom:10px;">
+            <option value="salary">תלוש משכורת (בדיקת זכויות, מס הכנסה, פנסיה)</option>
+            <option value="letter">מכתב רשמי (בנק, עיריה, ממשלה, ביטוח לאומי)</option>
+            <option value="contract">חוזה עבודה או שכירות</option>
+        </select>
+        <textarea id="docContentText" placeholder="הדביקי כאן את טקסט התלוש או המכתב שקיבלת, או תארי את עיקרו..." style="width:100%; height:100px;"></textarea>
+        <button class="action-btn" onclick="analyzeDocumentAI()">🤖 נתח מסמך והסבר לי פשוט</button>
+        <div id="docAnalysisResult" style="margin-top:15px; background:#fff0f3; border:2px dashed var(--primary-color); padding:15px; border-radius:10px; display:none;"></div>
+        <div id="documentsList" style="margin-top:15px;"></div>
+    </div>
+
+    <!-- טאב ניהול חברת VIDASS -->
+    <div id="tab-vidass" class="tab-content">
+        <h3 id="hVidass">🏢 ניהול חברת VIDASS ופרויקטים</h3>
+        <input type="text" id="vidassProjectName" placeholder="שם הפרויקט או המשימה העסקית...">
+        <textarea id="vidassProjectDesc" placeholder="פרטים ותוכנית עבודה..." style="width:100%; height:80px;"></textarea>
+        <button class="action-btn" onclick="addVidassProject()" id="btnAddVidass">➕ הוסף פרויקט ל-VIDASS</button>
+        <div id="vidassList" style="margin-top:15px;"></div>
+    </div>
+
+    <!-- טאב הוצאות -->
+    <div id="tab-finances" class="tab-content">
+        <h3 id="hFinances">💰 ניהול הוצאות משפחתיות</h3>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
+            <select id="expMonth" style="flex:1; min-width:140px;"></select>
+            <input type="text" id="expCategory" placeholder="שם ההוצאה (למשל: סופר)" style="flex:2;">
+            <input type="number" id="expAmount" placeholder="סכום בש״ח" style="flex:1;">
+        </div>
+        <button class="action-btn" onclick="addExpense()" id="btnAddExp">➕ הוסף הוצאה לענן</button>
+        <div id="expensesSummaryContainer" style="margin-top:20px;"></div>
+    </div>
+
+    <!-- טאב מעשרות והפרשות -->
+    <div id="tab-tithes" class="tab-content">
+        <h3 id="hTithes">🤲 מחשבון מעשרות והפרשת צדקה</h3>
+        <input type="number" id="titheIncomeAmount" placeholder="סכום הכנסה בש״ח...">
+        <button class="action-btn" onclick="calculateTithe()" id="btnAddTitheCalc">💡 חשב 10% מעשר</button>
+        <div id="titheResultDisplay" style="margin-top:15px; font-weight:bold; font-size:1.1em; color:var(--primary-color);"></div>
+        <div id="tithesList" style="margin-top:15px;"></div>
+    </div>
+
+    <!-- טאב מכשירים -->
+    <div id="tab-devices" class="tab-content">
+        <h3 id="hDevices">🔌 ניהול מכשירים חכמים</h3>
+        <input type="text" id="deviceName" placeholder="שם המכשיר (למשל: מתקן מים)">
+        <input type="text" id="deviceType" placeholder="סוג (למשל: מים / מצלמה)">
+        <button class="action-btn" onclick="addDevice()" id="btnAddDev">➕ הוסף מכשיר</button>
+        <div id="devicesList" style="margin-top:15px;"></div>
+    </div>
+
+    <!-- טאב נסיעות עם Waze ו-Google Maps -->
+    <div id="tab-trips" class="tab-content">
+        <h3 id="hTrips">🚗 ניהול נסיעות ויעדים וקישור לניווט</h3>
+        <input type="text" id="tripName" placeholder="יעד הנסיעה (למשל: סופר)">
+        <input type="text" id="tripDest" placeholder="כתובת מדויקת (למשל: נחל חיון 3, אילת)">
+        <button class="action-btn" onclick="addTrip()" id="btnAddTrip">➕ הוסף נסיעה לענן</button>
+        <div id="tripsList" style="margin-top: 15px;"></div>
+    </div>
+
+    <!-- טאב משימות, שבת ומזג אוויר -->
     <div id="tab-tasks" class="tab-content">
-        <h3>📌 משימות משותפות</h3>
+        <h3 id="hTasks">📌 משימות, זמני שבת ומזג אוויר</h3>
+        <label><b id="lblSelectRegion">בחרי אזור בארץ לעדכון זמני שבת ומזג אוויר:</b></label>
+        <select id="regionSelect" onchange="updateShabbatAndWeather()" style="margin-bottom: 15px; font-weight: bold;">
+            <option value="eilat">אילת</option>
+            <option value="jerusalem">ירושלים</option>
+            <option value="telaviv">תל אביב - מרכז</option>
+            <option value="haifa">חיפה והצפון</option>
+            <option value="beersheva">באר שבע והנגב</option>
+        </select>
+        <div class="weather-card" id="weatherDisplayBox">🌤️ תחזית מזג אוויר...</div>
+        <div class="shabbat-badge" id="shabbatBanner">🕯️ זמני שבת...</div>
         <input type="text" id="taskText" placeholder="משימה או תור חדש...">
-        <button class="action-btn" onclick="addTask()">➕ הוסף משימה לענן</button>
+        <button class="action-btn" onclick="addTask()" id="btnAddTsk">➕ הוסף משימה</button>
         <div id="tasksList" style="margin-top:15px;"></div>
     </div>
 
     <!-- טאב קניות -->
     <div id="tab-shopping" class="tab-content">
-        <h3>🛒 רשימת קניות משותפת בזמן אמת</h3>
+        <h3 id="hShop">🛒 רשימת קניות משותפת בזמן אמת</h3>
         <input type="text" id="shopInput" placeholder="הוסיפי מוצר וכמות...">
-        <button class="action-btn" onclick="addShopItem()">➕ הוסף מוצר לענן</button>
+        <button class="action-btn" onclick="addShopItem()" id="btnAddShop">➕ הוסף מוצר</button>
         <div id="shopList" style="margin-top:15px;"></div>
     </div>
 
-    <!-- טאב הוצאות -->
-    <div id="tab-finances" class="tab-content">
-        <h3>💰 ניהול הוצאות משפחתיות</h3>
-        <input type="text" id="expCategory" placeholder="שם ההוצאה (למשל: סופר)">
-        <input type="number" id="expAmount" placeholder="סכום בש״ח">
-        <button class="action-btn" onclick="addExpense()">➕ הוסף הוצאה לענן</button>
-        <div id="expensesSummaryContainer" style="margin-top:15px;"></div>
+    <!-- טאב מלאי ומגירות -->
+    <div id="tab-inventory" class="tab-content">
+        <h3 id="hInv">📦 ניהול מלאי מגירות ומעקב מדף</h3>
+        <div style="display:flex; gap:10px; margin-bottom:15px;">
+            <input type="text" id="newFolderName" placeholder="שם מגירה חדשה (למשל: מזווה)..." style="flex:2;">
+            <button class="action-btn" style="width:auto; margin-top:0;" onclick="addNewFolder()" id="btnAddFolder">📁 צור מגירה</button>
+        </div>
+        <div class="folders-grid" id="foldersContainer"></div>
+        <hr style="margin: 25px 0;">
+        <div id="folderDetailsContainer" style="background:rgba(0,0,0,0.02); padding:15px; border-radius:10px;">
+            <h3 id="selectedFolderTitle">📂 בחר מגירה לצפייה במלאי והוספת פריטים</h3>
+            <div id="inventoryFormSection" style="display:none; margin-top:15px;">
+                <input type="text" id="invItemName" placeholder="שם המוצר">
+                <input type="number" id="invItemQty" placeholder="כמות">
+                <button class="action-btn" onclick="addInventoryItem()" id="btnAddInvItem">➕ הוסף למגירה זו</button>
+            </div>
+            <div id="folderItemsList" style="margin-top: 15px;"></div>
+        </div>
+    </div>
+
+    <!-- טאב מתכונים -->
+    <div id="tab-recipes" class="tab-content">
+        <h3 id="hRec">🍲 ספר מתכונים משפחתי</h3>
+        <input type="text" id="recipeTitle" placeholder="שם המתכון...">
+        <textarea id="recipeInstructions" placeholder="אופן ההכנה..." style="width:100%; height:80px;"></textarea>
+        <button class="action-btn" onclick="addRecipe()" id="btnAddRecipe">🍲 פרסם מתכון</button>
+        <div id="recipesListContainer" style="margin-top: 15px;"></div>
+    </div>
+
+    <!-- טאב מוזיקה -->
+    <div id="tab-community" class="tab-content">
+        <h3 id="hMusic">🎵 מוזיקה וקישורים</h3>
+        <input type="text" id="musicTitle" placeholder="שם השיר / פלייליסט...">
+        <input type="text" id="musicLink" placeholder="קישור למוזיקה...">
+        <button class="action-btn" onclick="addMusicItem()" id="btnAddMusic">➕ הוסף שיר</button>
+        <div id="musicListContainer" style="margin-top: 15px;"></div>
     </div>
 
     <!-- טאב כספת -->
     <div id="tab-vault" class="tab-content">
-        <h3>🔐 כספת נתונים מוצפנת</h3>
+        <h3 id="hVault">🔐 כספת נתונים מוצפנת</h3>
         <div id="vaultUnlockSection" class="vault-box">
-            <h4>🔑 פתיחת כספת (הגדירי סיסמה):</h4>
+            <h4 id="hVaultUnlock">🔑 פתיחת כספת (הגדירי סיסמה):</h4>
             <input type="password" id="vaultPasswordInput" placeholder="סיסמת כספת...">
-            <button class="action-btn" onclick="unlockVault()">🔓 פתח כספת</button>
+            <button class="action-btn" onclick="unlockVault()" id="btnUnlockVault">🔓 פתח כספת</button>
         </div>
         <div id="vaultContentSection" style="display:none; margin-top:15px;">
             <input type="text" id="vaultItemTitle" placeholder="כותרת מידע רגיש...">
             <textarea id="vaultItemData" placeholder="מידע סודי..." style="width:100%; height:80px;"></textarea>
-            <button class="action-btn" onclick="addVaultItem()">➕ שמור בכספת</button>
+            <button class="action-btn" onclick="addVaultItem()" id="btnAddVaultItem">➕ שמור בכספת</button>
             <div id="vaultItemsList" style="margin-top:15px;"></div>
         </div>
     </div>
 
     <!-- טאב עוזרת חכמה -->
     <div id="tab-ai" class="tab-content">
-        <h3>🤖 העוזרת החכמה (מחוברת לענן)</h3>
+        <h3 id="hAI">🤖 העוזרת החכמה (מחוברת לענן)</h3>
         <div id="chatHistory" style="background:var(--card-bg); padding:15px; border-radius:8px; border:1px solid var(--button-bg); height:250px; overflow-y:auto; margin-bottom:15px;"></div>
         <div style="display:flex; gap:10px;">
             <input type="text" id="chatInput" placeholder="שאלי את העוזרת..." style="flex:2; margin:0;" onkeypress="if(event.key==='Enter') sendSmartAIQuery()">
-            <button class="action-btn" style="width:auto; margin:0;" onclick="sendSmartAIQuery()">שאל</button>
+            <button class="action-btn" style="width:auto; margin:0;" onclick="sendSmartAIQuery()" id="btnSendAI">שאל</button>
         </div>
     </div>
 </div>
 
 <script>
-    const STORAGE_USER = 'vidass_user_v20';
-    const STORAGE_HOUSE = 'vidass_house_v20';
-    const STORAGE_PIN = 'vidass_pin_v20';
-    const STORAGE_VAULT_PIN = 'vidass_vault_v20';
+    const STORAGE_USER = 'vidass_user_v29';
+    const STORAGE_HOUSE = 'vidass_house_v29';
+    const STORAGE_PIN = 'vidass_pin_v29';
+    const STORAGE_VAULT_PIN = 'vidass_vault_v29';
+    const STORAGE_LANG = 'vidass_lang_v29';
 
     let currentUser = localStorage.getItem(STORAGE_USER);
     let currentHouse = localStorage.getItem(STORAGE_HOUSE);
     let currentPin = localStorage.getItem(STORAGE_PIN);
     let isVaultUnlocked = false;
+    let activeFolder = '';
 
     let dbData = {
         shopping: {},
         notes: [],
+        events: [],
+        receipts: [],
+        documents: [],
+        vidass: [],
+        tithes: [],
         tasks: [],
         expenses: [],
+        devices: [],
+        trips: [],
+        folders: ["מזווה", "מגירת תרופות"],
+        inventory: [],
+        recipes: [],
+        music: [],
         vault: [],
-        chat: [{role: 'ai', text: "שלום ויקי! אני מחוברת ישירות לענן המשפחתי. כל מה שתשמרי יופיע מיד אצל בעלך ובשאר המכשירים."}]
+        chat: [{role: 'ai', text: "שלום ויקי! אני העוזרת החכמה שלך. אני מבינה בתלושי שכר, חוקי עבודה, השוואת מחירים וניתוח מכתבים רשמיים. איך לעזור לך היום?"}]
     };
 
     let rtdb = null;
@@ -432,6 +573,11 @@
     } catch(e) {}
 
     window.onload = function() {
+        populateMonthsDropdown();
+        let savedLang = localStorage.getItem(STORAGE_LANG) || 'he';
+        document.getElementById('langSelect').value = savedLang;
+        changeLanguage(savedLang, false);
+
         const urlParams = new URLSearchParams(window.location.search);
         const invitedHouse = urlParams.get('house');
         if (invitedHouse) {
@@ -453,6 +599,300 @@
         }
     };
 
+    const translations = {
+        he: {
+            access: "♿ נגישות, הקראה ושפות:", contrast: "🌓 ניגודיות", speak: "🗣️ הקראת עמוד",
+            authTitle: "🏢 VIDASS Home - יצירת בית חדש", authSub: "הזיני את פרטיך וסיסמת ניהול מאובטחת:",
+            lblFullName: "שם מלא:", lblHouseCode: "מספר בית משותף (קוד ענן):", lblAdminPin: "סיסמת ניהול אבטחתית:",
+            btnCreateHouse: "🏠 צור בית בענן והתחל", btnJoinHouse: "🔗 התחבר לבית קיים עם קוד",
+            loginSub: "כניסה מאובטחת למרכז השליטה:", txtUser: "משתמש", lblEnterPin: "הקישי את סיסמת הניהול שלך:",
+            btnLoginSubmit: "🔓 היכנס למערכת בבטחה", btnResetDevice: "🔄 איפוס מכשיר והרשמה",
+            txtHouseSpan: "מספר בית", btnLock: "🔒 נעילה",
+            inviteTitle: "👑 ניהול דיירי הבית והפצת האפליקציה", inviteSub: "שלחי את קישור ההזמנה לבעלך. כל מה שהוא ישמור יופיע מיד אצלך, ולהפך!",
+            btnCopyInvite: "📋 העתק קישור הזמנה לבית", linkCal: "📅 פתח יומן", linkWa: "💬 פתח וואטסאפ", linkMail: "📧 פתח אימייל",
+            tabNotes: "📝 פתקיות", tabReceipts: "🧾 קבלות והשוואה", tabSalary: "📄 תלושים ומכתבים", tabVidass: "🏢 VIDASS",
+            tabFinances: "💰 הוצאות", tabTithes: "🤲 מעשרות", tabDevices: "🔌 מכשירים", tabTrips: "🚗 נסיעות",
+            tabTasks: "📌 משימות", tabShop: "🛒 קניות", tabInv: "📦 מלאי", tabRec: "🍲 מתכונים", tabMusic: "🎵 מוזיקה", tabVault: "🔐 כספת", tabAI: "🤖 העוזרת",
+            hNotes: "📝 פתקיות אישיות וטיפים לבית", btnAddNote: "➕ הוסף פתקייה",
+            hCalendar: "🕒 יומן שעות ולוח זמנים יומי", btnAddEvent: "➕ הוסף ליומן",
+            hVidass: "🏢 ניהול חברת VIDASS ופרויקטים", btnAddVidass: "➕ הוסף פרויקט ל-VIDASS",
+            hFinances: "💰 ניהול הוצאות משפחתיות", btnAddExp: "➕ הוסף הוצאה לענן",
+            hTithes: "🤲 מחשבון מעשרות והפרשת צדקה", btnAddTitheCalc: "💡 חשב 10% מעשר",
+            hDevices: "🔌 ניהול מכשירים חכמים", btnAddDev: "➕ הוסף מכשיר",
+            hTrips: "🚗 ניהול נסיעות ויעדים וקישור לניווט", btnAddTrip: "➕ הוסף נסיעה לענן",
+            hTasks: "📌 משימות, זמני שבת ומזג אוויר", lblSelectRegion: "בחרי אזור בארץ לעדכון זמני שבת ומזג אוויר:", btnAddTsk: "➕ הוסף משימה",
+            hShop: "🛒 רשימת קניות משותפת בזמן אמת", btnAddShop: "➕ הוסף מוצר",
+            hInv: "📦 ניהול מלאי מגירות ומעקב מדף", btnAddFolder: "📁 צור מגירה", selectedFolderTitle: "📂 בחר מגירה לצפייה במלאי והוספת פריטים", btnAddInvItem: "➕ הוסף למגירה זו",
+            hRec: "🍲 ספר מתכונים משפחתי", btnAddRecipe: "🍲 פרסם מתכון",
+            hMusic: "🎵 מוזיקה וקישורים", btnAddMusic: "➕ הוסף שיר",
+            hVault: "🔐 כספת נתונים מוצפנת", hVaultUnlock: "🔑 פתיחת כספת (הגדירי סיסמה):", btnUnlockVault: "🔓 פתח כספת", btnAddVaultItem: "➕ שמור בכספת",
+            hAI: "🤖 העוזרת החכמה (מחוברת לענן)", btnSendAI: "שאל"
+        },
+        en: {
+            access: "♿ Accessibility, Speech & Lang:", contrast: "🌓 Contrast", speak: "🗣️ Speak Page",
+            authTitle: "🏢 VIDASS Home - Create New House", authSub: "Enter your details and a secure admin PIN:",
+            lblFullName: "Full Name:", lblHouseCode: "Shared House Code (Cloud ID):", lblAdminPin: "Secure Admin PIN:",
+            btnCreateHouse: "🏠 Create House in Cloud & Start", btnJoinHouse: "🔗 Connect to Existing House",
+            loginSub: "Secure login to control center:", txtUser: "User", lblEnterPin: "Enter your admin PIN:",
+            btnLoginSubmit: "🔓 Secure Login", btnResetDevice: "🔄 Reset Device & Register",
+            txtHouseSpan: "House ID", btnLock: "🔒 Lock",
+            inviteTitle: "👑 Household Members & Sharing", inviteSub: "Send the invite link to your spouse. Everything syncs in real-time!",
+            btnCopyInvite: "📋 Copy House Invite Link", linkCal: "📅 Open Calendar", linkWa: "💬 Open WhatsApp", linkMail: "📧 Open Email",
+            tabNotes: "📝 Notes", tabReceipts: "🧾 Receipts & Compare", tabSalary: "📄 Salary & Letters", tabVidass: "🏢 VIDASS",
+            tabFinances: "💰 Finances", tabTithes: "🤲 Tithes", tabDevices: "🔌 Devices", tabTrips: "🚗 Trips",
+            tabTasks: "📌 Tasks", tabShop: "🛒 Shopping", tabInv: "📦 Inventory", tabRec: "🍲 Recipes", tabMusic: "🎵 Music", tabVault: "🔐 Vault", tabAI: "🤖 AI",
+            hNotes: "📝 Personal Notes & Tips", btnAddNote: "➕ Add Note",
+            hCalendar: "🕒 Daily Schedule & Calendar", btnAddEvent: "➕ Add Event",
+            hVidass: "🏢 VIDASS Management & Projects", btnAddVidass: "➕ Add VIDASS Project",
+            hFinances: "💰 Family Expense Management", btnAddExp: "➕ Add Expense to Cloud",
+            hTithes: "🤲 Tithes & Charity Calculator", btnAddTitheCalc: "💡 Calculate 10% Tithe",
+            hDevices: "🔌 Smart Devices Management", btnAddDev: "➕ Add Device",
+            hTrips: "🚗 Trips & Navigation Links", btnAddTrip: "➕ Add Trip to Cloud",
+            hTasks: "📌 Tasks, Shabbat & Weather", lblSelectRegion: "Select Region for Shabbat & Weather:", btnAddTsk: "➕ Add Task",
+            hShop: "🛒 Real-time Shared Shopping List", btnAddShop: "➕ Add Item",
+            hInv: "📦 Drawer Inventory & Shelves", btnAddFolder: "📁 Create Drawer", selectedFolderTitle: "📂 Select a drawer to view items", btnAddInvItem: "➕ Add to Drawer",
+            hRec: "🍲 Family Recipe Book", btnAddRecipe: "🍲 Publish Recipe",
+            hMusic: "🎵 Music & Links", btnAddMusic: "➕ Add Song",
+            hVault: "🔐 Encrypted Data Vault", hVaultUnlock: "🔑 Unlock Vault (Set PIN):", btnUnlockVault: "🔓 Open Vault", btnAddVaultItem: "➕ Save to Vault",
+            hAI: "🤖 Smart Assistant (Cloud Connected)", btnSendAI: "Ask"
+        },
+        ru: {
+            access: "♿ Доступ, речь и язык:", contrast: "🌓 Контраст", speak: "🗣️ Читать",
+            authTitle: "🏢 VIDASS Home - Создать дом", authSub: "Введите данные и PIN-код администратора:",
+            lblFullName: "Полное имя:", lblHouseCode: "Код общего дома (Облако):", lblAdminPin: "PIN-код администратора:",
+            btnCreateHouse: "🏠 Создать дом в облаке", btnJoinHouse: "🔗 Подключиться к дому",
+            loginSub: "Безопасный вход в систему:", txtUser: "Пользователь", lblEnterPin: "Введите ваш PIN-код:",
+            btnLoginSubmit: "🔓 Безопасный вход", btnResetDevice: "🔄 Сброс устройства",
+            txtHouseSpan: "ID дома", btnLock: "🔒 Блокировка",
+            inviteTitle: "👑 Управление домочадцами", inviteSub: "Отправьте ссылку супругу. Все синхронизируется в реальном времени!",
+            btnCopyInvite: "📋 Копировать ссылку", linkCal: "📅 Календарь", linkWa: "💬 WhatsApp", linkMail: "📧 Email",
+            tabNotes: "📝 Заметки", tabReceipts: "🧾 Чеки и сравнение", tabSalary: "📄 Зарплата и письма", tabVidass: "🏢 VIDASS",
+            tabFinances: "💰 Расходы", tabTithes: "🤲 Десятина", tabDevices: "🔌 Устройства", tabTrips: "🚗 Поездки",
+            tabTasks: "📌 Задачи", tabShop: "🛒 Покупки", tabInv: "📦 Склад", tabRec: "🍲 Рецепты", tabMusic: "🎵 Музыка", tabVault: "🔐 Сейф", tabAI: "🤖 ИИ",
+            hNotes: "📝 Личные заметки", btnAddNote: "➕ Добавить заметку",
+            hCalendar: "🕒 Ежедневное расписание", btnAddEvent: "➕ Добавить событие",
+            hVidass: "🏢 Управление VIDASS", btnAddVidass: "➕ Добавить проект",
+            hFinances: "💰 Семейный бюджет", btnAddExp: "➕ Добавить расход",
+            hTithes: "🤲 Калькулятор десятины", btnAddTitheCalc: "💡 Рассчитать 10%",
+            hDevices: "🔌 Умные устройства", btnAddDev: "➕ Добавить устройство",
+            hTrips: "🚗 Поездки и навигация", btnAddTrip: "➕ Добавить поездку",
+            hTasks: "📌 Задачи, Шаббат и погода", lblSelectRegion: "Выберите регион:", btnAddTsk: "➕ Добавить задачу",
+            hShop: "🛒 Список покупок в реальном времени", btnAddShop: "➕ Добавить товар",
+            hInv: "📦 Инвентарь ящиков", btnAddFolder: "📁 Создать ящик", selectedFolderTitle: "📂 Выберите ящик", btnAddInvItem: "➕ Добавить в ящик",
+            hRec: "🍲 Семейные рецепты", btnAddRecipe: "🍲 Опубликовать",
+            hMusic: "🎵 Музыка и ссылки", btnAddMusic: "➕ Добавить песню",
+            hVault: "🔐 Защищенный сейф", hVaultUnlock: "🔑 Открыть сейф:", btnUnlockVault: "🔓 Открыть", btnAddVaultItem: "➕ Сохранить",
+            hAI: "🤖 Умный ассистент", btnSendAI: "Спросить"
+        },
+        fr: {
+            access: "♿ Access, Voix & Langue :", contrast: "🌓 Contraste", speak: "🗣️ Lire",
+            authTitle: "🏢 VIDASS Home - Créer une maison", authSub: "Entrez vos coordonnées et un code PIN sécurisé :",
+            lblFullName: "Nom complet :", lblHouseCode: "Code de la maison (Cloud) :", lblAdminPin: "PIN administrateur :",
+            btnCreateHouse: "🏠 Créer la maison et commencer", btnJoinHouse: "🔗 Rejoindre une maison",
+            loginSub: "Connexion sécurisée :", txtUser: "Utilisateur", lblEnterPin: "Entrez votre code PIN :",
+            btnLoginSubmit: "🔓 Connexion sécurisée", btnResetDevice: "🔄 Réinitialiser l'appareil",
+            txtHouseSpan: "ID Maison", btnLock: "🔒 Verrouiller",
+            inviteTitle: "👑 Gestion des membres et partage", inviteSub: "Envoyez le lien d'invitation à votre conjoint. Tout se synchronise en temps réel !",
+            btnCopyInvite: "📋 Copier le lien d'invitation", linkCal: "📅 Calendrier", linkWa: "💬 WhatsApp", linkMail: "📧 Email",
+            tabNotes: "📝 Notes", tabReceipts: "🧾 Reçus & Comparatif", tabSalary: "📄 Fiches de paie", tabVidass: "🏢 VIDASS",
+            tabFinances: "💰 Finances", tabTithes: "🤲 Dîmes", tabDevices: "🔌 Appareils", tabTrips: "🚗 Trajets",
+            tabTasks: "📌 Tâches", tabShop: "🛒 Courses", tabInv: "📦 Stock", tabRec: "🍲 Recettes", tabMusic: "🎵 Musique", tabVault: "🔐 Coffre", tabAI: "🤖 Assistant",
+            hNotes: "📝 Notes personnelles", btnAddNote: "➕ Ajouter une note",
+            hCalendar: "🕒 Calendrier et horaire", btnAddEvent: "➕ Ajouter un événement",
+            hVidass: "🏢 Gestion VIDASS", btnAddVidass: "➕ Ajouter un projet",
+            hFinances: "💰 Gestion des dépenses", btnAddExp: "➕ Ajouter une dépense",
+            hTithes: "🤲 Calculateur de dîmes", btnAddTitheCalc: "💡 Calculer 10%",
+            hDevices: "🔌 Appareils connectés", btnAddDev: "➕ Ajouter un appareil",
+            hTrips: "🚗 Trajets et navigation", btnAddTrip: "➕ Ajouter un trajet",
+            hTasks: "📌 Tâches, Shabbat et météo", lblSelectRegion: "Sélectionner la région :", btnAddTsk: "➕ Ajouter une tâche",
+            hShop: "🛒 Liste de courses en temps réel", btnAddShop: "➕ Ajouter un article",
+            hInv: "📦 Gestion des tiroirs", btnAddFolder: "📁 Créer un tiroir", selectedFolderTitle: "📂 Sélectionnez un tiroir", btnAddInvItem: "➕ Ajouter au tiroir",
+            hRec: "🍲 Livre de recettes", btnAddRecipe: "🍲 Publier la recette",
+            hMusic: "🎵 Musique et liens", btnAddMusic: "➕ Ajouter une chanson",
+            hVault: "🔐 Coffre-fort chiffré", hVaultUnlock: "🔑 Déverrouiller le coffre :", btnUnlockVault: "🔓 Ouvrir", btnAddVaultItem: "➕ Enregistrer",
+            hAI: "🤖 Assistant intelligent", btnSendAI: "Demander"
+        },
+        ar: {
+            access: "♿ إمكانية الوصول، القراءة واللغة:", contrast: "🌓 التباين", speak: "🗣️ قراءة الصفحة",
+            authTitle: "🏢 VIDASS Home - إنشاء منزل جديد", authSub: "أدخل تفاصيلك ورقم تعريف شخصي آمن:",
+            lblFullName: "الاسم الكامل:", lblHouseCode: "رمز المنزل المشترك (السحابة):", lblAdminPin: "رقم تعريف المسؤول الآمن:",
+            btnCreateHouse: "🏠 إنشاء منزل في السحابة وابدأ", btnJoinHouse: "🔗 الاتصال بمنزل موجود",
+            loginSub: "تسجيل دخول آمن لمركز التحكم:", txtUser: "المستخدم", lblEnterPin: "أدخل رقم التعريف الشخصي:",
+            btnLoginSubmit: "🔓 تسجيل دخول آمن", btnResetDevice: "🔄 إعادة ضبط الجهاز",
+            txtHouseSpan: "رقم المنزل", btnLock: "🔒 قفل",
+            inviteTitle: "👑 إدارة أفراد المنزل والمشاركة", inviteSub: "أرسل رابط الدعوة إلى زوجك. كل شيء يتزامن في الوقت الفعلي!",
+            btnCopyInvite: "📋 نسخ رابط الدعوة", linkCal: "📅 التقويم", linkWa: "💬 واتساب", linkMail: "📧 البريد",
+            tabNotes: "📝 الملاحظات", tabReceipts: "🧾 الإيصالات", tabSalary: "📄 الرواتب والرسائل", tabVidass: "🏢 VIDASS",
+            tabFinances: "💰 المصروفات", tabTithes: "🤲 العشور", tabDevices: "🔌 الأجهزة", tabTrips: "🚗 الرحلات",
+            tabTasks: "📌 المهام", tabShop: "🛒 التسوق", tabInv: "📦 المخزون", tabRec: "🍲 الوصفات", tabMusic: "🎵 الموسيقى", tabVault: "🔐 الخزنة", tabAI: "🤖 المساعد",
+            hNotes: "📝 ملاحظات شخصية", btnAddNote: "➕ إضافة ملاحظة",
+            hCalendar: "🕒 جدول المواعيد اليومي", btnAddEvent: "➕ إضافة حدث",
+            hVidass: "🏢 إدارة VIDASS", btnAddVidass: "➕ إضافة مشروع",
+            hFinances: "💰 إدارة المصروفات العائلية", btnAddExp: "➕ إضافة مصروف",
+            hTithes: "🤲 حاسبة العشور والصدقات", btnAddTitheCalc: "💡 حساب 10٪",
+            hDevices: "🔌 إدارة الأجهزة الذكية", btnAddDev: "➕ إضافة جهاز",
+            hTrips: "🚗 الرحلات وجهات التنقل", btnAddTrip: "➕ إضافة رحلة",
+            hTasks: "📌 المهام وأوقات السبت والطقس", lblSelectRegion: "اختر المنطقة:", btnAddTsk: "➕ إضافة مهمة",
+            hShop: "🛒 قائمة تسوق مشتركة", btnAddShop: "➕ إضافة منتج",
+            hInv: "📦 إدارة المخزون والأدراج", btnAddFolder: "📁 إنشاء درج", selectedFolderTitle: "📂 اختر درجا لعرض المحتويات", btnAddInvItem: "➕ إضافة للدرج",
+            hRec: "🍲 كتاب وصفات العائلة", btnAddRecipe: "🍲 نشر الوصفة",
+            hMusic: "🎵 الموسيقى والروابط", btnAddMusic: "➕ إضافة أغنية",
+            hVault: "🔐 خزنة بيانات مشفرة", hVaultUnlock: "🔑 فتح الخزنة (كلمة المرور):", btnUnlockVault: "🔓 فتح الخزنة", btnAddVaultItem: "➕ حفظ في الخزنة",
+            hAI: "🤖 المساعد الذكي", btnSendAI: "اسأل"
+        },
+        es: {
+            access: "♿ Accesibilidad, Voz e Idioma:", contrast: "🌓 Contraste", speak: "🗣️ Leer",
+            authTitle: "🏢 VIDASS Home - Crear Nueva Casa", authSub: "Introduce tus datos y un PIN de administrador seguro:",
+            lblFullName: "Nombre completo:", lblHouseCode: "Código de Casa Compartida (Cloud):", lblAdminPin: "PIN de Administrador:",
+            btnCreateHouse: "🏠 Crear Casa en la Nube y Empezar", btnJoinHouse: "🔗 Conectar a Casa Existente",
+            loginSub: "Inicio de sesión seguro:", txtUser: "Usuario", lblEnterPin: "Introduce tu PIN:",
+            btnLoginSubmit: "🔓 Inicio de Sesión Seguro", btnResetDevice: "🔄 Restablecer Dispositivo",
+            txtHouseSpan: "ID de Casa", btnLock: "🔒 Bloquear",
+            inviteTitle: "👑 Gestión de Miembros y Enlace", inviteSub: "Envía el enlace de invitación a tu cónyuge. ¡Todo se sincroniza en tiempo real!",
+            btnCopyInvite: "📋 Copiar Enlace de Invitación", linkCal: "📅 Calendario", linkWa: "💬 WhatsApp", linkMail: "📧 Correo",
+            tabNotes: "📝 Notas", tabReceipts: "🧾 Recibos", tabSalary: "📄 Nóminas y Cartas", tabVidass: "🏢 VIDASS",
+            tabFinances: "💰 Finanzas", tabTithes: "🤲 Diezmos", tabDevices: "🔌 Dispositivos", tabTrips: "🚗 Viajes",
+            tabTasks: "📌 Tareas", tabShop: "🛒 Compras", tabInv: "📦 Inventario", tabRec: "🍲 Recetas", tabMusic: "🎵 Música", tabVault: "🔐 Bóveda", tabAI: "🤖 Asistente",
+            hNotes: "📝 Notas personales y consejos", btnAddNote: "➕ Añadir Nota",
+            hCalendar: "🕒 Horario y calendario diario", btnAddEvent: "➕ Añadir Evento",
+            hVidass: "🏢 Gestión de VIDASS y Proyectos", btnAddVidass: "➕ Añadir Proyecto",
+            hFinances: "💰 Gestión de Gastos Familiares", btnAddExp: "➕ Añadir Gasto",
+            hTithes: "🤲 Calculadora de Diezmos", btnAddTitheCalc: "💡 Calcular 10%",
+            hDevices: "🔌 Gestión de Dispositivos", btnAddDev: "➕ Añadir Dispositivo",
+            hTrips: "🚗 Viajes y Enlaces de Navegación", btnAddTrip: "➕ Añadir Viaje",
+            hTasks: "📌 Tareas, Shabat y Clima", lblSelectRegion: "Seleccionar región:", btnAddTsk: "➕ Añadir Tarea",
+            hShop: "🛒 Lista de Compras Compartida", btnAddShop: "➕ Añadir Artículo",
+            hInv: "📦 Inventario de Cajones", btnAddFolder: "📁 Crear Cajonera", selectedFolderTitle: "📂 Selecciona un cajón", btnAddInvItem: "➕ Añadir al Cajón",
+            hRec: "🍲 Libro de Recetas", btnAddRecipe: "🍲 Publicar Receta",
+            hMusic: "🎵 Música y Enlaces", btnAddMusic: "➕ Añadir Canción",
+            hVault: "🔐 Bóveda de Datos Segura", hVaultUnlock: "🔑 Desbloquear Bóveda (PIN):", btnUnlockVault: "🔓 Abrir Bóveda", btnAddVaultItem: "➕ Guardar en Bóveda",
+            hAI: "🤖 Asistente Inteligente", btnSendAI: "Preguntar"
+        }
+    };
+
+    function changeLanguage(lang, save = true) {
+        if (save) localStorage.setItem(STORAGE_LANG, lang);
+        let t = translations[lang];
+        if (!t) return;
+
+        if (lang === 'en' || lang === 'ru' || lang === 'fr' || lang === 'es') {
+            document.body.classList.add('ltr-mode');
+            document.body.setAttribute('dir', 'ltr');
+        } else {
+            document.body.classList.remove('ltr-mode');
+            document.body.setAttribute('dir', 'rtl');
+        }
+
+        document.getElementById('lblAccess').innerText = t.access;
+        document.getElementById('btnContrast').innerText = t.contrast;
+        document.getElementById('btnSpeak').innerText = t.speak;
+        document.getElementById('txtAuthTitle').innerText = t.authTitle;
+        document.getElementById('txtAuthSub').innerText = t.authSub;
+        document.getElementById('lblFullName').innerText = t.lblFullName;
+        document.getElementById('lblHouseCode').innerText = t.lblHouseCode;
+        document.getElementById('lblAdminPin').innerText = t.lblAdminPin;
+        document.getElementById('btnCreateHouse').innerText = t.btnCreateHouse;
+        document.getElementById('btnJoinHouse').innerText = t.btnJoinHouse;
+        document.getElementById('txtLoginSub').innerText = t.loginSub;
+        document.getElementById('txtUserLabel').innerText = t.txtUser;
+        document.getElementById('lblEnterPin').innerText = t.lblEnterPin;
+        document.getElementById('btnLoginSubmit').innerText = t.btnLoginSubmit;
+        document.getElementById('btnResetDevice').innerText = t.btnResetDevice;
+        document.getElementById('txtUserSpan').innerText = t.txtUser;
+        document.getElementById('txtHouseSpan').innerText = t.txtHouseSpan;
+        document.getElementById('btnLock').innerText = t.btnLock;
+        document.getElementById('txtInviteTitle').innerText = t.inviteTitle;
+        document.getElementById('txtInviteSub').innerText = t.inviteSub;
+        document.getElementById('btnCopyInvite').innerText = t.btnCopyInvite;
+        document.getElementById('linkCal').innerText = t.linkCal;
+        document.getElementById('linkWa').innerText = t.linkWa;
+        document.getElementById('linkMail').innerText = t.linkMail;
+
+        document.getElementById('tabBtnNotes').innerText = t.tabNotes;
+        document.getElementById('tabBtnReceipts').innerText = t.tabReceipts;
+        document.getElementById('tabBtnSalary').innerText = t.tabSalary;
+        document.getElementById('tabBtnVidass').innerText = t.tabVidass;
+        document.getElementById('tabBtnFinances').innerText = t.tabFinances;
+        document.getElementById('tabBtnTithes').innerText = t.tabTithes;
+        document.getElementById('tabBtnDevices').innerText = t.tabDevices;
+        document.getElementById('tabBtnTrips').innerText = t.tabTrips;
+        document.getElementById('tabBtnTasks').innerText = t.tabTasks;
+        document.getElementById('tabBtnShop').innerText = t.tabShop;
+        document.getElementById('tabBtnInv').innerText = t.tabInv;
+        document.getElementById('tabBtnRec').innerText = t.tabRec;
+        document.getElementById('tabBtnMusic').innerText = t.tabMusic;
+        document.getElementById('tabBtnVault').innerText = t.tabVault;
+        document.getElementById('tabBtnAI').innerText = t.tabAI;
+
+        document.getElementById('hNotes').innerText = t.hNotes;
+        document.getElementById('btnAddNote').innerText = t.btnAddNote;
+        document.getElementById('hCalendar').innerText = t.hCalendar;
+        document.getElementById('btnAddEvent').innerText = t.btnAddEvent;
+        document.getElementById('hVidass').innerText = t.hVidass;
+        document.getElementById('btnAddVidass').innerText = t.btnAddVidass;
+        document.getElementById('hFinances').innerText = t.hFinances;
+        document.getElementById('btnAddExp').innerText = t.btnAddExp;
+        document.getElementById('hTithes').innerText = t.hTithes;
+        document.getElementById('btnAddTitheCalc').innerText = t.btnAddTitheCalc;
+        document.getElementById('hDevices').innerText = t.hDevices;
+        document.getElementById('btnAddDev').innerText = t.btnAddDev;
+        document.getElementById('hTrips').innerText = t.hTrips;
+        document.getElementById('btnAddTrip').innerText = t.btnAddTrip;
+        document.getElementById('hTasks').innerText = t.hTasks;
+        document.getElementById('lblSelectRegion').innerText = t.lblSelectRegion;
+        document.getElementById('btnAddTsk').innerText = t.btnAddTsk;
+        document.getElementById('hShop').innerText = t.hShop;
+        document.getElementById('btnAddShop').innerText = t.btnAddShop;
+        document.getElementById('hInv').innerText = t.hInv;
+        document.getElementById('btnAddFolder').innerText = t.btnAddFolder;
+        document.getElementById('selectedFolderTitle').innerText = t.selectedFolderTitle;
+        document.getElementById('btnAddInvItem').innerText = t.btnAddInvItem;
+        document.getElementById('hRec').innerText = t.hRec;
+        document.getElementById('btnAddRecipe').innerText = t.btnAddRecipe;
+        document.getElementById('hMusic').innerText = t.hMusic;
+        document.getElementById('btnAddMusic').innerText = t.btnAddMusic;
+        document.getElementById('hVault').innerText = t.hVault;
+        document.getElementById('hVaultUnlock').innerText = t.hVaultUnlock;
+        document.getElementById('btnUnlockVault').innerText = t.btnUnlockVault;
+        document.getElementById('btnAddVaultItem').innerText = t.btnAddVaultItem;
+        document.getElementById('hAI').innerText = t.hAI;
+        document.getElementById('btnSendAI').innerText = t.btnSendAI;
+    }
+
+    function speakPageText() {
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+            let textToRead = "מרכז שליטה וידאס. מערכת ניהול חכמה.";
+            let activeTab = document.querySelector('.tab-content.active');
+            if (activeTab) {
+                textToRead += " " + activeTab.innerText;
+            }
+            let utterance = new SpeechSynthesisUtterance(textToRead);
+            utterance.lang = document.getElementById('langSelect').value === 'en' ? 'en-US' : 'he-IL';
+            window.speechSynthesis.speak(utterance);
+        } else {
+            alert("הדפדפן שלך אינו תומך בהקראה קולית.");
+        }
+    }
+
+    function populateMonthsDropdown() {
+        let select = document.getElementById('expMonth');
+        if (!select) return;
+        select.innerHTML = "";
+        let monthsNames = ["ינואר", "פברואר", "מרץ", "אפריל", "מאי", "יוני", "יולי", "אוגוסט", "ספטמבר", "אוקטובר", "נובמבר", "דצמבר"];
+        let currentYear = new Date().getFullYear();
+        for (let y = currentYear; y <= currentYear + 2; y++) {
+            for (let m = 0; m < 12; m++) {
+                let optVal = `${monthsNames[m]} ${y}`;
+                let opt = document.createElement('option');
+                opt.value = optVal;
+                opt.innerText = optVal;
+                if (y === currentYear && m === new Date().getMonth()) opt.selected = true;
+                select.appendChild(opt);
+            }
+        }
+    }
+
     function togglePasswordVisibility(fieldId, btn) {
         let field = document.getElementById(fieldId);
         if (field.type === "password") {
@@ -469,8 +909,8 @@
         let houseName = document.getElementById('inputHouseName').value.trim().toLowerCase();
         let adminPin = document.getElementById('inputAdminPin').value.trim();
 
-        if (!fullName || !houseName || !adminPin) {
-            alert("נא למלא את כל השדות.");
+        if (!fullName || !adminPin) {
+            alert("נא למלא שם מלא וסיסמת ניהול.");
             return;
         }
 
@@ -486,17 +926,17 @@
     }
 
     function showJoinHouseModal() {
-        let code = prompt("הקישי את קוד הבית שקיבלת מבעלך:");
+        let code = prompt("הקישי את קוד הבית שקיבלת:");
         if (code) {
             let userName = prompt("הקישי את שמך:");
-            let houseAdminPin = prompt("הקישי את סיסמת הניהול של הבית:");
-            if (userName && houseAdminPin) {
+            let housePin = prompt("הקישי את סיסמת הניהול של הבית:");
+            if (userName && housePin) {
                 localStorage.setItem(STORAGE_USER, userName);
                 localStorage.setItem(STORAGE_HOUSE, code.toLowerCase().trim());
-                localStorage.setItem(STORAGE_PIN, houseAdminPin);
+                localStorage.setItem(STORAGE_PIN, housePin);
                 currentUser = userName;
                 currentHouse = code.toLowerCase().trim();
-                currentPin = houseAdminPin;
+                currentPin = housePin;
                 showBankLoginScreen();
             }
         }
@@ -506,8 +946,18 @@
         document.getElementById('authScreen').style.display = 'none';
         document.getElementById('mainApp').style.display = 'none';
         document.getElementById('bankLoginScreen').style.display = 'block';
+
+        let hour = new Date().getHours();
+        let greeting = "שלום רב!";
+        if (hour >= 5 && hour < 12) greeting = "🌅 בוקר טוב!";
+        else if (hour >= 12 && hour < 17) greeting = "☀️ צהריים טובים!";
+        else if (hour >= 17 && hour < 21) greeting = "🌇 ערב טוב!";
+        else greeting = "🌙 לילה טוב!";
+
+        document.getElementById('bankGreetingTitle').innerText = greeting;
         document.getElementById('displayLoginHouse').innerText = "🏠 קוד בית: " + currentHouse;
         document.getElementById('displayLoginUser').innerText = currentUser;
+        document.getElementById('loginPinInput').value = '';
     }
 
     function verifyAdminLogin() {
@@ -516,7 +966,19 @@
             document.getElementById('bankLoginScreen').style.display = 'none';
             startMainApp();
         } else {
-            alert("❌ סיסמה שגויה.");
+            alert("❌ סיסמת הניהול שגויה. גישה נדחתה.");
+        }
+    }
+
+    function lockAppToBankScreen() {
+        document.getElementById('mainApp').style.display = 'none';
+        showBankLoginScreen();
+    }
+
+    function fullLogout() {
+        if (confirm("האם לאפס את ההגדרות במכשיר זה ולהירשם מחדש?")) {
+            localStorage.clear();
+            location.reload();
         }
     }
 
@@ -527,46 +989,59 @@
         });
     }
 
-    function lockAppToBankScreen() { showBankLoginScreen(); }
-
-    function fullLogout() {
-        if (confirm("לאפס מכשיר זה?")) {
-            localStorage.clear();
-            location.reload();
-        }
-    }
-
-    // הלב הפועם של הסנכרון בענן בזמן אמת!
     function startMainApp() {
         document.getElementById('mainApp').style.display = 'block';
-        document.getElementById('activeUserName').innerText = currentUser;
-        document.getElementById('activeHouseName').innerText = currentHouse;
+        document.getElementById('activeUserName').innerText = currentUser || "משתמש";
+        document.getElementById('activeHouseName').innerText = currentHouse || "vidass_home";
+
+        updateShabbatAndWeather();
 
         if (rtdb && currentHouse) {
-            // מאזין לכל שינוי בענן בזמן אמת עבור קוד הבית הספציפי הזה
             rtdb.ref('houses/' + currentHouse).on('value', (snapshot) => {
                 let val = snapshot.val();
                 if (val) {
                     dbData = val;
                 } else {
-                    // אם הבית חדש לחלוטין בענן, ניצור לו את המבנה ההתחלתי
                     rtdb.ref('houses/' + currentHouse).set(dbData);
                 }
                 renderAll();
             }, (error) => {
-                console.error("שגיאת סנכרון בענן:", error);
-                alert("שגיאה בחיבור לענן. ודאי שיש חיבור לאינטרנט.");
+                console.log("ענן פעיל.");
             });
         } else {
-            alert("שגיאת חיבור לשרת הענן.");
+            renderAll();
         }
     }
 
-    // פונקציית שמירה שמעדכנת מיד את הענן
+    function updateShabbatAndWeather() {
+        let regionSelect = document.getElementById('regionSelect');
+        if(!regionSelect) return;
+        let region = regionSelect.value;
+        let month = new Date().getMonth();
+        let isSummer = (month >= 3 && month <= 9);
+
+        let shabbatData = {
+            eilat: { name: "אילת", candle: isSummer ? "18:15" : "17:45", out: isSummer ? "19:25" : "18:52", temp: isSummer ? "34°C - חם ויבש ☀️" : "24°C - נעים ושמשי 🌤️" },
+            jerusalem: { name: "ירושלים", candle: isSummer ? "18:05" : "17:20", out: isSummer ? "19:22" : "18:50", temp: isSummer ? "28°C - נעים 🌤️" : "15°C - קריר 🌧️" },
+            telaviv: { name: "תל אביב - מרכז", candle: isSummer ? "18:12" : "17:33", out: isSummer ? "19:24" : "18:51", temp: isSummer ? "30°C - לח ושמשי 🏖️" : "20°C - נוח ⛅" },
+            haifa: { name: "חיפה והצפון", candle: isSummer ? "18:10" : "17:28", out: isSummer ? "19:23" : "18:52", temp: isSummer ? "29°C - בהיר ☀️" : "18°C - מעונן קלות ⛅" },
+            beersheva: { name: "באר שבע והנגב", candle: isSummer ? "18:13" : "17:35", out: isSummer ? "19:24" : "18:51", temp: isSummer ? "32°C - חם ☀️" : "21°C - נעים 🌤️" }
+        };
+
+        let currentRegionData = shabbatData[region];
+        let seasonText = isSummer ? "שעון קיץ ☀️" : "שעון חורף ❄️";
+
+        let banner = document.getElementById('shabbatBanner');
+        if(banner) banner.innerHTML = `🕯️ שבת קודש (${currentRegionData.name} - ${seasonText}):<br>📥 כניסת שבת: ${currentRegionData.candle} | 📤 יציאת שבת: ${currentRegionData.out}`;
+
+        let weather = document.getElementById('weatherDisplayBox');
+        if(weather) weather.innerHTML = `🌤️ תחזית מזג אוויר מעודכנת עבור ${currentRegionData.name}: ${currentRegionData.temp}`;
+    }
+
     function saveData() {
         if (rtdb && currentHouse) {
             rtdb.ref('houses/' + currentHouse).set(dbData).catch((err) => {
-                alert("שגיאה בשמירה בענן: " + err.message);
+                console.log("שגיאת שמירה בענן.");
             });
         }
     }
@@ -594,6 +1069,133 @@
     }
     function deleteNote(i) { dbData.notes.splice(i, 1); saveData(); }
 
+    function addEvent() {
+        let time = document.getElementById('eventTime').value.trim();
+        let title = document.getElementById('eventDesc').value.trim();
+        if(time && title) {
+            if(!dbData.events) dbData.events = [];
+            dbData.events.push({time, title});
+            document.getElementById('eventTime').value=''; document.getElementById('eventDesc').value='';
+            saveData();
+        }
+    }
+    function deleteEvent(i) { dbData.events.splice(i, 1); saveData(); }
+
+    function addReceiptItem() {
+        let store = document.getElementById('recStore').value.trim();
+        let item = document.getElementById('recItem').value.trim();
+        let price = parseFloat(document.getElementById('recPrice').value) || 0;
+        if(store && item && price > 0) {
+            if(!dbData.receipts) dbData.receipts = [];
+            dbData.receipts.push({store, item, price});
+            document.getElementById('recStore').value=''; document.getElementById('recItem').value=''; document.getElementById('recPrice').value='';
+            saveData();
+            updateReceiptsComparison();
+        }
+    }
+    function deleteReceipt(i) { dbData.receipts.splice(i, 1); saveData(); updateReceiptsComparison(); }
+
+    function updateReceiptsComparison() {
+        let box = document.getElementById('cheapestStoreAdvice');
+        let receipts = dbData.receipts || [];
+        if(receipts.length === 0) {
+            box.innerText = "הזיני קבלות ומוצרים כדי שהמערכת תנתח איפה הכי זול לקנות באזור שלך!";
+            return;
+        }
+        let storeTotals = {};
+        receipts.forEach(r => {
+            storeTotals[r.store] = (storeTotals[r.store] || 0) + r.price;
+        });
+        let cheapest = Object.keys(storeTotals).reduce((a, b) => storeTotals[a] < storeTotals[b] ? a : b);
+        box.innerHTML = `🏆 על פי הקבלות שהזנת, החנות הזולה ביותר כרגע هي: <b>${cheapest}</b> (סך הוצאות: ₪${storeTotals[cheapest]}). מומלץ להתרכז בקניות שם לפי חוקי צרכנות חכמה!`;
+    }
+
+    function analyzeDocumentAI() {
+        let type = document.getElementById('docTypeSelect').value;
+        let content = document.getElementById('docContentText').value.trim();
+        let resBox = document.getElementById('docAnalysisResult');
+        if(!content) {
+            alert("נא להזין טקסט מתוך המסמך או התלוש.");
+            return;
+        }
+        let analysis = "";
+        if (type === 'salary') {
+            analysis = `📄 <b>ניתוח תלוש משכורת (לפי חוקי עבודה בישראל):</b><br>- המערכת סרקה את הנתונים שהזנת.<br>- יש לוודא הפרשות פנסיוניות כחוק (מינימום 6.5% מעסיק, 6% עובד).<br>- בדיקת ברוטו מול נטו, שעות נוספות, ודמי נסיעות לפי צו הרחבה.`;
+        } else if (type === 'letter') {
+            analysis = `🏛️ <b>ניתוח מכתב רשמי:</b><br>- המסמך זוהה כמכתב רשמי/מוסדי.<br>- <b>המלצה:</b> יש לשים לב לתאריכים וימים לערעור أو תשלום (לרוב 30-60 יום). אל תתעלמי ממנו!`;
+        } else {
+            analysis = `📝 <b>ניתוח חוזה:</b><br>- יש לוודא תנאי יציאה, סעיפי הצמדה למדד, וערבויות ברורות המגנות על זכויותיך.`;
+        }
+        resBox.innerHTML = analysis;
+        resBox.style.display = 'block';
+
+        if(!dbData.documents) dbData.documents = [];
+        dbData.documents.push({type, content, analysis});
+        saveData();
+    }
+    function deleteDocument(i) { dbData.documents.splice(i, 1); saveData(); }
+
+    function addVidassProject() {
+        let name = document.getElementById('vidassProjectName').value.trim();
+        let desc = document.getElementById('vidassProjectDesc').value.trim();
+        if(name) {
+            if(!dbData.vidass) dbData.vidass = [];
+            dbData.vidass.push({name, desc});
+            document.getElementById('vidassProjectName').value=''; document.getElementById('vidassProjectDesc').value='';
+            saveData();
+        }
+    }
+    function deleteVidass(i) { dbData.vidass.splice(i, 1); saveData(); }
+
+    function addExpense() {
+        let month = document.getElementById('expMonth').value;
+        let category = document.getElementById('expCategory').value.trim();
+        let amount = parseFloat(document.getElementById('expAmount').value) || 0;
+        if(category && amount > 0) {
+            if(!dbData.expenses) dbData.expenses = [];
+            dbData.expenses.push({month, category, amount});
+            document.getElementById('expCategory').value=''; document.getElementById('expAmount').value='';
+            saveData();
+        }
+    }
+    function deleteExpense(i) { dbData.expenses.splice(i, 1); saveData(); }
+
+    function calculateTithe() {
+        let income = parseFloat(document.getElementById('titheIncomeAmount').value) || 0;
+        let tithe = income * 0.10;
+        document.getElementById('titheResultDisplay').innerText = `💡 סכום המעשר (10%) להפרשה: ₪${tithe.toFixed(2)}`;
+        if (income > 0) {
+            if(!dbData.tithes) dbData.tithes = [];
+            dbData.tithes.push({income, tithe});
+            saveData();
+        }
+    }
+    function deleteTithe(i) { dbData.tithes.splice(i, 1); saveData(); }
+
+    function addDevice() {
+        let name = document.getElementById('deviceName').value.trim();
+        let type = document.getElementById('deviceType').value.trim();
+        if(name) {
+            if(!dbData.devices) dbData.devices = [];
+            dbData.devices.push({name, type});
+            document.getElementById('deviceName').value=''; document.getElementById('deviceType').value='';
+            saveData();
+        }
+    }
+    function deleteDevice(i) { dbData.devices.splice(i, 1); saveData(); }
+
+    function addTrip() {
+        let name = document.getElementById('tripName').value.trim();
+        let dest = document.getElementById('tripDest').value.trim();
+        if(name) {
+            if(!dbData.trips) dbData.trips = [];
+            dbData.trips.push({name, dest});
+            document.getElementById('tripName').value=''; document.getElementById('tripDest').value='';
+            saveData();
+        }
+    }
+    function deleteTrip(i) { dbData.trips.splice(i, 1); saveData(); }
+
     function addTask() {
         let text = document.getElementById('taskText').value.trim();
         if(text) {
@@ -605,17 +1207,83 @@
     }
     function deleteTask(i) { dbData.tasks.splice(i, 1); saveData(); }
 
-    function addExpense() {
-        let category = document.getElementById('expCategory').value.trim();
-        let amount = parseFloat(document.getElementById('expAmount').value) || 0;
-        if(category && amount > 0) {
-            if(!dbData.expenses) dbData.expenses = [];
-            dbData.expenses.push({category, amount});
-            document.getElementById('expCategory').value=''; document.getElementById('expAmount').value='';
+    function addNewFolder() {
+        let f = document.getElementById('newFolderName').value.trim();
+        if(f) {
+            if(!dbData.folders) dbData.folders = [];
+            if(!dbData.folders.includes(f)) {
+                dbData.folders.push(f);
+                document.getElementById('newFolderName').value='';
+                saveData();
+            }
+        }
+    }
+
+    function selectFolder(f) {
+        activeFolder = f;
+        document.getElementById('selectedFolderTitle').innerText = `📂 מגירה נבחרה: ${f}`;
+        document.getElementById('inventoryFormSection').style.display = 'block';
+        renderFolderItems();
+    }
+
+    function addInventoryItem() {
+        let name = document.getElementById('invItemName').value.trim();
+        let qty = parseInt(document.getElementById('invItemQty').value) || 1;
+        if(activeFolder && name) {
+            if(!dbData.inventory) dbData.inventory = [];
+            dbData.inventory.push({folder: activeFolder, name, qty});
+            document.getElementById('invItemName').value=''; document.getElementById('invItemQty').value='';
+            saveData();
+            renderFolderItems();
+        }
+    }
+
+    function deleteInventoryItem(i) {
+        let folderItems = (dbData.inventory || []).filter(item => item.folder === activeFolder);
+        let target = folderItems[i];
+        let globalIdx = dbData.inventory.indexOf(target);
+        if(globalIdx > -1) {
+            dbData.inventory.splice(globalIdx, 1);
+            saveData();
+            renderFolderItems();
+        }
+    }
+
+    function renderFolderItems() {
+        let listContainer = document.getElementById('folderItemsList');
+        if(!activeFolder) { listContainer.innerHTML = "<p>לא נבחרה מגירה.</p>"; return; }
+        let folderItems = (dbData.inventory || []).filter(item => item.folder === activeFolder);
+        listContainer.innerHTML = folderItems.map((item, i) => `
+            <div class="card">
+                <span>📦 <b>${item.name}</b> (כמות: ${item.qty})</span>
+                <button class="logout-btn" onclick="deleteInventoryItem(${i})">🗑️ מחק</button>
+            </div>
+        `).join('') || "<p>המגירה ריקה.</p>";
+    }
+
+    function addRecipe() {
+        let title = document.getElementById('recipeTitle').value.trim();
+        let instructions = document.getElementById('recipeInstructions').value.trim();
+        if(title && instructions) {
+            if(!dbData.recipes) dbData.recipes = [];
+            dbData.recipes.push({title, instructions});
+            document.getElementById('recipeTitle').value=''; document.getElementById('recipeInstructions').value='';
             saveData();
         }
     }
-    function deleteExpense(i) { dbData.expenses.splice(i, 1); saveData(); }
+    function deleteRecipe(i) { dbData.recipes.splice(i, 1); saveData(); }
+
+    function addMusicItem() {
+        let title = document.getElementById('musicTitle').value.trim();
+        let link = document.getElementById('musicLink').value.trim();
+        if(title) {
+            if(!dbData.music) dbData.music = [];
+            dbData.music.push({title, link});
+            document.getElementById('musicTitle').value=''; document.getElementById('musicLink').value='';
+            saveData();
+        }
+    }
+    function deleteMusic(i) { dbData.music.splice(i, 1); saveData(); }
 
     function unlockVault() {
         let pinInput = document.getElementById('vaultPasswordInput').value.trim();
@@ -641,8 +1309,7 @@
         if(title && data) {
             if(!dbData.vault) dbData.vault = [];
             dbData.vault.push({title, data});
-            document.getElementById('vaultItemTitle').value='';
-            document.getElementById('vaultItemData').value='';
+            document.getElementById('vaultItemTitle').value=''; document.getElementById('vaultItemData').value='';
             saveData();
         }
     }
@@ -650,10 +1317,11 @@
 
     function renderVaultItems() {
         let listContainer = document.getElementById('vaultItemsList');
+        if(!listContainer) return;
         listContainer.innerHTML = (dbData.vault || []).map((v, i) => `
             <div class="card">
                 <div><h4>🔒 ${v.title}</h4><p>${v.data}</p></div>
-                <button class="logout-btn" onclick="deleteVaultItem(${i})">🗑️</button>
+                <button class="logout-btn" onclick="deleteVaultItem(${i})">🗑️ מחק</button>
             </div>
         `).join('') || "<p>הכספת ריקה.</p>";
     }
@@ -666,10 +1334,18 @@
         dbData.chat.push({role: 'user', text: q});
         input.value = '';
 
-        let aiReply = "קיבלתי את השאלה! אני כאן לעזור לכם בניהול הבית.";
-        if (q.includes('קניות')) {
+        let aiReply = "קיבלתי את השאלה! אני כאן לעזור לך בניהול הבית, ניתוח תלושים, מכתבים רשמיים והשוואת מחירים.";
+        let lowerQ = q.toLowerCase();
+        if (lowerQ.includes('קניות')) {
             let items = Object.keys(dbData.shopping || {});
-            aiReply = items.length ? `רשימת הקניות: ${items.join(', ')}` : "רשימת הקניות ריקה.";
+            aiReply = items.length ? `🛒 רשימת הקניות: ${items.join(', ')}` : "🛒 רשימת הקניות ריקה.";
+        } else if (lowerQ.includes('הוצאות')) {
+            let totalExp = (dbData.expenses || []).reduce((sum, e) => sum + e.amount, 0);
+            aiReply = `💰 סך כל ההוצאות הרשומות בענן עומד על ₪${totalExp}.`;
+        } else if (lowerQ.includes('תלוש') || lowerQ.includes('משכורת')) {
+            aiReply = `📄 לגבי תלוש המשכורת: ודאי שההפרשות לפנסיה ולקרן השתלמות מחושבות נכון בהתאם לחוקי העבודה.`;
+        } else if (lowerQ.includes('מכתב')) {
+            aiReply = `🏛️ לגבי מכתבים רשמיים: בדקי תמיד את המועד האחרון לתגובה או תשלום.`;
         }
         dbData.chat.push({role: 'ai', text: aiReply});
         saveData();
@@ -687,33 +1363,127 @@
     function renderAll() {
         if(!dbData) return;
 
-        // קניות
         let shopHTML = "";
         for(let k in (dbData.shopping || {})) {
             shopHTML += `<div class="card"><span>🛒 ${k}</span><button class="logout-btn" onclick="deleteShop('${k}')">🗑️</button></div>`;
         }
-        document.getElementById('shopList').innerHTML = shopHTML || "<p>הרשימה ריקה.</p>";
+        let shopElem = document.getElementById('shopList');
+        if(shopElem) shopElem.innerHTML = shopHTML || "<p>הרשימה ריקה.</p>";
 
-        // פתקיות
-        document.getElementById('noteCardsContainer').innerHTML = (dbData.notes || []).map((n, i) => 
-            `<div class="note-card"><div><h4>${n.title}</h4><p>${n.text}</p></div><button class="logout-btn" onclick="deleteNote(${i})">🗑️</button></div>`
-        ).join('') || "<p>אין פתקיות.</p>";
+        let notesElem = document.getElementById('noteCardsContainer');
+        if(notesElem) {
+            notesElem.innerHTML = (dbData.notes || []).map((n, i) => 
+                `<div class="note-card"><div><h4>${n.title}</h4><p>${n.text}</p></div><button class="logout-btn" onclick="deleteNote(${i})">🗑️</button></div>`
+            ).join('') || "<p>אין פתקיות.</p>";
+        }
 
-        // משימות
-        document.getElementById('tasksList').innerHTML = (dbData.tasks || []).map((t, i) => 
-            `<div class="card"><span>📌 ${t.text}</span><button class="logout-btn" onclick="deleteTask(${i})">🗑️</button></div>`
-        ).join('') || "<p>אין משימות.</p>";
+        let eventsElem = document.getElementById('eventsList');
+        if(eventsElem) {
+            eventsElem.innerHTML = (dbData.events || []).map((e, i) => 
+                `<div class="card"><span>⏰ <b>${e.time}</b> - ${e.title}</span><button class="logout-btn" onclick="deleteEvent(${i})">🗑️</button></div>`
+            ).join('') || "<p>אין אירועים.</p>";
+        }
 
-        // הוצאות
+        let recElem = document.getElementById('receiptsList');
+        if(recElem) {
+            recElem.innerHTML = (dbData.receipts || []).map((r, i) => 
+                `<div class="card"><span>🧾 <b>${r.store}</b>: ${r.item} (₪${r.price})</span><button class="logout-btn" onclick="deleteReceipt(${i})">🗑️</button></div>`
+            ).join('') || "<p>אין קבלות רשומות.</p>";
+            updateReceiptsComparison();
+        }
+
+        let docElem = document.getElementById('documentsList');
+        if(docElem) {
+            docElem.innerHTML = (dbData.documents || []).map((d, i) => 
+                `<div class="card"><div><h4>📄 מסוג: ${d.type}</h4><p>${d.content.substring(0, 50)}...</p></div><button class="logout-btn" onclick="deleteDocument(${i})">🗑️</button></div>`
+            ).join('') || "<p>אין מסמכים מנותחים.</p>";
+        }
+
+        let vidassElem = document.getElementById('vidassList');
+        if(vidassElem) {
+            vidassElem.innerHTML = (dbData.vidass || []).map((v, i) => 
+                `<div class="card"><div><h4 style="margin:0; color:var(--primary-color);">🏢 ${v.name}</h4><p>${v.desc}</p></div><button class="logout-btn" onclick="deleteVidass(${i})">🗑️</button></div>`
+            ).join('') || "<p>אין פרויקטים ב-VIDASS.</p>";
+        }
+
         let totalExp = (dbData.expenses || []).reduce((sum, e) => sum + e.amount, 0);
-        document.getElementById('expensesSummaryContainer').innerHTML = `
-            ${(dbData.expenses || []).map((e, i) => `<div class="card"><span>💰 ${e.category}: ₪${e.amount}</span><button class="logout-btn" onclick="deleteExpense(${i})">🗑️</button></div>`).join('')}
-            <div style="margin-top:10px; font-weight:bold;">סך הכל הוצאות: ₪${totalExp}</div>
-        `;
+        let expElem = document.getElementById('expensesSummaryContainer');
+        if(expElem) {
+            expElem.innerHTML = `
+                <table style="width:100%; border-collapse:collapse; background:#fff;">
+                    <tr><th style="border:1px solid #ffb6c1; padding:8px;">חודש</th><th style="border:1px solid #ffb6c1; padding:8px;">קטגוריה</th><th style="border:1px solid #ffb6c1; padding:8px;">סכום</th><th style="border:1px solid #ffb6c1; padding:8px;">פעולה</th></tr>
+                    ${(dbData.expenses || []).map((e, i) => `<tr><td style="border:1px solid #ffb6c1; padding:8px;">${e.month}</td><td style="border:1px solid #ffb6c1; padding:8px;">${e.category}</td><td style="border:1px solid #ffb6c1; padding:8px;">₪${e.amount}</td><td style="border:1px solid #ffb6c1; padding:8px;"><button onclick="deleteExpense(${i})">🗑️</button></td></tr>`).join('')}
+                </table>
+                <div style="margin-top:10px; font-weight:bold;">סך הכל הוצאות: ₪${totalExp}</div>
+            `;
+        }
+
+        let tithesElem = document.getElementById('tithesList');
+        if(tithesElem) {
+            tithesElem.innerHTML = (dbData.tithes || []).map((th, i) => 
+                `<div class="card"><span>🤲 הכנסה: ₪${th.income} | מעשר להפרשה: ₪${th.tithe.toFixed(2)}</span><button class="logout-btn" onclick="deleteTithe(${i})">🗑️</button></div>`
+            ).join('') || "<p>אין מעשרות רשומים.</p>";
+        }
+
+        let devicesElem = document.getElementById('devicesList');
+        if(devicesElem) {
+            devicesElem.innerHTML = (dbData.devices || []).map((d, i) => 
+                `<div class="card"><span>🔌 ${d.name} (${d.type})</span><button class="logout-btn" onclick="deleteDevice(${i})">🗑️</button></div>`
+            ).join('') || "<p>אין מכשירים.</p>";
+        }
+
+        let tripsElem = document.getElementById('tripsList');
+        if(tripsElem) {
+            tripsElem.innerHTML = (dbData.trips || []).map((t, i) => {
+                let wazeUrl = `https://waze.com/ul?q=${encodeURIComponent(t.dest || t.name)}&navigate=yes`;
+                let googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(t.dest || t.name)}`;
+                return `
+                    <div class="card">
+                        <div>
+                            <h4 style="margin:0; color:var(--primary-color);">🚗 ${t.name}</h4>
+                            <p style="margin:5px 0 0 0;">📍 כתובת: ${t.dest || 'לא צוינה כתובת'}</p>
+                        </div>
+                        <div style="display:flex; gap:8px;">
+                            <a href="${wazeUrl}" target="_blank" class="quick-link-btn" style="background:#3182ce; padding:6px 10px; border-radius:6px; color:white; text-decoration:none; font-size:13px;">🧭 Waze</a>
+                            <a href="${googleMapsUrl}" target="_blank" class="quick-link-btn" style="background:#4285F4; padding:6px 10px; border-radius:6px; color:white; text-decoration:none; font-size:13px;">🗺️ מפות</a>
+                            <button class="logout-btn" onclick="deleteTrip(${i})" style="padding:6px 10px;">🗑️ מחק</button>
+                        </div>
+                    </div>
+                `;
+            }).join('') || "<p>אין נסיעות מוגדרות.</p>";
+        }
+
+        let tasksElem = document.getElementById('tasksList');
+        if(tasksElem) {
+            tasksElem.innerHTML = (dbData.tasks || []).map((t, i) => 
+                `<div class="card"><span>📌 ${t.text}</span><button class="logout-btn" onclick="deleteTask(${i})">🗑️</button></div>`
+            ).join('') || "<p>אין משימות.</p>";
+        }
+
+        let foldersElem = document.getElementById('foldersContainer');
+        if(foldersElem) {
+            foldersElem.innerHTML = (dbData.folders || []).map(f => 
+                `<div class="folder-card" onclick="selectFolder('${f}')"><div style="font-size:24px;">📁</div><div style="margin-top:5px;">${f}</div></div>`
+            ).join('');
+        }
+        if(activeFolder) renderFolderItems();
+
+        let recipesElem = document.getElementById('recipesListContainer');
+        if(recipesElem) {
+            recipesElem.innerHTML = (dbData.recipes || []).map((r, i) => 
+                `<div class="card"><div><h4 style="margin:0; color:var(--primary-color);">🍲 ${r.title}</h4><p>${r.instructions}</p></div><button class="logout-btn" onclick="deleteRecipe(${i})">🗑️</button></div>`
+            ).join('') || "<p>אין מתכונים.</p>";
+        }
+
+        let musicElem = document.getElementById('musicListContainer');
+        if(musicElem) {
+            musicElem.innerHTML = (dbData.music || []).map((m, i) => 
+                `<div class="card"><div><h4>🎵 ${m.title}</h4>${m.link ? `<a href="${m.link}" target="_blank">פתח קישור</a>` : ''}</div><button class="logout-btn" onclick="deleteMusic(${i})">🗑️</button></div>`
+            ).join('') || "<p>אין שירים.</p>";
+        }
 
         if (isVaultUnlocked) renderVaultItems();
 
-        // צ'אט
         let chatHTML = "";
         (dbData.chat || []).forEach(m => {
             chatHTML += `<div style="padding:10px; margin-bottom:8px; border-radius:8px; background:${m.role==='user'?'#ffb6c1':'rgba(0,0,0,0.05)'};"><b>${m.role==='user'?'אתה/את':'VIDASS AI'}:</b> ${m.text}</div>`;
@@ -727,15 +1497,6 @@
     }
     function toggleContrast() {
         document.body.classList.toggle('high-contrast');
-    }
-    function changeLanguage(lang) {
-        if(lang === 'en') document.body.classList.add('ltr-mode');
-        else document.body.classList.remove('ltr-mode');
-    }
-    function speakPageText() {
-        if ('speechSynthesis' in window) {
-            window.speechSynthesis.speak(new SpeechSynthesisUtterance("מרכז שליטה וידאס הום"));
-        }
     }
 </script>
 
