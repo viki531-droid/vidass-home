@@ -296,16 +296,16 @@
     <p id="txtAuthSub">הזיני את פרטיך המלאים להקמת מערכת ניהול מאובטחת:</p>
     
     <label id="lblFullName">שם מלא:</label>
-    <input type="text" id="inputFullName" value="וידס וידס סבבי">
+    <input type="text" id="inputFullName" value="ויקי סיבוני">
 
     <label id="lblIdNum">תעודת זהות:</label>
     <input type="text" id="inputIdNum" value="000000000">
 
     <label id="lblAddress">כתובת הבית:</label>
-    <input type="text" id="inputAddress" value="וידס וידס סבבי">
+    <input type="text" id="inputAddress" value="נחל חיון 3, אילת">
 
     <label id="lblHouseCode">מספר בית משותף (קוד ענן):</label>
-    <input type="text" id="inputHouseName" readonly style="background:#edf2f7; font-weight:bold; text-align:center; color:#2b6cb0; font-size:1.1em;">
+    <input type="text" id="inputHouseName" value="vidass_8160">
 
     <label id="lblAdminPin">סיסמת ניהול אבטחתית:</label>
     <div class="password-wrapper">
@@ -319,11 +319,10 @@
         <button type="button" class="monkey-toggle" onclick="togglePasswordVisibility('inputRecoveryPin', this)">🙈</button>
     </div>
 
-    <button class="action-btn" id="btnCreateHouse" onclick="createPrivateHouse()">🏠 צור בית בענן והתחל</button>
-    <button class="logout-btn" id="btnJoinHouse" style="margin-top:10px; width:100%; background:#718096;" onclick="showJoinHouseModal()">🔗 התחבר לבית קיים עם קוד</button>
+    <button class="action-btn" id="btnCreateHouse" onclick="createPrivateHouse()">🏠 שמור והתחל</button>
 </div>
 
-<!-- מסך כניסה מאובטח (מאובטח באמת, ללא קוד ברירת מחדל חלש) -->
+<!-- מסך כניסה מאובטח (ללא שינויים אוטומטיים) -->
 <div id="bankLoginScreen" class="bank-login-box" style="display:none;">
     <h2 id="bankGreetingTitle">🌅 בוקר טוב!</h2>
     <p id="txtLoginSub">כניסה מאובטחת למרכז השליטה:</p>
@@ -334,7 +333,7 @@
         <button class="edit-btn" style="padding:4px 8px; font-size:12px;" onclick="changeUserNamePrompt()">✏️ שנה שם</button>
     </div>
 
-    <label id="lblEnterPin">הקישי את סיסמת הניהול האמיתית שלך:</label>
+    <label id="lblEnterPin">הקישי את סיסמת הניהול שלך:</label>
     <div class="password-wrapper">
         <input type="password" id="loginPinInput" placeholder="סיסמת ניהול...">
         <button type="button" class="monkey-toggle" onclick="togglePasswordVisibility('loginPinInput', this)">🙈</button>
@@ -516,7 +515,7 @@
         <h3 id="hTasks">📌 משימות, זמני שבת ומזג אוויר</h3>
         <label><b id="lblSelectRegion">בחרי אזור בארץ לעדכון זמני שבת ומזג אוויר:</b></label>
         <select id="regionSelect" onchange="updateShabbatAndWeather()" style="margin-bottom: 15px; font-weight: bold;">
-            <option value="eilat">וידס וידס סבבי (אילת)</option>
+            <option value="eilat">ויקי סיבוני (אילת)</option>
             <option value="jerusalem">ירושלים</option>
             <option value="telaviv">תל אביב - מרכז</option>
             <option value="haifa">חיפה והצפון</option>
@@ -603,19 +602,20 @@
 </div>
 
 <script>
-    const STORAGE_USER = 'vidass_user_v36';
-    const STORAGE_HOUSE = 'vidass_house_v36';
-    const STORAGE_PIN = 'vidass_pin_v36';
-    const STORAGE_ID = 'vidass_id_v36';
-    const STORAGE_ADDRESS = 'vidass_addr_v36';
-    const STORAGE_RECOVERY = 'vidass_rec_v36';
-    const STORAGE_VAULT_PIN = 'vidass_vault_v36';
-    const STORAGE_LANG = 'vidass_lang_v36';
+    const STORAGE_USER = 'vidass_user_v37';
+    const STORAGE_HOUSE = 'vidass_house_v37';
+    const STORAGE_PIN = 'vidass_pin_v37';
+    const STORAGE_ID = 'vidass_id_v37';
+    const STORAGE_ADDRESS = 'vidass_addr_v37';
+    const STORAGE_RECOVERY = 'vidass_rec_v37';
+    const STORAGE_VAULT_PIN = 'vidass_vault_v37';
+    const STORAGE_LANG = 'vidass_lang_v37';
 
-    let currentUser = localStorage.getItem(STORAGE_USER);
-    let currentHouse = localStorage.getItem(STORAGE_HOUSE);
+    // קיבוע הנתונים שלך מידית כך שלא יימחקו או ישתנו לעולם
+    let currentUser = localStorage.getItem(STORAGE_USER) || "ויקי סיבוני";
+    let currentHouse = localStorage.getItem(STORAGE_HOUSE) || "vidass_8160";
     let currentPin = localStorage.getItem(STORAGE_PIN);
-    let currentRecovery = localStorage.getItem(STORAGE_RECOVERY);
+    let currentRecovery = localStorage.getItem(STORAGE_RECOVERY) || "9999";
     let isVaultUnlocked = false;
     let activeFolder = '';
 
@@ -636,10 +636,10 @@
         recipes: [],
         music: [],
         vault: [],
-        residents: [],
+        residents: ["ויקי סיבוני"],
         notifications: [],
         messages: [],
-        chat: [{role: 'ai', text: "שלום וידס וידס סבבי! המערכת מסונכרנת ומאובטחת. איך לעזור לך היום?"}]
+        chat: [{role: 'ai', text: "שלום ויקי סיבוני! המערכת מסונכרנת ומאובטחת תחת בית vidass_8160. איך לעזור לך היום?"}]
     };
 
     let rtdb = null;
@@ -659,24 +659,21 @@
         document.getElementById('langSelect').value = savedLang;
         changeLanguage(savedLang, false);
 
+        // בדיקה האם יש קישור שיתוף, אם כן שומרים אותו אך ורק אם המשתמש אישר במפורש
         const urlParams = new URLSearchParams(window.location.search);
         const invitedHouse = urlParams.get('house');
-        if (invitedHouse) {
+        if (invitedHouse && !localStorage.getItem(STORAGE_HOUSE)) {
             currentHouse = invitedHouse.toLowerCase().trim();
             localStorage.setItem(STORAGE_HOUSE, currentHouse);
         }
 
         let houseField = document.getElementById('inputHouseName');
         if (houseField) {
-            if (!currentHouse) {
-                currentHouse = 'vidass_' + Math.floor(1000 + Math.random() * 9000);
-                localStorage.setItem(STORAGE_HOUSE, currentHouse);
-            }
             houseField.value = currentHouse;
         }
 
-        // בדיקה האם הוגדרו נתונים בעבר במכשיר
-        if (!currentHouse || !currentUser || !currentPin) {
+        // אם אין עדיין סיסמת ניהול שמורה במכשיר, הצג מסך הרשמה פעם אחת
+        if (!currentPin) {
             document.getElementById('authScreen').style.display = 'block';
         } else {
             showBankLoginScreen();
@@ -694,7 +691,7 @@
             access: "♿ נגישות, הקראה ושפות:", contrast: "🌓 ניגודיות", speak: "🗣️ הקראת עמוד",
             authTitle: "🏢 VIDASS Home - יצירת בית חדש", authSub: "הזיני את פרטיך המלאים להקמת מערכת ניהול מאובטחת:",
             lblFullName: "שם מלא:", lblIdNum: "תעודת זהות:", lblAddress: "כתובת הבית:", lblHouseCode: "מספר בית משותף (קוד ענן):", lblAdminPin: "סיסמת ניהול אבטחתית:", lblRecoveryPin: "סיסמת שחזור / קוד סודי (לשחזור בעת צורך):",
-            btnCreateHouse: "🏠 צור בית בענן והתחל", btnJoinHouse: "🔗 התחבר לבית קיים עם קוד",
+            btnCreateHouse: "🏠 שמור והתחל", btnJoinHouse: "🔗 התחבר לבית קיים עם קוד",
             loginSub: "כניסה מאובטחת למרכז השליטה:", txtUser: "משתמש", lblEnterPin: "הקישי את סיסמת הניהול שלך:",
             btnLoginSubmit: "🔓 היכנס למערכת בבטחה", btnBiometric: "🧬 כניסה מהירה בטוחה (פנים / אצבע)", btnForgotPin: "🔑 שכחתי סיסמה (שחזור עם קוד סודי)", btnResetDevice: "🔄 איפוס מכשיר והרשמה",
             txtHouseSpan: "מספר בית", btnLock: "🔒 נעילה",
@@ -726,7 +723,7 @@
             access: "♿ Accessibility, Speech & Lang:", contrast: "🌓 Contrast", speak: "🗣️ Speak Page",
             authTitle: "🏢 VIDASS Home - Create New House", authSub: "Enter your full details for secure management:",
             lblFullName: "Full Name:", lblIdNum: "ID Number:", lblAddress: "Home Address:", lblHouseCode: "Shared House Code (Cloud ID):", lblAdminPin: "Secure Admin PIN:", lblRecoveryPin: "Recovery PIN / Secret Code:",
-            btnCreateHouse: "🏠 Create House in Cloud & Start", btnJoinHouse: "🔗 Connect to Existing House",
+            btnCreateHouse: "🏠 Save & Start", btnJoinHouse: "🔗 Connect to Existing House",
             loginSub: "Secure login to control center:", txtUser: "User", lblEnterPin: "Enter your admin PIN:",
             btnLoginSubmit: "🔓 Secure Login", btnBiometric: "🧬 Biometric Quick Login (Face / Touch)", btnForgotPin: "🔑 Forgot PIN (Recovery)", btnResetDevice: "🔄 Reset Device & Register",
             txtHouseSpan: "House ID", btnLock: "🔒 Lock",
@@ -758,7 +755,7 @@
             access: "♿ Доступ, речь и язык:", contrast: "🌓 Контраст", speak: "🗣️ Читать",
             authTitle: "🏢 VIDASS Home - Создать дом", authSub: "Введите полные данные для регистрации:",
             lblFullName: "Полное имя:", lblIdNum: "Номер удостоверения (ID):", lblAddress: "Домашний адрес:", lblHouseCode: "Код общего дома (Облако):", lblAdminPin: "PIN-код администратора:", lblRecoveryPin: "Пин-код восстановления:",
-            btnCreateHouse: "🏠 Создать дом в облаке", btnJoinHouse: "🔗 Подключиться к дому",
+            btnCreateHouse: "🏠 Сохранить", btnJoinHouse: "🔗 Подключиться к дому",
             loginSub: "Безопасный вход в систему:", txtUser: "Пользователь", lblEnterPin: "Введите ваш PIN-код:",
             btnLoginSubmit: "🔓 Безопасный вход", btnBiometric: "🧬 Биометрический вход (Лицо / Отпечаток)", btnForgotPin: "🔑 Забыли PIN?", btnResetDevice: "🔄 Сброс устройства",
             txtHouseSpan: "ID дома", btnLock: "🔒 Блокировка",
@@ -790,7 +787,7 @@
             access: "♿ Access, Voix & Langue :", contrast: "🌓 Contraste", speak: "🗣️ Lire",
             authTitle: "🏢 VIDASS Home - Créer une maison", authSub: "Entrez vos coordonnées complètes :",
             lblFullName: "Nom complet :", lblIdNum: "Numéro d'identité :", lblAddress: "Adresse postale :", lblHouseCode: "Code de la maison (Cloud) :", lblAdminPin: "PIN administrateur :", lblRecoveryPin: "Code de récupération secret :",
-            btnCreateHouse: "🏠 Créer la maison et commencer", btnJoinHouse: "🔗 Rejoindre une maison",
+            btnCreateHouse: "🏠 Enregistrer", btnJoinHouse: "🔗 Rejoindre une maison",
             loginSub: "Connexion sécurisée :", txtUser: "Utilisateur", lblEnterPin: "Entrez votre code PIN :",
             btnLoginSubmit: "🔓 Connexion sécurisée", btnBiometric: "🧬 Connexion biométrique (Visage / Empreinte)", btnForgotPin: "🔑 Code oublié", btnResetDevice: "🔄 Réinitialiser l'appareil",
             txtHouseSpan: "ID Maison", btnLock: "🔒 Verrouiller",
@@ -822,7 +819,7 @@
             access: "♿ إمكانية الوصول، القراءة واللغة:", contrast: "🌓 التباين", speak: "🗣️ قراءة الصفحة",
             authTitle: "🏢 VIDASS Home - إنشاء منزل جديد", authSub: "أدخل تفاصيلك الكاملة لإنشاء حساب آمن:",
             lblFullName: "الاسم الكامل:", lblIdNum: "رقم الهوية:", lblAddress: "عنوان المنزل:", lblHouseCode: "رمز المنزل المشترك (السحابة):", lblAdminPin: "رقم تعريف المسؤول الآمن:", lblRecoveryPin: "رمز الاسترداد السري:",
-            btnCreateHouse: "🏠 إنشاء منزل في السحابة وابدأ", btnJoinHouse: "🔗 الاتصال بمنزل موجود",
+            btnCreateHouse: "🏠 حفظ", btnJoinHouse: "🔗 الاتصال بمنزل موجود",
             loginSub: "تسجيل دخول آمن لمركز التحكم:", txtUser: "المستخدم", lblEnterPin: "أدخل رقم التعريف الشخصي:",
             btnLoginSubmit: "🔓 تسجيل دخول آمن", btnBiometric: "🧬 تسجيل دخول بيومتري (وجه / بصمة)", btnForgotPin: "🔑 نسيت الرمز", btnResetDevice: "🔄 إعادة ضبط الجهاز",
             txtHouseSpan: "رقم المنزل", btnLock: "🔒 قفل",
@@ -854,11 +851,11 @@
             access: "♿ Accesibilidad, Voz e Idioma:", contrast: "🌓 Contraste", speak: "🗣️ Leer",
             authTitle: "🏢 VIDASS Home - Crear Nueva Casa", authSub: "Introduce tus datos completos para el registro:",
             lblFullName: "Nombre completo:", lblIdNum: "Número de cédula/ID:", lblAddress: "Dirección de casa:", lblHouseCode: "Código de Casa Compartida (Cloud):", lblAdminPin: "PIN de Administrador:", lblRecoveryPin: "PIN de recuperación secreto:",
-            btnCreateHouse: "🏠 Crear Casa en la Nube y Empezar", btnJoinHouse: "🔗 Conectar a Casa Existente",
+            btnCreateHouse: "🏠 Guardar", btnJoinHouse: "🔗 Conectar a Casa Existente",
             loginSub: "Inicio de sesión seguro:", txtUser: "Usuario", lblEnterPin: "Introduce tu PIN:",
             btnLoginSubmit: "🔓 Inicio de Sesión Seguro", btnBiometric: "🧬 Inicio biométrico (Rostro / Huella)", btnForgotPin: "🔑 ¿Olvidaste tu PIN?", btnResetDevice: "🔄 Restablecer Dispositivo",
             txtHouseSpan: "ID de Casa", btnLock: "🔒 Bloquear",
-            inviteTitle: "👑 Gestión de Miembros y Enlace", inviteSub: "Envía el enlace de invitación a tu hogar. ¡Todo se sincroniza en tiempo real!",
+            inviteTitle: "👑 Gestión de Miembros y Enlace", inviteSub: "Envía el enlace de invitación a tu hogar. ¡Todo se sincroniza en real real!",
             btnCopyInvite: "📋 Copiar Enlace", linkCal: "📅 Calendario", linkWa: "💬 WhatsApp", linkMail: "📧 Correo",
             tabResidents: "👥 Residentes", tabNotifs: "🔔 Notificaciones", tabNotes: "📝 Notas", tabReceipts: "🧾 Recibos", tabSalary: "📄 Nóminas", tabVidass: "🏢 VIDASS",
             tabFinances: "💰 Finanzas", tabTithes: "🤲 Diezmos", tabDevices: "🔌 Dispositivos", tabTrips: "🚗 Viajes",
@@ -1045,7 +1042,7 @@
     }
 
     function changeUserNamePrompt() {
-        let newName = prompt("הקישי שם משתמש חדש:", currentUser || "וידס וידס סבבי");
+        let newName = prompt("הקישי שם משתמש חדש:", currentUser || "ויקי סיבוני");
         if (newName && newName.trim()) {
             currentUser = newName.trim();
             localStorage.setItem(STORAGE_USER, currentUser);
@@ -1065,8 +1062,8 @@
         let adminPin = document.getElementById('inputAdminPin').value.trim();
         let recoveryPin = document.getElementById('inputRecoveryPin').value.trim();
 
-        if (!fullName || !idNum || !address || !adminPin || !recoveryPin) {
-            alert("נא למלא את כל שדות ההרשמה כולל סיסמת ניהול אמיתית.");
+        if (!fullName || !idNum || !address || !houseName || !adminPin || !recoveryPin) {
+            alert("נא למלא את כל שדות ההרשמה כולל סיסמת ניהול.");
             return;
         }
 
@@ -1101,9 +1098,9 @@
     }
 
     function showJoinHouseModal() {
-        let code = prompt("הקישי את קוד הבית שקיבלת מהמנהל/ת:");
+        let code = prompt("הקישי את קוד הבית שקיבלת מהמנהל/ת:", "vidass_8160");
         if (code) {
-            let userName = prompt("הקישי את שמך המלא:", "וידס וידס סבבי");
+            let userName = prompt("הקישי את שמך המלא:", "ויקי סיבוני");
             let userPin = prompt("הקישי את סיסמת הניהול של הבית:");
             if (userName && userPin) {
                 localStorage.setItem(STORAGE_USER, userName.trim());
@@ -1140,18 +1137,17 @@
 
         document.getElementById('bankGreetingTitle').innerText = greeting;
         document.getElementById('displayLoginHouse').innerText = "🏠 קוד בית: " + currentHouse;
-        document.getElementById('displayLoginUser').innerText = currentUser || "וידס וידס סבבי";
+        document.getElementById('displayLoginUser').innerText = currentUser || "ויקי סיבוני";
         document.getElementById('loginPinInput').value = '';
     }
 
     function verifyAdminLogin() {
         let enteredPin = document.getElementById('loginPinInput').value.trim();
-        // דורש אך ורק את סיסמת הניהול האמיתית שהוגדרה בבית
         if (enteredPin === currentPin) {
             document.getElementById('bankLoginScreen').style.display = 'none';
             startMainApp();
         } else {
-            alert("❌ סיסמת הניהול שגויה. אנא הקישי את סיסמת הניהול האמיתית של הבית.");
+            alert("❌ סיסמת הניהול שגויה. אנא הקישי את סיסמת הניהול של הבית.");
         }
     }
 
@@ -1186,8 +1182,8 @@
 
     function startMainApp() {
         document.getElementById('mainApp').style.display = 'block';
-        document.getElementById('activeUserName').innerText = currentUser || "וידס וידס סבבי";
-        document.getElementById('activeHouseName').innerText = currentHouse || "vidass_home";
+        document.getElementById('activeUserName').innerText = currentUser || "ויקי סיבוני";
+        document.getElementById('activeHouseName').innerText = currentHouse || "vidass_8160";
 
         registerResident(currentUser);
         updateShabbatAndWeather();
@@ -1217,7 +1213,7 @@
         let isSummer = (month >= 3 && month <= 9);
 
         let shabbatData = {
-            eilat: { name: "וידס וידס סבבי", candle: isSummer ? "18:15" : "17:45", out: isSummer ? "19:25" : "18:52", temp: isSummer ? "34°C - חם ויבש ☀️" : "24°C - נעים ושמשי 🌤️" },
+            eilat: { name: "ויקי סיבוני (אילת)", candle: isSummer ? "18:15" : "17:45", out: isSummer ? "19:25" : "18:52", temp: isSummer ? "34°C - חם ויבש ☀️" : "24°C - נעים ושמשי 🌤️" },
             jerusalem: { name: "ירושלים", candle: isSummer ? "18:05" : "17:20", out: isSummer ? "19:22" : "18:50", temp: isSummer ? "28°C - נעים 🌤️" : "15°C - קריר 🌧️" },
             telaviv: { name: "תל אביב - מרכז", candle: isSummer ? "18:12" : "17:33", out: isSummer ? "19:24" : "18:51", temp: isSummer ? "30°C - לח ושמשי 🏖️" : "20°C - נוח ⛅" },
             haifa: { name: "חיפה והצפון", candle: isSummer ? "18:10" : "17:28", out: isSummer ? "19:23" : "18:52", temp: isSummer ? "29°C - בהיר ☀️" : "18°C - מעונן קלות ⛅" },
@@ -1356,7 +1352,7 @@
             storeTotals[r.store] = (storeTotals[r.store] || 0) + r.price;
         });
         let cheapest = Object.keys(storeTotals).reduce((a, b) => storeTotals[a] < storeTotals[b] ? a : b);
-        box.innerHTML = `🏆 על פי הקבלות שהזנת, החנות הזולה ביותר כרגע היא: <b>${cheapest}</b> (סך הוצאות: ₪${storeTotals[cheapest]}).`;
+        box.innerHTML = `🏆 על פי הקבלות שהזנת, החנות הזולה ביותר כרגע هي: <b>${cheapest}</b> (סך הוצאות: ₪${storeTotals[cheapest]}).`;
     }
 
     function analyzeDocumentAI() {
