@@ -309,7 +309,7 @@
 
     <label id="lblAdminPin">סיסמת ניהול אבטחתית:</label>
     <div class="password-wrapper">
-        <input type="password" id="inputAdminPin" value="1234">
+        <input type="password" id="inputAdminPin" placeholder="הקישי סיסמת ניהול...">
         <button type="button" class="monkey-toggle" onclick="togglePasswordVisibility('inputAdminPin', this)">🙈</button>
     </div>
 
@@ -323,16 +323,20 @@
     <button class="logout-btn" id="btnJoinHouse" style="margin-top:10px; width:100%; background:#718096;" onclick="showJoinHouseModal()">🔗 התחבר לבית קיים עם קוד</button>
 </div>
 
-<!-- מסך כניסה מאובטח (כולל סנכרון אוטומטי מול הקישור) -->
+<!-- מסך כניסה מאובטח (מאובטח באמת, ללא קוד ברירת מחדל חלש) -->
 <div id="bankLoginScreen" class="bank-login-box" style="display:none;">
     <h2 id="bankGreetingTitle">🌅 בוקר טוב!</h2>
     <p id="txtLoginSub">כניסה מאובטחת למרכז השליטה:</p>
     <h3 id="displayLoginHouse" style="background:rgba(0,0,0,0.03); padding:10px; border-radius:8px;"></h3>
-    <p><span id="txtUserLabel">משתמש</span>: <b id="displayLoginUser"></b></p>
+    
+    <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.02); padding:8px 12px; border-radius:8px; margin:10px 0;">
+        <span><span id="txtUserLabel">משתמש</span>: <b id="displayLoginUser"></b></span>
+        <button class="edit-btn" style="padding:4px 8px; font-size:12px;" onclick="changeUserNamePrompt()">✏️ שנה שם</button>
+    </div>
 
-    <label id="lblEnterPin">הקישי את סיסמת הניהול שלך:</label>
+    <label id="lblEnterPin">הקישי את סיסמת הניהול האמיתית שלך:</label>
     <div class="password-wrapper">
-        <input type="password" id="loginPinInput" placeholder="סיסמת ניהול (ברירת מחדל: 1234)..." value="1234">
+        <input type="password" id="loginPinInput" placeholder="סיסמת ניהול...">
         <button type="button" class="monkey-toggle" onclick="togglePasswordVisibility('loginPinInput', this)">🙈</button>
     </div>
 
@@ -347,7 +351,11 @@
     <div class="top-bar">
         <div>
             <h1>🏢 VIDASS Control Center</h1>
-            <p><span id="txtUserSpan">משתמש</span>: <span id="activeUserName" style="color:var(--primary-color); font-weight:bold;"></span> | <span id="txtHouseSpan">מספר בית</span>: <span id="activeHouseName" style="font-weight:bold;"></span></p>
+            <p>
+                <span id="txtUserSpan">משתמש</span>: <span id="activeUserName" style="color:var(--primary-color); font-weight:bold;"></span> 
+                <button class="edit-btn" style="padding:2px 6px; font-size:11px; margin-right:5px;" onclick="changeUserNamePrompt()">✏️ שנה</button>
+                | <span id="txtHouseSpan">מספר בית</span>: <span id="activeHouseName" style="font-weight:bold;"></span>
+            </p>
         </div>
         <div style="display:flex; gap:15px; align-items:center;">
             <div class="status-indicator" id="statusCloud">🟢 ענן פעיל ומסונכרן</div>
@@ -595,19 +603,19 @@
 </div>
 
 <script>
-    const STORAGE_USER = 'vidass_user_v35';
-    const STORAGE_HOUSE = 'vidass_house_v35';
-    const STORAGE_PIN = 'vidass_pin_v35';
-    const STORAGE_ID = 'vidass_id_v35';
-    const STORAGE_ADDRESS = 'vidass_addr_v35';
-    const STORAGE_RECOVERY = 'vidass_rec_v35';
-    const STORAGE_VAULT_PIN = 'vidass_vault_v35';
-    const STORAGE_LANG = 'vidass_lang_v35';
+    const STORAGE_USER = 'vidass_user_v36';
+    const STORAGE_HOUSE = 'vidass_house_v36';
+    const STORAGE_PIN = 'vidass_pin_v36';
+    const STORAGE_ID = 'vidass_id_v36';
+    const STORAGE_ADDRESS = 'vidass_addr_v36';
+    const STORAGE_RECOVERY = 'vidass_rec_v36';
+    const STORAGE_VAULT_PIN = 'vidass_vault_v36';
+    const STORAGE_LANG = 'vidass_lang_v36';
 
-    let currentUser = localStorage.getItem(STORAGE_USER) || "וידס וידס סבבי";
+    let currentUser = localStorage.getItem(STORAGE_USER);
     let currentHouse = localStorage.getItem(STORAGE_HOUSE);
-    let currentPin = localStorage.getItem(STORAGE_PIN) || "1234";
-    let currentRecovery = localStorage.getItem(STORAGE_RECOVERY) || "9999";
+    let currentPin = localStorage.getItem(STORAGE_PIN);
+    let currentRecovery = localStorage.getItem(STORAGE_RECOVERY);
     let isVaultUnlocked = false;
     let activeFolder = '';
 
@@ -667,21 +675,11 @@
             houseField.value = currentHouse;
         }
 
-        // ודאי שמירת ברירת מחדל לסיסמה אם לא קיימת
-        if (!localStorage.getItem(STORAGE_PIN)) {
-            localStorage.setItem(STORAGE_PIN, "1234");
-            currentPin = "1234";
-        }
-        if (!localStorage.getItem(STORAGE_USER)) {
-            localStorage.setItem(STORAGE_USER, "וידס וידס סבבי");
-            currentUser = "וידס וידס סבבי";
-        }
-
-        // אם יש קוד בית ומשתמש מוגדרים, עבור מיד למסך כניסה מאובטח (או התחברות חלקה)
-        if (currentHouse && currentUser && currentPin) {
-            showBankLoginScreen();
-        } else {
+        // בדיקה האם הוגדרו נתונים בעבר במכשיר
+        if (!currentHouse || !currentUser || !currentPin) {
             document.getElementById('authScreen').style.display = 'block';
+        } else {
+            showBankLoginScreen();
         }
     };
 
@@ -871,7 +869,7 @@
             hCalendar: "🕒 Horario diario", btnAddEvent: "➕ Añadir Evento",
             hReceiptsTitle: "🧾 Recibos y comparativa", btnAddReceipt: "➕ Guardar Recibo", hReceiptTip: "💡 Consejo de ahorro:",
             hSalaryTitle: "📄 Análisis de nóminas", lblSelectDoc: "Seleccionar tipo:", btnAnalyzeDoc: "🤖 Analizar",
-            hVidass: "🏢 Gestión de VIDASS", btnAddVidass: "➕ Añadir Proyecto",
+            hVidass: "🏢 Gestión VIDASS", btnAddVidass: "➕ Añadir Proyecto",
             hFinances: "💰 Gestión de Gastos", btnAddExp: "➕ Añadir Gasto",
             hTithes: "🤲 Calculadora de Diezmos", btnAddTitheCalc: "💡 Calcular 10%",
             hDevices: "🔌 Gestión de Dispositivos", btnAddDev: "➕ Añadir Dispositivo",
@@ -1046,6 +1044,19 @@
         }
     }
 
+    function changeUserNamePrompt() {
+        let newName = prompt("הקישי שם משתמש חדש:", currentUser || "וידס וידס סבבי");
+        if (newName && newName.trim()) {
+            currentUser = newName.trim();
+            localStorage.setItem(STORAGE_USER, currentUser);
+            document.getElementById('displayLoginUser').innerText = currentUser;
+            let activeUserSpan = document.getElementById('activeUserName');
+            if(activeUserSpan) activeUserSpan.innerText = currentUser;
+            registerResident(currentUser);
+            alert("✅ שם המשתמש עודכן בהצלחה!");
+        }
+    }
+
     function createPrivateHouse() {
         let fullName = document.getElementById('inputFullName').value.trim();
         let idNum = document.getElementById('inputIdNum').value.trim();
@@ -1055,7 +1066,7 @@
         let recoveryPin = document.getElementById('inputRecoveryPin').value.trim();
 
         if (!fullName || !idNum || !address || !adminPin || !recoveryPin) {
-            alert("נא למלא את כל שדות ההרשמה.");
+            alert("נא למלא את כל שדות ההרשמה כולל סיסמת ניהול אמיתית.");
             return;
         }
 
@@ -1076,8 +1087,8 @@
     }
 
     function recoverPasswordModal() {
-        let recInput = prompt("הקישי את קוד השחזור הסודי שהגדרת בהרשמה (ברירת מחדל: 9999):");
-        if (recInput === currentRecovery || recInput === "9999") {
+        let recInput = prompt("הקישי את קוד השחזור הסודי שהגדרת בהרשמה:");
+        if (recInput === currentRecovery) {
             let newPin = prompt("✅ הקוד אושר! הקישי סיסמת ניהול חדשה:");
             if (newPin) {
                 currentPin = newPin.trim();
@@ -1090,18 +1101,18 @@
     }
 
     function showJoinHouseModal() {
-        let code = prompt("הקישי את קוד הבית שקיבלת:");
+        let code = prompt("הקישי את קוד הבית שקיבלת מהמנהל/ת:");
         if (code) {
-            let userName = prompt("הקישי את שמך:", "וידס וידס סבבי");
-            let userPin = prompt("הקישי את סיסמת הניהול של הבית (ברירת מחדל: 1234):", "1234");
+            let userName = prompt("הקישי את שמך המלא:", "וידס וידס סבבי");
+            let userPin = prompt("הקישי את סיסמת הניהול של הבית:");
             if (userName && userPin) {
-                localStorage.setItem(STORAGE_USER, userName);
+                localStorage.setItem(STORAGE_USER, userName.trim());
                 localStorage.setItem(STORAGE_HOUSE, code.toLowerCase().trim());
-                localStorage.setItem(STORAGE_PIN, userPin);
-                currentUser = userName;
+                localStorage.setItem(STORAGE_PIN, userPin.trim());
+                currentUser = userName.trim();
                 currentHouse = code.toLowerCase().trim();
-                currentPin = userPin;
-                registerResident(userName);
+                currentPin = userPin.trim();
+                registerResident(currentUser);
                 showBankLoginScreen();
             }
         }
@@ -1129,22 +1140,18 @@
 
         document.getElementById('bankGreetingTitle').innerText = greeting;
         document.getElementById('displayLoginHouse').innerText = "🏠 קוד בית: " + currentHouse;
-        document.getElementById('displayLoginUser').innerText = currentUser;
-        document.getElementById('loginPinInput').value = currentPin || "1234";
+        document.getElementById('displayLoginUser').innerText = currentUser || "וידס וידס סבבי";
+        document.getElementById('loginPinInput').value = '';
     }
 
     function verifyAdminLogin() {
         let enteredPin = document.getElementById('loginPinInput').value.trim();
-        // מאפשר כניסה חלקה גם עם סיסמת ברירת מחדל 1234
-        if (enteredPin === currentPin || enteredPin === "1234" || enteredPin === "9999") {
-            if(enteredPin === "1234" && currentPin !== "1234") {
-                currentPin = "1234";
-                localStorage.setItem(STORAGE_PIN, currentPin);
-            }
+        // דורש אך ורק את סיסמת הניהול האמיתית שהוגדרה בבית
+        if (enteredPin === currentPin) {
             document.getElementById('bankLoginScreen').style.display = 'none';
             startMainApp();
         } else {
-            alert("❌ סיסמת הניהול שגויה. (לצורך גישה מהירה דרך קישור ניתן להשתמש בסיסמה 1234)");
+            alert("❌ סיסמת הניהול שגויה. אנא הקישי את סיסמת הניהול האמיתית של הבית.");
         }
     }
 
@@ -1569,8 +1576,8 @@
 
     function unlockVault() {
         let pinInput = document.getElementById('vaultPasswordInput').value.trim();
-        let savedVaultPin = localStorage.getItem(STORAGE_VAULT_PIN) || "1234";
-        if (pinInput === savedVaultPin || pinInput === "1234") {
+        let savedVaultPin = localStorage.getItem(STORAGE_VAULT_PIN) || currentPin;
+        if (pinInput === savedVaultPin) {
             isVaultUnlocked = true;
             document.getElementById('vaultUnlockSection').style.display = 'none';
             document.getElementById('vaultContentSection').style.display = 'block';
