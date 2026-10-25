@@ -306,7 +306,7 @@
 </head>
 <body id="appBody" dir="rtl">
 
-<!-- סרגל נגישות ושפות מתוקן -->
+<!-- סרגל נגישות ושפות -->
 <div class="accessibility-bar" role="region">
     <span id="lblAccess">♿ נגישות ושפות:</span>
     <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
@@ -746,19 +746,35 @@
 </div>
 
 <script>
-    const STORAGE_USER = 'vidass_persistent_user_v45';
-    const STORAGE_HOUSE = 'vidass_persistent_house_v45';
-    const STORAGE_PIN = 'vidass_persistent_pin_v45';
-    const STORAGE_RECOVERY = 'vidass_persistent_rec_v45';
-    const STORAGE_VAULT_PIN = 'vidass_persistent_vault_v45';
-    const STORAGE_LANG = 'vidass_persistent_lang_v45';
-    const STORAGE_THEME = 'vidass_persistent_theme_v45';
-    const STORAGE_DATA = 'vidass_persistent_local_backup_v45';
+    // מפתחות שמירה עם גיבוי אוטומטי מהגרסאות הקודמות (v44 / v45)
+    const STORAGE_USER = 'vidass_persistent_user_v46';
+    const STORAGE_HOUSE = 'vidass_persistent_house_v46';
+    const STORAGE_PIN = 'vidass_persistent_pin_v46';
+    const STORAGE_RECOVERY = 'vidass_persistent_rec_v46';
+    const STORAGE_VAULT_PIN = 'vidass_persistent_vault_v46';
+    const STORAGE_LANG = 'vidass_persistent_lang_v46';
+    const STORAGE_THEME = 'vidass_persistent_theme_v46';
+    const STORAGE_DATA = 'vidass_persistent_local_backup_v46';
 
-    let currentUser = localStorage.getItem(STORAGE_USER);
-    let currentHouse = localStorage.getItem(STORAGE_HOUSE);
-    let currentPin = localStorage.getItem(STORAGE_PIN);
-    let currentRecovery = localStorage.getItem(STORAGE_RECOVERY);
+    // פונקציית שחזור נתונים מקודמים אם הקีย์ החדש ריק
+    function getPersistentData(newKey, oldKeys) {
+        let val = localStorage.getItem(newKey);
+        if (val) return val;
+        for (let ok of oldKeys) {
+            let oldVal = localStorage.getItem(ok);
+            if (oldVal) {
+                localStorage.setItem(newKey, oldVal);
+                return oldVal;
+            }
+        }
+        return null;
+    }
+
+    let currentUser = getPersistentData(STORAGE_USER, ['vidass_persistent_user_v45', 'vidass_persistent_user_v44']);
+    let currentHouse = getPersistentData(STORAGE_HOUSE, ['vidass_persistent_house_v45', 'vidass_persistent_house_v44']);
+    let currentPin = getPersistentData(STORAGE_PIN, ['vidass_persistent_pin_v45', 'vidass_persistent_pin_v44']);
+    let currentRecovery = getPersistentData(STORAGE_RECOVERY, ['vidass_persistent_rec_v45', 'vidass_persistent_rec_v44']);
+    
     let isVaultUnlocked = false;
     let isFinancesUnlocked = false;
     let activeFolder = '';
@@ -787,7 +803,7 @@
         chat: [{role: 'ai', text: "שלום! הנתונים וההגדרות שלך נשמרים באופן קבוע ומאובטח. איך לעזור לך היום?"}]
     };
 
-    let localBackup = localStorage.getItem(STORAGE_DATA);
+    let localBackup = getPersistentData(STORAGE_DATA, ['vidass_persistent_local_backup_v45', 'vidass_persistent_local_backup_v44']);
     let dbData = localBackup ? JSON.parse(localBackup) : defaultDbData;
 
     let rtdb = null;
@@ -1887,7 +1903,7 @@
 
     function unlockVault() {
         let pinInput = document.getElementById('vaultPasswordInput').value.trim();
-        let savedVaultPin = localStorage.getItem(STORAGE_VAULT_PIN) || currentPin;
+        let savedVaultPin = getPersistentData(STORAGE_VAULT_PIN, ['vidass_persistent_vault_v45', 'vidass_persistent_vault_v44']) || currentPin;
         if (pinInput === savedVaultPin) {
             isVaultUnlocked = true;
             document.getElementById('vaultUnlockSection').style.display = 'none';
