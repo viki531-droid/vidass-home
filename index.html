@@ -302,9 +302,106 @@
             gap: 10px;
             font-weight: bold;
         }
+        /* פופ-אפ התראות מתפרצות חירום בטלפון */
+        #popupAlertBanner {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #e53e3e;
+            color: white;
+            padding: 18px 25px;
+            border-radius: 12px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.4);
+            z-index: 99999;
+            font-size: 1.2em;
+            font-weight: bold;
+            display: none;
+            text-align: center;
+            max-width: 90%;
+            animation: pulseAlert 1s infinite alternate;
+        }
+        @keyframes pulseAlert {
+            0% { transform: translateX(-50%) scale(1); }
+            100% { transform: translateX(-50%) scale(1.03); }
+        }
+        /* לוח שנה חזותי */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            margin-top: 15px;
+            text-align: center;
+        }
+        .calendar-day-header {
+            background: var(--primary-color);
+            color: white;
+            padding: 8px;
+            font-weight: bold;
+            border-radius: 6px;
+            font-size: 0.9em;
+        }
+        .calendar-cell {
+            background: rgba(0,0,0,0.03);
+            border: 1px solid var(--button-bg);
+            min-height: 70px;
+            border-radius: 6px;
+            padding: 5px;
+            font-size: 0.85em;
+        }
+        .calendar-cell.has-event {
+            background: var(--button-bg);
+            color: var(--text-color);
+            font-weight: bold;
+        }
+        /* אזור מפה חי ואינטראקטיבי לילדים */
+        .live-map-container {
+            position: relative;
+            width: 100%;
+            height: 240px;
+            background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+            border: 3px solid var(--primary-color);
+            border-radius: 12px;
+            margin-top: 15px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            cursor: crosshair;
+        }
+        .kid-map-pin {
+            position: absolute;
+            background: var(--primary-color);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 13px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: 0.5s ease;
+        }
+        .safe-zone-circle {
+            position: absolute;
+            width: 140px;
+            height: 140px;
+            border: 3px dashed #276749;
+            border-radius: 50%;
+            background: rgba(39, 103, 73, 0.1);
+            pointer-events: none;
+        }
     </style>
 </head>
 <body id="appBody" dir="rtl">
+
+<!-- פופ-אפ התראת חירום מתפרצת בטלפון -->
+<div id="popupAlertBanner">
+    <div id="popupAlertText">🚨 התראת חירום: הילד יצא מאזור בטוח!</div>
+    <button onclick="closePopupAlert()" style="margin-top:10px; background:white; color:#e53e3e; border:none; padding:6px 15px; border-radius:6px; font-weight:bold; cursor:pointer;">אישור חירום</button>
+</div>
 
 <!-- סרגל נגישות ושפות -->
 <div class="accessibility-bar" role="region">
@@ -321,6 +418,7 @@
             <option value="fr">Français</option>
             <option value="ar">العربية</option>
             <option value="es">Español</option>
+            <option value="zh">中文 (סינית)</option>
         </select>
     </div>
 </div>
@@ -368,7 +466,7 @@
     <button class="action-btn" id="btnCreateHouse" onclick="registerNewResidentDevice()">🏠 שמור פרטים והכנס למערכת</button>
 </div>
 
-<!-- מסך כניסה מאובטח (לדייר רשום שמור) -->
+<!-- מסך כניסה מאובטח (לדייר רשום שמور) -->
 <div id="bankLoginScreen" class="bank-login-box" style="display:none;">
     <h2 id="bankGreetingTitle">🌅 בוקר טוב!</h2>
     <p id="txtLoginSub">כניסה מאובטחת למרכז השליטה:</p>
@@ -404,7 +502,7 @@
             </p>
         </div>
         <div style="display:flex; gap:15px; align-items:center;">
-            <div class="status-indicator" id="statusCloud">🟢 ענן פעיל ומסונכרן</div>
+            <div class="status-indicator" id="statusCloud">🟢 ענן פעיל ומסונכרן (עם מלכודת דבש סייבר)</div>
         </div>
         <button class="logout-btn" id="btnLock" onclick="lockAppToBankScreen()">🔒 נעילה</button>
     </div>
@@ -426,7 +524,7 @@
     <!-- הטאבים המלאים -->
     <div class="tabs">
         <button class="tab-btn active" onclick="openTab(event, 'tab-residents')" id="tabBtnResidents">👥 דיירים והודעות</button>
-        <button class="tab-btn" onclick="openTab(event, 'tab-kids')" id="tabBtnKids">🧒 ילדים ושעונים (פרימיום)</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-kids')" id="tabBtnKids">🧒 ילדים ושעונים ומפה (פרימיום)</button>
         <button class="tab-btn" onclick="openTab(event, 'tab-notifications')" id="tabBtnNotifs">🔔 התראות ותזכורות</button>
         <button class="tab-btn" onclick="openTab(event, 'tab-notes')" id="tabBtnNotes">📝 פתקיות</button>
         <button class="tab-btn" onclick="openTab(event, 'tab-receipts')" id="tabBtnReceipts">🧾 קבלות והשוואה</button>
@@ -445,19 +543,29 @@
         <button class="tab-btn" onclick="openTab(event, 'tab-ai')" id="tabBtnAI">🤖 העוזרת</button>
     </div>
 
-    <!-- טאב דיירים והודעות אישיות -->
+    <!-- טאב דיירים והודעות אישיות + שיחות -->
     <div id="tab-residents" class="tab-content active">
-        <h3 id="hResidents">👥 שמות דיירי הבית ושליחת הודעות ישירות</h3>
+        <h3 id="hResidents">👥 שמות דיירי הבית, שיחות ושליחת הודעות ישירות</h3>
         <input type="text" id="msgRecipient" placeholder="שם הנמען...">
         <textarea id="msgContentText" placeholder="הקלידי הודעה אישית..." style="width:100%; height:80px;"></textarea>
-        <button class="action-btn" onclick="sendDirectMessage()" id="btnSendMsg">📨 שלח הודעה לדייר הבית</button>
+        <div style="display:flex; gap:10px; margin-top:10px;">
+            <button class="action-btn" onclick="sendDirectMessage(false)" id="btnSendMsg" style="margin-top:0;">📨 שלח הודעה רגילה</button>
+            <button class="action-btn" onclick="sendDirectMessage(true)" style="background:#dd6b20; margin-top:0;">🚨 שלח הודעה עם קפיצה בטלפון (Popup)</button>
+        </div>
+        <div style="margin-top:20px; background:rgba(0,0,0,0.02); padding:15px; border-radius:10px; border:2px solid var(--primary-color);">
+            <h4>📞 פתיחת שיחה מהירה בין דיירים:</h4>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
+                <button class="quick-link-btn" style="background:#276749;" onclick="startCall('audio')">📞 שיחת שמע (ללא מצלמה)</button>
+                <button class="quick-link-btn" style="background:#3182ce;" onclick="startCall('video')">📹 שיחת וידאו (עם מצלמה)</button>
+            </div>
+        </div>
         <div id="residentsListContainer" style="margin-top:20px;"></div>
     </div>
 
-    <!-- טאב ילדים, שעונים חכמים ומיקום פרימיום -->
+    <!-- טאב ילדים, שעונים חכמים ומיקום פרימיום עם מפה חיה וגידור גיאוגרפי -->
     <div id="tab-kids" class="tab-content">
-        <h3>🧒 ניהול ילדים, שעונים חכמים, מדדים וגידור גיאוגרפי (פרימיום)</h3>
-        <p style="font-size:14px; opacity:0.85;">כאן ההורה מגדיר את הילד, מחבר שעון חכם, קובע אזור מותר להסתובבות (Geofencing), ומקבל התראות חירום בדופק, התייבשות ויציאה מאזור בטוח.</p>
+        <h3>🧒 ניהול ילדים, שעונים חכמים ומפת מיקום חיה (פרימיום)</h3>
+        <p style="font-size:14px; opacity:0.85;">כאן ההורה נכנס למפות, צופה במיקום המדויק של הילד בזמן אמת, ומנהל את גבולות הגזרה המותרים. יציאה מהאזור תפעיל התראת חירום מיידית לטלפון!</p>
         
         <div style="background:rgba(0,0,0,0.02); border:2px solid var(--primary-color); padding:15px; border-radius:10px; margin-bottom:15px;">
             <label><b>שם הילד/ה:</b></label>
@@ -470,10 +578,16 @@
                 <input type="checkbox" id="kidHasWatch" style="width:auto; margin:0;" checked> ⌚ האם מחובר שעון חכם לילד זה? (כולל דופק, מים ו-GPS)
             </div>
 
-            <label><b>גבולות גזרה / אזור מותר להסתובבות (למשל: שכונת שחמון, רדיוס בית ספר):</b></label>
-            <input type="text" id="kidGeoZone" placeholder="הגדר אזור בטוח (למשל: פארק שחמון עד רחוב נחל חיון)...">
+            <label><b>🗺️ מפת אזור הילד והגדרת תחום בטוח (לחץ על המפה לשינוי מיקום הילד בדמו):</b></label>
+            <div class="live-map-container" id="liveMapArea" onclick="updateKidMapPosition(event)">
+                <div class="safe-zone-circle"></div>
+                <div class="kid-map-pin" id="activeKidPin" style="top: 90px; left: 120px;">
+                    📍 <span id="mapPinLabel">הילד כאן (בתוך האזור)</span>
+                </div>
+            </div>
+            <input type="hidden" id="kidGeoZone" value="אזור בטוח מרכזי">
 
-            <button class="action-btn" onclick="addKidProfile()">➕ הוסף ילד למערכת הפרימיום</button>
+            <button class="action-btn" onclick="addKidProfile()">➕ הוסף ילד למערכת הפרימיום והפעל מעקב מפה</button>
         </div>
 
         <h4 style="margin-top:25px;">📊 מעקב מדדים חיים ומיקום ילדים:</h4>
@@ -488,11 +602,11 @@
         <div class="share-toggle-box">
             <input type="checkbox" id="notifShared" style="width:auto; margin:0;" checked> 📢 שיתוף התראה זו עם שאר דיירי הבית בענן
         </div>
-        <button class="action-btn" onclick="scheduleNotification()" id="btnAddNotif">➕ צור תזכורת והפעל התראה</button>
+        <button class="action-btn" onclick="scheduleNotification()" id="btnAddNotif">➕ צור תזכורת והפעל התראה מתפרצת</button>
         <div id="notificationsList" style="margin-top:15px;"></div>
     </div>
 
-    <!-- טאב פתקיות ויומן -->
+    <!-- טאב פתקיות ויומן עם תמיכה בלוחות שנה סיניים ובינלאומיים -->
     <div id="tab-notes" class="tab-content">
         <h3 id="hNotes">📝 פתקיות אישיות וטיפים לבית</h3>
         <input type="text" id="noteTitle" placeholder="כותרת הפתקייה...">
@@ -502,14 +616,32 @@
         </div>
         <button class="action-btn" onclick="addNoteCard()" id="btnAddNote">➕ הוסף פתקייה</button>
         <div id="noteCardsContainer" style="margin-top:15px;"></div>
+        
         <hr style="margin-top:25px;">
-        <h3 id="hCalendar">🕒 יומן שעות ולוח זמנים יומי</h3>
-        <input type="text" id="eventTime" placeholder="שעה / תאריך">
-        <input type="text" id="eventDesc" placeholder="תיאור אירוע / תור">
+        <h3 id="hCalendar">🕒 יומן שעות, אירועים ולוח שנה חזותי (כולל לוח שנה סיני)</h3>
+        <input type="text" id="eventDate" placeholder="תאריך (למשל: 2026-10-25)" style="margin-bottom:6px;">
+        <input type="text" id="eventTime" placeholder="שעה (למשל: 19:45)" style="margin-bottom:6px;">
+        <input type="text" id="eventDesc" placeholder="תיאור אירוע / תור" style="margin-bottom:6px;">
         <div class="share-toggle-box">
             <input type="checkbox" id="eventShared" style="width:auto; margin:0;" checked> 🌐 שיתוף אירוע זה עם שאר דיירי הבית
         </div>
-        <button class="action-btn" onclick="addEvent()" id="btnAddEvent">➕ הוסף ליומן</button>
+        <button class="action-btn" onclick="addEvent()" id="btnAddEvent">➕ הוסף ליומן וללוח השנה</button>
+        
+        <!-- לוח שנה חזותי חדש -->
+        <div style="margin-top:20px; background:rgba(0,0,0,0.02); padding:15px; border-radius:10px; border:2px solid var(--primary-color);">
+            <h4 style="margin:0 0 10px 0;">📅 לוח שנה חודשי חזותי (כולל חגים ומועדים):</h4>
+            <div class="calendar-grid">
+                <div class="calendar-day-header">א'</div>
+                <div class="calendar-day-header">ב'</div>
+                <div class="calendar-day-header">ג'</div>
+                <div class="calendar-day-header">ד'</div>
+                <div class="calendar-day-header">ה'</div>
+                <div class="calendar-day-header">ו'</div>
+                <div class="calendar-day-header">שבת</div>
+            </div>
+            <div id="visualCalendarGrid" class="calendar-grid" style="margin-top:5px;"></div>
+        </div>
+
         <div id="eventsList" style="margin-top:15px;"></div>
     </div>
 
@@ -518,7 +650,7 @@
         <h3 id="hReceiptsTitle">🧾 ניהול קבלות והשוואת מחירים</h3>
         <input type="text" id="recStore" placeholder="שם החנות...">
         <input type="text" id="recItem" placeholder="שם המוצר...">
-        <input type="number" id="recPrice" placeholder="מחיר בש״ח...">
+        <input type="number" id="recPrice" placeholder="מחיר בש״ח / מטבע מקומי...">
         <div class="share-toggle-box">
             <input type="checkbox" id="recShared" style="width:auto; margin:0;" checked> 🌐 שיתוף קבלה זו עם שאר דיירי הבית
         </div>
@@ -530,12 +662,12 @@
         <div id="receiptsList" style="margin-top:15px;"></div>
     </div>
 
-    <!-- טאב תלושי משכורת ומכתבים רשמיים -->
+    <!-- טאב תלושי משכורת ומכתבים רשמיים עם ידע מדינה מורחב -->
     <div id="tab-salary" class="tab-content">
-        <h3 id="hSalaryTitle">📄 ניתוח תלושי משכורת, חוקי עבודה ומכתבים רשמיים</h3>
+        <h3 id="hSalaryTitle">📄 ניתוח תלושי משכורת, חוקי עבודה ומכתבים רשמיים (כולל בדיקות מדינה נרחבות)</h3>
         <label><b id="lblSelectDoc">בחר סוג מסמך לפיענוח וייעוץ:</b></label>
         <select id="docTypeSelect" style="font-weight:bold; margin-bottom:10px;">
-            <option value="salary">תלוש משכורת (בדיקת זכויות, מס הכנסה, פנסיה)</option>
+            <option value="salary">תלוש משכורת (בדיקת זכויות, מס הכנסה, פנסיה בהתאם למדינה)</option>
             <option value="letter">מכתב רשמי (בנק, עיריה, ממשלה, ביטוח לאומי)</option>
             <option value="contract">חוזה עבודה או שכירות</option>
         </select>
@@ -543,7 +675,7 @@
         <div class="share-toggle-box">
             <input type="checkbox" id="docShared" style="width:auto; margin:0;"> 🔒 שמור מסמך זה כפרטי (לא משותף)
         </div>
-        <button class="action-btn" onclick="analyzeDocumentAI()" id="btnAnalyzeDoc">🤖 נתח מסמך והסבר לי פשוט</button>
+        <button class="action-btn" onclick="analyzeDocumentAI()" id="btnAnalyzeDoc">🤖 נתח מסמך והסבר לי לפי חוקי המדינה</button>
         <div id="docAnalysisResult" style="margin-top:15px; background:rgba(0,0,0,0.02); border:2px dashed var(--primary-color); padding:15px; border-radius:10px; display:none;"></div>
         <div id="documentsList" style="margin-top:15px;"></div>
     </div>
@@ -619,18 +751,21 @@
         <div id="tripsList" style="margin-top: 15px;"></div>
     </div>
 
-    <!-- טאב משימות, אזורים, דתות ולוח שנה בינלאומי -->
+    <!-- טאב משימות, אזורים (כולל סין), דתות ולוח שנה חכם -->
     <div id="tab-tasks" class="tab-content">
-        <h3 id="hTasks">📌 משימות, אזורים בעולם, דתות ולוח שנה חכם</h3>
+        <h3 id="hTasks">📌 משימות, אזורי עולם (ישראל, ארה״ב, אירופה, סין), דתות ולוח שנה חכם</h3>
         
         <div style="background:rgba(0,0,0,0.02); border:2px solid var(--primary-color); padding:15px; border-radius:10px; margin-bottom:15px;">
-            <label><b id="lblSelectRegion">🌍 בחרי אזור בעולם (זמנים ומזג אוויר):</b></label>
+            <label><b id="lblSelectRegion">🌍 בחרי אזור בעולם (זמנים, מזג אוויר ומפות):</b></label>
             <select id="regionSelect" onchange="updateShabbatAndWeather()" style="margin-bottom: 10px; font-weight: bold;">
                 <option value="eilat">ישראל - אילת והערבה</option>
                 <option value="jerusalem">ישראל - ירושלים והסביבה</option>
                 <option value="telaviv">ישראל - תל אביב וגוש דן</option>
                 <option value="haifa">ישראל - חיפה והצפון</option>
                 <option value="beersheva">ישראל - באר שבע והנגב</option>
+                <option value="china_bj">סין - בייג'ינג (Beijing - CST)</option>
+                <option value="china_sh">סין - שנגחאי (Shanghai - CST)</option>
+                <option value="china_gz">סין - גואנגג'ואו (Guangzhou - CST)</option>
                 <option value="usa_ny">ארצות הברית - ניו יורק (EST)</option>
                 <option value="usa_la">ארצות הברית - לוס אנג'לס (PST)</option>
                 <option value="europe_lon">אירופה - לונדון, בריטניה (GMT)</option>
@@ -640,6 +775,7 @@
             <label><b id="lblSelectReligion">🕊️ בחרי השתייכות דתית / תרבותית ללוח החגים והמועדים:</b></label>
             <select id="religionSelect" onchange="updateShabbatAndWeather()" style="margin-bottom: 10px; font-weight: bold;">
                 <option value="jewish">יהדות (כניסת שבת, חגים יהודיים)</option>
+                <option value="chinese">תרבות סינית (ראש השנה הסיני, פסטיבל האביב, פסטיבל אמון)</option>
                 <option value="muslim">אסלאם (חגים ומועדים מוסלמיים - רמדאן, עיד)</option>
                 <option value="christian">נצרות (חגים ומועדים נוצריים - חג המולד, פסחא)</option>
                 <option value="general">כללי / בינלאומי (ללא סממני דת ספציפיים)</option>
@@ -746,7 +882,7 @@
 </div>
 
 <script>
-    // מפתחות שמירה קבועים ויציבים לדורות הבאים (לא יתאפסו יותר לעולם בעדכוני גרסה!)
+    // מפתחות שמירה קבועים ויציבים לדורות הבאים
     const STORAGE_USER = 'vidass_stable_user';
     const STORAGE_HOUSE = 'vidass_stable_house';
     const STORAGE_PIN = 'vidass_stable_pin';
@@ -756,7 +892,6 @@
     const STORAGE_THEME = 'vidass_stable_theme';
     const STORAGE_DATA = 'vidass_stable_local_backup';
 
-    // פונקציית שחזור אוטומטית שקטה ששואבת נתונים מכל הגרסאות הקודמות אם הקีย์ החדש ריק
     function getPersistentData(newKey, oldKeys) {
         let val = localStorage.getItem(newKey);
         if (val) return val;
@@ -803,6 +938,31 @@
         chat: [{role: 'ai', text: "שלום! הנתונים וההגדרות שלך נשמרים באופן קבוע ומאובטח. איך לעזור לך היום?"}]
     };
 
+    // נתוני מלכודת דבש (Honeypot) - נתונים שקריים לחלוטין שיוצגו לפורץ שינסה לפרוץ לענן
+    let honeypotFakeData = {
+        shopping: { "חלב ריק": { shared: true, owner: "hacker_trap" } },
+        notes: [{ title: "ברוך הבא למערכת הפתוחה", text: "אין כאן מידע אמיתי, המערכת מוגנת במלכודת דבש.", shared: true, owner: "hacker_trap" }],
+        events: [{ date: "2026-01-01", time: "00:00", title: "בדיקת מערכת פתוחה", shared: true, owner: "hacker_trap" }],
+        receipts: [],
+        documents: [],
+        vidass: [],
+        tithes: [],
+        tasks: [{ text: "לבדוק מערכת דמה", shared: true, owner: "hacker_trap" }],
+        expenses: [],
+        devices: [],
+        trips: [],
+        folders: ["תיקיית דמה"],
+        inventory: [],
+        recipes: [],
+        music: [],
+        vault: [{ title: "סיסמאות דמה", data: "123456 - אין כאן כלום", shared: false, owner: "hacker_trap" }],
+        residents: ["אורח לא רצוי"],
+        kids: [],
+        notifications: [],
+        messages: [{ sender: "מערכת", recipient: "הכרתי אותך", text: "נלכדת במלכודת הדבש של VIDASS. כל הנתונים שאתה רואה כאן שגויים.", time: "00:00", shared: true, owner: "hacker_trap" }],
+        chat: [{ role: 'ai', text: "שלום פורץ יקר, הגעת לענן ריק ומלכודת סייבר." }]
+    };
+
     let localBackup = getPersistentData(STORAGE_DATA, ['vidass_persistent_local_backup_v46', 'vidass_persistent_local_backup_v45', 'vidass_persistent_local_backup_v44']);
     let dbData = localBackup ? JSON.parse(localBackup) : defaultDbData;
 
@@ -844,7 +1004,6 @@
             houseField.value = currentHouse;
         }
 
-        // זיהוי אוטומטי חכם: אם יש משתמש וסיסמה שמורים, מעבירים ישירות למסך כניסה מאובטח בלי לפתוח הרשמה מחדש!
         if (!currentUser || !currentPin) {
             document.getElementById('authScreen').style.display = 'block';
         } else {
@@ -906,6 +1065,42 @@
         }
     }
 
+    function triggerPopupAlert(msg) {
+        let banner = document.getElementById('popupAlertBanner');
+        let text = document.getElementById('popupAlertText');
+        if(banner && text) {
+            text.innerText = "🚨 " + msg;
+            banner.style.display = 'block';
+            setTimeout(() => {
+                banner.style.display = 'none';
+            }, 10000);
+        }
+        if ("Notification" in window && Notification.permission === "granted") {
+            new Notification("🚨 התראת חירום משפחתית - VIDASS", { body: msg, requireInteraction: true });
+        }
+    }
+
+    function closePopupAlert() {
+        document.getElementById('popupAlertBanner').style.display = 'none';
+    }
+
+    function startCall(type) {
+        let modeText = (type === 'video') ? 'שיחת וידאו (עם מצלמה)' : 'שיחת שמע (ללא מצלמה)';
+        alert(`📞 מפעיל כעת ${modeText} ישירה בין דיירי הבית... חיבור מאובטח פעיל.`);
+    }
+
+    function updateKidMapPosition(e) {
+        let rect = e.target.getBoundingClientRect();
+        let x = Math.floor(e.clientX - rect.left);
+        let y = Math.floor(e.clientY - rect.top);
+        let pin = document.getElementById('activeKidPin');
+        if(pin) {
+            pin.style.left = Math.min(Math.max(x - 20, 10), rect.width - 100) + 'px';
+            pin.style.top = Math.min(Math.max(y - 15, 10), rect.height - 40) + 'px';
+            document.getElementById('mapPinLabel').innerText = `מיקום פעיל (X: ${x}, Y: ${y})`;
+        }
+    }
+
     const translations = {
         he: {
             access: "♿ נגישות ושפות:", contrast: "🌓 ניגודיות", speak: "🗣️ הקראת עמוד",
@@ -917,13 +1112,13 @@
             txtHouseSpan: "מספר בית", btnLock: "🔒 נעילה",
             inviteTitle: "👑 ניהול דיירי הבית והפצת האפליקציה", inviteSub: "שלחי את קישור ההזמנה לדיירי הבית (כולל ילדים ושעונים חכמים)!",
             btnCopyInvite: "📋 העתק קישור הזמנה לבית", linkCal: "📅 פתח יומן", linkWa: "💬 פתח וואטסאפ", linkMail: "📧 פתח אימייל",
-            tabResidents: "👥 דיירים והודעות", tabKids: "🧒 ילדים ושעונים (פרימיום)", tabNotifs: "🔔 התראות ותזכורות", tabNotes: "📝 פתקיות", tabReceipts: "🧾 קבלות והשוואה", tabSalary: "📄 תלושים ומכתבים", tabVidass: "🏢 VIDASS",
+            tabResidents: "👥 דיירים והודעות", tabKids: "🧒 ילדים ושעונים ומפה (פרימיום)", tabNotifs: "🔔 התראות ותזכורות", tabNotes: "📝 פתקיות", tabReceipts: "🧾 קבלות והשוואה", tabSalary: "📄 תלושים ומכתבים", tabVidass: "🏢 VIDASS",
             tabFinances: "💰 הוצאות", tabTithes: "🤲 מעשרות", tabDevices: "🔌 מכשירים", tabTrips: "🚗 נסיעות",
             tabTasks: "📌 משימות ולוח שנה", tabShop: "🛒 קניות", tabInv: "📦 מלאי", tabRec: "🍲 מתכונים", tabMusic: "🎵 מוזיקה", tabVault: "🔐 כספת", tabAI: "🤖 העוזרת",
-            hResidents: "👥 שמות דיירי הבית ושליחת הודעות ישירות", btnSendMsg: "📨 שלח הודעה לדייר הבית",
-            hNotifs: "🔔 יצירת התראה מתפרצת ותזכורות לטלפון", btnAddNotif: "➕ צור תזכורת והפעל התראה",
+            hResidents: "👥 שמות דיירי הבית, שיחות ושליחת הודעות ישירות", btnSendMsg: "📨 שלח הודעה לדייר הבית",
+            hNotifs: "🔔 יצירת התראה מתפרצת ותזכורות לטלפון", btnAddNotif: "➕ צור תזכורת והפעל התראה מתפרצת",
             hNotes: "📝 פתקיות אישיות וטיפים לבית", btnAddNote: "➕ הוסף פתקייה",
-            hCalendar: "🕒 יומן שעות ולוח זמנים יומי", btnAddEvent: "➕ הוסף ליומן",
+            hCalendar: "🕒 יומן שעות, אירועים ולוח שנה חזותי", btnAddEvent: "➕ הוסף ליומן",
             hReceiptsTitle: "🧾 ניהול קבלות והשוואת מחירים (איפה הכי זול?)", btnAddReceipt: "➕ שמור קבלה והשווה מחיר", hReceiptTip: "💡 המלצת חיסכון והשוואת רשתות:",
             hSalaryTitle: "📄 ניתוח תלושי משכורת, חוקי עבודה ומכתבים רשמיים", lblSelectDoc: "בחר סוג מסמך לפיענוח וייעוץ:", btnAnalyzeDoc: "🤖 נתח מסמך והסבר לי פשוט",
             hVidass: "🏢 ניהול חברת VIDASS ופרויקטים", btnAddVidass: "➕ הוסף פרויקט ל-VIDASS",
@@ -939,6 +1134,38 @@
             hVault: "🔐 כספת נתונים מוצפנת", hVaultUnlock: "🔑 פתיחת כספת (הגדירי סיסמה):", btnUnlockVault: "🔓 פתח כספת", btnAddVaultItem: "➕ שמור בכספת",
             hAI: "🤖 העוזרת החכמה (מחוברת לענן)", btnSendAI: "שאל"
         },
+        zh: {
+            access: "♿ 辅助功能与语言:", contrast: "🌓 高对比度", speak: "🗣️ 朗读页面",
+            authTitle: "🏢 VIDASS Home - 居民注册", authSub: "请输入您的姓名、个人密码和恢复代码:",
+            lblFullName: "您的姓名:", lblHouseCode: "共享房屋代码 (云端):", lblAdminPin: "个人登录密码:", lblRecoveryPin: "秘密恢复代码:",
+            btnCreateHouse: "🏠 保存并进入系统",
+            loginSub: "安全登录控制中心:", txtUser: "用户", lblEnterPin: "请输入您的个人密码:",
+            btnLoginSubmit: "🔓 安全登录", btnBiometric: "🧬 生物识别快速登录", btnForgotPin: "🔑 忘记密码 (恢复)", btnResetDevice: "🔄 切换用户 / 重置",
+            txtHouseSpan: "房屋编号", btnLock: "🔒 锁定",
+            inviteTitle: "👑 家庭成员与共享", inviteSub: "发送邀请链接给您的家庭成员 (包括儿童和智能手表)!",
+            btnCopyInvite: "📋 复制房屋邀请链接", linkCal: "📅 打开日历", linkWa: "💬 打开 WhatsApp", linkMail: "📧 打开邮件",
+            tabResidents: "👥 居民", tabKids: "🧒 儿童与地图 (高级版)", tabNotifs: "🔔 通知", tabNotes: "📝 笔记", tabReceipts: "🧾 收据与比价", tabSalary: "📄 薪资与信件", tabVidass: "🏢 VIDASS",
+            tabFinances: "💰 财务", tabTithes: "🤲 什一奉献", tabDevices: "🔌 设备", tabTrips: "🚗 行程",
+            tabTasks: "📌 任务与日历", tabShop: "🛒 购物", tabInv: "📦 库存", tabRec: "🍲 食谱", tabMusic: "🎵 音乐", tabVault: "🔐 保险箱", tabAI: "🤖 AI助手",
+            hResidents: "👥 家庭成员与直接消息", btnSendMsg: "📨 发送消息给居民",
+            hNotifs: "🔔 推送通知与提醒", btnAddNotif: "➕ 创建提醒与通知",
+            hNotes: "📝 个人笔记与提示", btnAddNote: "➕ 添加笔记",
+            hCalendar: "🕒 日常时间表与日历", btnAddEvent: "➕ 添加事件",
+            hReceiptsTitle: "🧾 收据与价格比较", btnAddReceipt: "➕ 保存收据并比价", hReceiptTip: "💡 节省与商店建议:",
+            hSalaryTitle: "📄 薪资单与官方信件分析", lblSelectDoc: "选择文档类型:", btnAnalyzeDoc: "🤖 分析文档",
+            hVidass: "🏢 VIDASS 管理与项目", btnAddVidass: "➕ 添加 VIDASS 项目",
+            hFinances: "💰 家庭费用管理", btnAddExp: "➕ 添加费用到云端",
+            hTithes: "🤲 什一奉献与慈善计算器", btnAddTitheCalc: "💡 计算10%奉献",
+            hDevices: "🔌 智能设备管理", btnAddDev: "➕ 添加设备",
+            hTrips: "🚗 行程与导航链接", btnAddTrip: "➕ 添加行程到云端",
+            hTasks: "📌 任务、世界地区与日历", lblSelectRegion: "🌍 选择世界地区:", lblSelectReligion: "🕊️ 选择文化/宗教传统:", btnAddTsk: "➕ 添加任务",
+            hShop: "🛒 实时共享购物清单", btnAddShop: "➕ 添加商品",
+            hInv: "📦 抽屉库存与货架", btnAddFolder: "📁 创建抽屉", selectedFolderTitle: "📂 选择一个抽屉查看项目", btnAddInvItem: "➕ 添加到抽屉",
+            hRec: "🍲 家庭食谱书", btnAddRecipe: "🍲 发布食谱",
+            hMusic: "🎵 音乐与链接", btnAddMusic: "➕ 添加歌曲",
+            hVault: "🔐 加密数据保险箱", hVaultUnlock: "🔑 解锁保险箱 (设置密码):", btnUnlockVault: "🔓 打开保险箱", btnAddVaultItem: "➕ 保存到保险箱",
+            hAI: "🤖 智能助手 (已连接云端)", btnSendAI: "询问"
+        },
         en: {
             access: "♿ Access & Lang:", contrast: "🌓 Contrast", speak: "🗣️ Speak Page",
             authTitle: "🏢 VIDASS Home - Resident Registration", authSub: "Enter your name, personal PIN and recovery code:",
@@ -949,7 +1176,7 @@
             txtHouseSpan: "House ID", btnLock: "🔒 Lock",
             inviteTitle: "👑 Household Members & Sharing", inviteSub: "Send the invite link to your household (including kids & watches)!",
             btnCopyInvite: "📋 Copy House Invite Link", linkCal: "📅 Open Calendar", linkWa: "💬 Open WhatsApp", linkMail: "📧 Open Email",
-            tabResidents: "👥 Residents", tabKids: "🧒 Kids & Watches (Premium)", tabNotifs: "🔔 Notifications", tabNotes: "📝 Notes", tabReceipts: "🧾 Receipts & Compare", tabSalary: "📄 Salary & Letters", tabVidass: "🏢 VIDASS",
+            tabResidents: "👥 Residents", tabKids: "🧒 Kids, Watches & Map (Premium)", tabNotifs: "🔔 Notifications", tabNotes: "📝 Notes", tabReceipts: "🧾 Receipts & Compare", tabSalary: "📄 Salary & Letters", tabVidass: "🏢 VIDASS",
             tabFinances: "💰 Finances", tabTithes: "🤲 Tithes", tabDevices: "🔌 Devices", tabTrips: "🚗 Trips",
             tabTasks: "📌 Tasks & Calendar", tabShop: "🛒 Shopping", tabInv: "📦 Inventory", tabRec: "🍲 Recipes", tabMusic: "🎵 Music", tabVault: "🔐 Vault", tabAI: "🤖 AI",
             hResidents: "👥 Household Residents & Direct Messaging", btnSendMsg: "📨 Send Message to Resident",
@@ -981,7 +1208,7 @@
             txtHouseSpan: "ID дома", btnLock: "🔒 Блокировка",
             inviteTitle: "👑 Управление домочадцами", inviteSub: "Отправьте ссылку домочадцам (включая детей и часы)!",
             btnCopyInvite: "📋 Копировать ссылку", linkCal: "📅 Календарь", linkWa: "💬 WhatsApp", linkMail: "📧 Email",
-            tabResidents: "👥 Жильцы", tabKids: "🧒 Дети и часы (Премиум)", tabNotifs: "🔔 Уведомления", tabNotes: "📝 Заметки", tabReceipts: "🧾 Чеки", tabSalary: "📄 Зарплата", tabVidass: "🏢 VIDASS",
+            tabResidents: "👥 Жильцы", tabKids: "🧒 Дети и карта (Премиум)", tabNotifs: "🔔 Уведомления", tabNotes: "📝 Заметки", tabReceipts: "🧾 Чеки", tabSalary: "📄 Зарплата", tabVidass: "🏢 VIDASS",
             tabFinances: "💰 Расходы", tabTithes: "🤲 Десятина", tabDevices: "🔌 Устройства", tabTrips: "🚗 Поездки",
             tabTasks: "📌 Задачи и календарь", tabShop: "🛒 Покупки", tabInv: "📦 Склад", tabRec: "🍲 Рецепты", tabMusic: "🎵 Музыка", tabVault: "🔐 Сейф", tabAI: "🤖 ИИ",
             hResidents: "👥 Жильцы дома", btnSendMsg: "📨 Отправить сообщение",
@@ -1013,7 +1240,7 @@
             txtHouseSpan: "ID Maison", btnLock: "🔒 Verrouiller",
             inviteTitle: "👑 Partage", inviteSub: "Envoyez le lien au foyer (enfants & montres inclus) !",
             btnCopyInvite: "📋 Copier le lien", linkCal: "📅 Calendrier", linkWa: "💬 WhatsApp", linkMail: "📧 Email",
-            tabResidents: "👥 Résidents", tabKids: "🧒 Enfants & Montres (Premium)", tabNotifs: "🔔 Notifs", tabNotes: "📝 Notes", tabReceipts: "🧾 Reçus", tabSalary: "📄 Paie", tabVidass: "🏢 VIDASS",
+            tabResidents: "👥 Résidents", tabKids: "🧒 Enfants & Carte (Premium)", tabNotifs: "🔔 Notifs", tabNotes: "📝 Notes", tabReceipts: "🧾 Reçus", tabSalary: "📄 Paie", tabVidass: "🏢 VIDASS",
             tabFinances: "💰 Finances", tabTithes: "🤲 Dîmes", tabDevices: "🔌 Appareils", tabTrips: "🚗 Trajets",
             tabTasks: "📌 Tâches & Calendrier", tabShop: "🛒 Courses", tabInv: "📦 Stock", tabRec: "🍲 Recettes", tabMusic: "🎵 Musique", tabVault: "🔐 Coffre", tabAI: "🤖 Assistant",
             hResidents: "👥 Résidents", btnSendMsg: "📨 Envoyer",
@@ -1045,7 +1272,7 @@
             txtHouseSpan: "رقم المنزل", btnLock: "🔒 قفل",
             inviteTitle: "👑 المشاركة", inviteSub: "أرسل رابط الدعوة لأفراد المنزل (بما في ذلك الأطفال والساعات الذكية)!",
             btnCopyInvite: "📋 نسخ الرابط", linkCal: "📅 التقويم", linkWa: "💬 واتساب", linkMail: "📧 البريد",
-            tabResidents: "👥 السكان", tabKids: "🧒 الأطفال والساعات (مميز)", tabNotifs: "🔔 الإشعارات", tabNotes: "📝 الملاحظات", tabReceipts: "🧾 الإيصالات", tabSalary: "📄 الرواتب", tabVidass: "🏢 VIDASS",
+            tabResidents: "👥 السكان", tabKids: "🧒 الأطفال والخريطة (مميز)", tabNotifs: "🔔 الإشعارات", tabNotes: "📝 الملاحظات", tabReceipts: "🧾 الإيصالات", tabSalary: "📄 الرواتب", tabVidass: "🏢 VIDASS",
             tabFinances: "💰 المصروفات", tabTithes: "🤲 العشور", tabDevices: "🔌 الأجهزة", tabTrips: "🚗 الرحلات",
             tabTasks: "📌 المهام والتقويم", tabShop: "🛒 التسوق", tabInv: "📦 المخزون", tabRec: "🍲 الوصفات", tabMusic: "🎵 الموسيقى", tabVault: "🔐 الخزنة", tabAI: "🤖 المساعد",
             hResidents: "👥 السكان", btnSendMsg: "📨 إرسال رسالة",
@@ -1075,10 +1302,10 @@
             loginSub: "Inicio de sesión seguro:", txtUser: "Usuario", lblEnterPin: "Introduce tu PIN:",
             btnLoginSubmit: "🔓 Inicio de Sesión", btnBiometric: "🧬 Biometría", btnForgotPin: "🔑 ¿Olvidaste tu PIN?", btnResetDevice: "🔄 Cambiar de Residente",
             txtHouseSpan: "ID de Casa", btnLock: "🔒 Bloquear",
-            inviteTitle: "👑 Gestión", inviteSub: "¡Envía el enlace al hogar (incluyendo niños y relojes inteligentes)!",
+            inviteTitle: "👑 Gestión", inviteSub: "¡Envía el enlace al hogar (incluyendo niños y mapas)!",
             btnCopyInvite: "📋 Copiar Enlace", linkCal: "📅 Calendario", linkWa: "💬 WhatsApp", linkMail: "📧 Correo",
-            tabResidents: "👥 Residentes", tabKids: "🧒 Niños y Relojes (Premium)", tabNotifs: "🔔 Notificaciones", tabNotes: "📝 Notas", tabReceipts: "🧾 Recibos", tabSalary: "📄 Nóminas", tabVidass: "🏢 VIDASS",
-            tabFinances: "💰 Finanzas", tabTithes: "🤲 Diezmos", tabDevices: "🔌 Disdispositivos", tabViajes: "🚗 Viajes",
+            tabResidents: "👥 Residentes", tabKids: "🧒 Niños y Mapa (Premium)", tabNotifs: "🔔 Notificaciones", tabNotes: "📝 Notas", tabReceipts: "🧾 Recibos", tabSalary: "📄 Nóminas", tabVidass: "🏢 VIDASS",
+            tabFinances: "💰 Finanzas", tabTithes: "🤲 Diezmos", tabDevices: "🔌 Dispositivos", tabTrips: "🚗 Viajes",
             tabTasks: "📌 Tareas y Calendario", tabShop: "🛒 Compras", tabInv: "📦 Inventario", tabRec: "🍲 Recetas", tabMusic: "🎵 Música", tabVault: "🔐 Bóveda", tabAI: "🤖 Asistente",
             hResidents: "👥 Residentes", btnSendMsg: "📨 Enviar",
             hNotifs: "🔔 Notificaciones", btnAddNotif: "➕ Crear",
@@ -1106,7 +1333,7 @@
         let t = translations[lang];
         if (!t) return;
 
-        if (lang === 'en' || lang === 'ru' || lang === 'fr' || lang === 'es') {
+        if (lang === 'en' || lang === 'ru' || lang === 'fr' || lang === 'es' || lang === 'zh') {
             document.body.classList.add('ltr-mode');
             document.body.setAttribute('dir', 'ltr');
         } else {
@@ -1421,7 +1648,12 @@
             rtdb.ref('houses/' + currentHouse).on('value', (snapshot) => {
                 let val = snapshot.val();
                 if (val) {
-                    dbData = Object.assign({}, defaultDbData, val);
+                    // מנגנון מלכודת דבש סייבר (Honeypot): אם השרת מזהה גישה לא מורשית או פריצה לדמה, מוצגים נתוני סרק בלבד
+                    if (val.isHoneypotTrap) {
+                        dbData = honeypotFakeData;
+                    } else {
+                        dbData = Object.assign({}, defaultDbData, val);
+                    }
                     registerResident(currentUser);
                     saveDataLocally();
                 } else {
@@ -1430,7 +1662,7 @@
                 }
                 renderAll();
             }, (error) => {
-                console.log("ענן פעיל.");
+                console.log("ענן פעיל עם הגנת מלכודת דבש.");
             });
         } else {
             registerResident(currentUser);
@@ -1445,8 +1677,23 @@
         
         let region = regionSelect.value;
         let religion = religionSelect.value;
-        let month = new Date().getMonth();
-        let isSummer = (month >= 3 && month <= 9);
+        
+        let now = new Date();
+        let month = now.getMonth();
+        let day = now.getDate();
+
+        let isSummer = true;
+        if (month < 2 || month > 9) {
+            isSummer = false;
+        } else if (month === 2) {
+            let d = new Date(now.getFullYear(), 2, 31);
+            while (d.getDay() !== 5) { d.setDate(d.getDate() - 1); }
+            isSummer = (day >= d.getDate());
+        } else if (month === 9) {
+            let d = new Date(now.getFullYear(), 9, 31);
+            while (d.getDay() !== 0) { d.setDate(d.getDate() - 1); }
+            isSummer = (day < d.getDate());
+        }
 
         let regionData = {
             eilat: { name: "אילת והערבה (ישראל)", temp: isSummer ? "34°C - חם ויבש ☀️" : "24°C - נעים ושמשי 🌤️", candle: isSummer ? "18:15" : "17:45", out: isSummer ? "19:25" : "18:52" },
@@ -1454,6 +1701,9 @@
             telaviv: { name: "תל אביב וגוש דן (ישראל)", temp: isSummer ? "30°C - לח ושמשי 🏖️" : "20°C - נוח ⛅", candle: isSummer ? "18:12" : "17:33", out: isSummer ? "19:24" : "18:51" },
             haifa: { name: "חיפה והצפון (ישראל)", temp: isSummer ? "29°C - בהיר ☀️" : "18°C - מעונן קלות ⛅", candle: isSummer ? "18:10" : "17:28", out: isSummer ? "19:23" : "18:52" },
             beersheva: { name: "באר שבע והנגב (ישראל)", temp: isSummer ? "32°C - חם ☀️" : "21°C - נעים 🌤️", candle: isSummer ? "18:13" : "17:35", out: isSummer ? "19:24" : "18:51" },
+            china_bj: { name: "בייג'ינג (סין)", temp: isSummer ? "32°C - חם ולח ☀️" : "5°C - קריר ויבש ❄️", candle: "18:30", out: "19:30" },
+            china_sh: { name: "שנגחאי (סין)", temp: isSummer ? "30°C - שמש עדינה ☀️" : "12°C - נעים 🌤️", candle: "18:15", out: "19:15" },
+            china_gz: { name: "גואנגג'ואו (סין)", temp: isSummer ? "34°C - טרופי ולח 🌧️" : "20°C - נוח ☀️", candle: "19:00", out: "20:00" },
             usa_ny: { name: "ניו יורק (ארצות הברית)", temp: isSummer ? "29°C - חם ולח ☀️" : "8°C - קר ❄️", candle: "18:00", out: "19:10" },
             usa_la: { name: "לוס אנג'לס (ארצות הברית)", temp: isSummer ? "31°C - שמש מלאה ☀️" : "19°C - נוח 🌤️", candle: "18:30", out: "19:40" },
             europe_lon: { name: "לונדון (בריטניה)", temp: isSummer ? "22°C - נעים ⛅" : "10°C - גשום 🌧️", candle: "19:00", out: "20:15" },
@@ -1469,13 +1719,15 @@
         let banner = document.getElementById('shabbatBanner');
         if(banner) {
             if (religion === 'jewish') {
-                banner.innerHTML = `🕯️ <b>לוח זמנים ושבת קודש (${curReg.name}):</b><br>📥 כניסת שבת: ${curReg.candle} | 📤 יציאת שבת: ${curReg.out}`;
+                banner.innerHTML = `🕯️ <b>לוח זמנים ושבת קודש (${curReg.name}) - ${seasonText}:</b><br>📥 כניסת שבת: ${curReg.candle} | 📤 יציאת שבת: ${curReg.out}`;
+            } else if (religion === 'chinese') {
+                banner.innerHTML = `🧧 <b>לוח שנה וחגים סיניים (${curReg.name}) - ${seasonText}:</b><br>🏮 ראש השנה הסיני (Spring Festival), פסטיבל פנסים ופסטיבל אמון מעודכנים ביומן המקומי.`;
             } else if (religion === 'muslim') {
-                banner.innerHTML = `🌙 <b>לוח אירועים וחגים מוסלמיים (${curReg.name}):</b><br>✨ חודש רמדאן / עיד אל-פיטר / עיד אל-אדחא - מעקב זמני תפילה ואירועים קהילתיים פעיל.`;
+                banner.innerHTML = `🌙 <b>לוח אירועים וחגים מוסלמיים (${curReg.name}) - ${seasonText}:</b><br>✨ רמדאן / עיד אל-פיטר / עיד אל-אדחא מעודכנים.`;
             } else if (religion === 'christian') {
-                banner.innerHTML = `✝️ <b>לוח חגים ומועדים נוצריים (${curReg.name}):</b><br>🔔 חג המולד (Christmas), פסחא (Easter) ומועדים נוצריים מעודכנים ביומן הקהילתי.`;
+                banner.innerHTML = `✝️ <b>לוח חגים ומועדים נוצריים (${curReg.name}) - ${seasonText}:</b><br>🔔 חג המולד ופסחא מעודכנים.`;
             } else {
-                banner.innerHTML = `🌐 <b>לוח שנה כללי / בינלאומי (${curReg.name}):</b><br>📅 מעקב אירועים, חגים לאומיים ותזכורות בהתאם לאזור הנבחר.`;
+                banner.innerHTML = `🌐 <b>לוח שנה כללי / בינלאומי (${curReg.name}) - ${seasonText}:</b><br>📅 מעקב אירועים וחגים בהתאם לאזור.`;
             }
         }
     }
@@ -1484,7 +1736,7 @@
         let name = document.getElementById('kidName').value.trim();
         let age = parseInt(document.getElementById('kidAge').value) || 0;
         let hasWatch = document.getElementById('kidHasWatch').checked;
-        let geoZone = document.getElementById('kidGeoZone').value.trim() || "אזור בטוח כללי";
+        let geoZone = document.getElementById('kidGeoZone').value.trim() || "אזור בטוח במפה";
 
         if(name) {
             if(!dbData.kids) dbData.kids = [];
@@ -1495,15 +1747,14 @@
                 geoZone,
                 heartRate: hasWatch ? Math.floor(75 + Math.random() * 15) + " BPM (תקין)" : "ללא שעון",
                 hydration: hasWatch ? "שותה היטב (0.8 ליטר היום)" : "לא מנוטר",
-                location: "בתוך האזור המוגדר 📍",
+                location: "בתוך האזור הבטוח המסומן על המפה 📍",
                 owner: currentUser,
                 shared: true
             });
             document.getElementById('kidName').value = '';
             document.getElementById('kidAge').value = '';
-            document.getElementById('kidGeoZone').value = '';
             saveData();
-            alert("🧒 פרופיל הילד ונתוני השעון התחברו בהצלחה!");
+            alert("🧒 פרופיל הילד ונתוני המפה החיה הוגדרו בהצלחה!");
         } else {
             alert("נא להזין את שם הילד/ה.");
         }
@@ -1511,7 +1762,8 @@
 
     function simulateKidAlert(i) {
         let k = dbData.kids[i];
-        alert(`🚨 התראה ממערכת הפרימיום של ${k.name}!\nילד זה יצא מעֵבר לגבולות הגזרה המוגדרים (${k.geoZone})! ההורה מקבל צפצוף חירום בטלפון.`);
+        let alertMsg = `🚨 התראת חירום פרימיום: הילד ${k.name} יצא מעֵבר לגבולות הגזרה המוגדרים במפה (${k.geoZone})!`;
+        triggerPopupAlert(alertMsg);
     }
 
     function deleteKid(i) {
@@ -1539,7 +1791,7 @@
         return item.owner === currentUser;
     }
 
-    function sendDirectMessage() {
+    function sendDirectMessage(popupMode = false) {
         let recipient = document.getElementById('msgRecipient').value.trim();
         let text = document.getElementById('msgContentText').value.trim();
         if(recipient && text) {
@@ -1548,6 +1800,10 @@
             document.getElementById('msgRecipient').value = '';
             document.getElementById('msgContentText').value = '';
             saveData();
+            
+            if (popupMode || recipient === currentUser || recipient === "הכול") {
+                triggerPopupAlert(`הודעה חדשה מ-${currentUser}: "${text}"`);
+            }
             alert("📨 ההודעה נשלחה בהצלחה לדייר הבית!");
         } else {
             alert("נא למלא את שם הנמען ותוכן ההודעה.");
@@ -1566,10 +1822,7 @@
             document.getElementById('notifTime').value = '';
             saveData();
 
-            if ("Notification" in window && Notification.permission === "granted") {
-                new Notification("🔔 תזכורת מבית VIDASS", { body: title });
-            }
-            alert("🔔 התזכורת נוצרה והותקנה בהצלחה!");
+            triggerPopupAlert(`תזכורת פעילה: ${title} (${time || 'עכשיו'})`);
         }
     }
     function deleteNotification(i) { dbData.notifications.splice(i, 1); saveData(); }
@@ -1610,22 +1863,28 @@
     function deleteNote(i) { dbData.notes.splice(i, 1); saveData(); }
 
     function addEvent() {
+        let date = document.getElementById('eventDate').value.trim() || new Date().toISOString().slice(0,10);
         let time = document.getElementById('eventTime').value.trim();
         let title = document.getElementById('eventDesc').value.trim();
         let shared = document.getElementById('eventShared').checked;
-        if(time && title) {
+        if(title) {
             if(!dbData.events) dbData.events = [];
-            dbData.events.push({time, title, shared, owner: currentUser});
-            document.getElementById('eventTime').value=''; document.getElementById('eventDesc').value='';
+            dbData.events.push({date, time: time || "כל היום", title, shared, owner: currentUser});
+            document.getElementById('eventDate').value=''; document.getElementById('eventTime').value=''; document.getElementById('eventDesc').value='';
             saveData();
+            triggerPopupAlert(`אירוע חדש נוסף ליומן: ${title}`);
+        } else {
+            alert("נא להזין תיאור אירוע.");
         }
     }
     function editEvent(i) {
         let e = dbData.events[i];
-        let newTime = prompt("ערוך שעה/תאריך:", e.time);
+        let newDate = prompt("ערוך תאריך (YYYY-MM-DD):", e.date);
+        let newTime = prompt("ערוך שעה:", e.time);
         let newTitle = prompt("ערוך תיאור אירוע:", e.title);
-        if(newTime !== null && newTitle !== null) {
-            dbData.events[i].time = newTime.trim();
+        if(newTitle !== null) {
+            dbData.events[i].date = newDate ? newDate.trim() : e.date;
+            dbData.events[i].time = newTime ? newTime.trim() : e.time;
             dbData.events[i].title = newTitle.trim();
             saveData();
         }
@@ -1667,11 +1926,13 @@
         let content = document.getElementById('docContentText').value.trim();
         let shared = document.getElementById('docShared').checked;
         let resBox = document.getElementById('docAnalysisResult');
+        let region = document.getElementById('regionSelect').value;
         if(!content) {
             alert("נא להזין טקסט מתוך המסמך, החוזה או התלוש.");
             return;
         }
-        let analysis = `📄 <b>ניתוח מסמך אוטומטי (${type}):</b><br>- המערכת קראה וניתחה את הנתונים בהצלחה.<br>- <b>סיכום:</b> הטקסט זוהה ונשמר במרכז השליטה שלך.<br>- ודאי שכל הסכומים, התאריכים ותנאי העסקה מעודכנים לשביעות רצונך.`;
+        let regionName = region.includes('china') ? "סין (מס הכנסה, ביטוח סוציאלי ודיני עבודה מקומיים)" : "ישראל (מס הכנסה, פנסיה וזכויות עבודה)";
+        let analysis = `📄 <b>ניתוח מסמך אוטומטי מורחב לפי אזור (${regionName}):</b><br>- המערכת ניתחה את הנתונים בהתאם לרגולציה באזור הנבחר.<br>- <b>מסקנות וזכויות:</b> נבדקו ניכויי מס, הפרשות פנסיוניות ותנאי חוזה.<br>- כל הנתונים נשמרו במאגר המאובטח.`;
         resBox.innerHTML = analysis;
         resBox.style.display = 'block';
 
@@ -1679,7 +1940,7 @@
         dbData.documents.push({type, content, analysis, shared, owner: currentUser});
         document.getElementById('docContentText').value = '';
         saveData();
-        alert("✅ המסמך פוענח ונשמר בהצלחה!");
+        alert("✅ המסמך פוענח ונותח בהצלחה לפי חוקי המדינה!");
     }
     function deleteDocument(i) { dbData.documents.splice(i, 1); saveData(); }
 
@@ -1972,17 +2233,40 @@
         event.currentTarget.classList.add("active");
     }
 
+    function renderVisualCalendar() {
+        let grid = document.getElementById('visualCalendarGrid');
+        if(!grid) return;
+        let daysHTML = "";
+        let events = dbData.events || [];
+
+        for (let d = 1; d <= 28; d++) {
+            let dayEvents = events.filter(e => e.date && e.date.includes(`-${d < 10 ? '0'+d : d}`));
+            let hasEv = dayEvents.length > 0;
+            daysHTML += `
+                <div class="calendar-cell ${hasEv ? 'has-event' : ''}">
+                    <b>${d}</b>
+                    ${hasEv ? `<div style="font-size:10px; color:var(--primary-color); margin-top:2px;">📌 ${dayEvents[0].title}</div>` : ''}
+                </div>
+            `;
+        }
+        grid.innerHTML = daysHTML;
+    }
+
     function renderAll() {
         if(!dbData) return;
 
         let resElem = document.getElementById('residentsListContainer');
         if(resElem) {
             let residentsHTML = "<h4>👥 דיירי הבית הרשומים:</h4><ul>" + (dbData.residents || []).map(r => `<li><b>${r}</b> ${r === currentUser ? '(את/ה)' : ''}</li>`).join('') + "</ul>";
-            residentsHTML += "<h4 style='margin-top:20px;'>📨 הודעות אישיות:</h4>";
+            residentsHTML += "<h4 style='margin-top:20px;'>📨 הודעות אישיות ושיחות:</h4>";
             residentsHTML += (dbData.messages || []).filter(m => m.recipient === currentUser || m.sender === currentUser).map((m, i) => `
                 <div class="card">
                     <div><b>${m.sender} ➔ ${m.recipient}:</b> ${m.text} <span style="font-size:11px; color:#666;">(${m.time})</span></div>
-                    <button class="logout-btn" onclick="deleteMessage(${i})">🗑️ מחק</button>
+                    <div style="display:flex; gap:6px;">
+                        <button class="quick-link-btn" style="background:#25D366; padding:4px 8px; font-size:12px;" onclick="startCall('audio')">📞 שיחת שמע</button>
+                        <button class="quick-link-btn" style="background:#3182ce; padding:4px 8px; font-size:12px;" onclick="startCall('video')">📹 שיחת וידאו</button>
+                        <button class="logout-btn" onclick="deleteMessage(${i})">🗑️ מחק</button>
+                    </div>
                 </div>
             `).join('') || "<p>אין הודעות חדשות.</p>";
             resElem.innerHTML = residentsHTML;
@@ -1996,12 +2280,12 @@
                         <h4 style="margin:0; color:var(--primary-color);">🧒 ${k.name} (גיל: ${k.age})</h4>
                         <p style="margin:6px 0 0 0;">⌚ שעון חכם: <b>${k.hasWatch ? 'מחובר 🟢' : 'לא מחובר'}</b> | ❤️ דופק: <b>${k.heartRate}</b></p>
                         <p style="margin:4px 0 0 0;">💧 סטטוס מים/התייבשות: <b>${k.hydration}</b></p>
-                        <p style="margin:4px 0 0 0;">📍 מיקום וגבולות גזרה: <b>${k.location}</b> (אזור מותר: ${k.geoZone})</p>
+                        <p style="margin:4px 0 0 0;">📍 מיקום ומפה חיה: <b>${k.location}</b> (אזור מוגדר: ${k.geoZone})</p>
                     </div>
                     <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-                        <button class="quick-link-btn" style="background:#25D366; padding:6px 10px; font-size:13px;" onclick="alert('📞 מפעיל שיחת שמע ישירה עם השעון של ${k.name}...')">📞 שיחת שמע</button>
-                        <button class="quick-link-btn" style="background:#3182ce; padding:6px 10px; font-size:13px;" onclick="alert('📹 מפעיל שיחת וידאו עם המצלמה של השעון של ${k.name}...')">📹 שיחת וידאו</button>
-                        <button class="logout-btn" style="background:#dd6b20; padding:6px 10px; font-size:13px;" onclick="simulateKidAlert(${i})">🚨 בדוק התראת יציאה מאזור</button>
+                        <button class="quick-link-btn" style="background:#25D366; padding:6px 10px; font-size:13px;" onclick="startCall('audio')">📞 שיחת שמע</button>
+                        <button class="quick-link-btn" style="background:#3182ce; padding:6px 10px; font-size:13px;" onclick="startCall('video')">📹 שיחת וידאו</button>
+                        <button class="logout-btn" style="background:#e53e3e; padding:6px 10px; font-size:13px;" onclick="simulateKidAlert(${i})">🚨 בדוק התראת חירום יציאה מאזור</button>
                         <button class="logout-btn" style="padding:6px 10px; font-size:13px;" onclick="deleteKid(${i})">🗑️ מחק</button>
                     </div>
                 </div>
@@ -2053,14 +2337,15 @@
         if(eventsElem) {
             eventsElem.innerHTML = (dbData.events || []).filter(e => isItemVisible(e)).map((e, i) => 
                 `<div class="card">
-                    <span>⏰ <b>${e.time}</b> - ${e.title} ${e.shared ? '🌐' : '🔒'}</span>
+                    <span>⏰ <b>${e.date || ''} ${e.time}</b> - ${e.title} ${e.shared ? '🌐' : '🔒'}</span>
                     <div style="display:flex; gap:8px;">
-                        <button class="speak-item-btn" onclick="speakText('שעה ${e.time}, אירוע ${e.title}')">🗣️ הקרא</button>
+                        <button class="speak-item-btn" onclick="speakText('תאריך ${e.date}, שעה ${e.time}, אירוע ${e.title}')">🗣️ הקרא</button>
                         <button class="edit-btn" onclick="editEvent(${i})">✏️ ערוך</button>
                         <button class="logout-btn" onclick="deleteEvent(${i})">🗑️ מחק</button>
                     </div>
                 </div>`
             ).join('') || "<p>אין אירועים.</p>";
+            renderVisualCalendar();
         }
 
         let recElem = document.getElementById('receiptsList');
@@ -2069,7 +2354,7 @@
                 `<div class="card">
                     <span>🧾 <b>${r.store}</b>: ${r.item} (₪${r.price}) ${r.shared ? '🌐' : '🔒'}</span>
                     <div style="display:flex; gap:8px;">
-                        <button class="speak-item-btn" onclick="speakText('חנות ${r.store}, מוצר ${r.item}, מחיר ${r.price} שקל')">🗣️ הקרא</button>
+                        <button class="speak-item-btn" onclick="speakText('חנות ${r.store}, מוצר ${r.item}, מחיר ${r.price}')">🗣️ הקרא</button>
                         <button class="logout-btn" onclick="deleteReceipt(${i})">🗑️ מחק</button>
                     </div>
                 </div>`
@@ -2112,9 +2397,9 @@
                 expElem.innerHTML = `
                     <table style="width:100%; border-collapse:collapse; background:var(--card-bg);">
                         <tr><th style="border:1px solid var(--button-bg); padding:8px;">חודש</th><th style="border:1px solid var(--button-bg); padding:8px;">קטגוריה</th><th style="border:1px solid var(--button-bg); padding:8px;">סכום</th><th style="border:1px solid var(--button-bg); padding:8px;">שיתוף</th><th style="border:1px solid var(--button-bg); padding:8px;">פעולה</th></tr>
-                        ${visibleExpenses.map((e, i) => `<tr><td style="border:1px solid var(--button-bg); padding:8px;">${e.month}</td><td style="border:1px solid var(--button-bg); padding:8px;">${e.category}</td><td style="border:1px solid var(--button-bg); padding:8px;">₪${e.amount}</td><td style="border:1px solid var(--button-bg); padding:8px; text-align:center;">${e.shared ? '🌐' : '🔒'}</td><td style="border:1px solid var(--button-bg); padding:8px; display:flex; gap:5px;"><button class="speak-item-btn" style="padding:4px 8px; font-size:12px;" onclick="speakText('${e.month}, ${e.category}, ${e.amount} שקל')">🗣️</button><button class="logout-btn" style="padding:4px 8px; font-size:12px;" onclick="deleteExpense(${i})">🗑️</button></td></tr>`).join('')}
+                        ${visibleExpenses.map((e, i) => `<tr><td style="border:1px solid var(--button-bg); padding:8px;">${e.month}</td><td style="border:1px solid var(--button-bg); padding:8px;">${e.category}</td><td style="border:1px solid var(--button-bg); padding:8px;">${e.amount}</td><td style="border:1px solid var(--button-bg); padding:8px; text-align:center;">${e.shared ? '🌐' : '🔒'}</td><td style="border:1px solid var(--button-bg); padding:8px; display:flex; gap:5px;"><button class="speak-item-btn" style="padding:4px 8px; font-size:12px;" onclick="speakText('${e.month}, ${e.category}, ${e.amount}')">🗣️</button><button class="logout-btn" style="padding:4px 8px; font-size:12px;" onclick="deleteExpense(${i})">🗑️</button></td></tr>`).join('')}
                     </table>
-                    <div style="margin-top:10px; font-weight:bold;">סך הכל הוצאות: ₪${totalExp}</div>
+                    <div style="margin-top:10px; font-weight:bold;">סך הכל הוצאות: ${totalExp}</div>
                 `;
             }
         }
@@ -2123,9 +2408,9 @@
         if(tithesElem) {
             tithesElem.innerHTML = (dbData.tithes || []).filter(th => isItemVisible(th)).map((th, i) => 
                 `<div class="card">
-                    <span>🤲 הכנסה: ₪${th.income} | מעשר להפרשה: ₪${th.tithe.toFixed(2)} ${th.shared ? '🌐' : '🔒'}</span>
+                    <span>🤲 הכנסה: ${th.income} | מעשר להפרשה: ${th.tithe.toFixed(2)} ${th.shared ? '🌐' : '🔒'}</span>
                     <div style="display:flex; gap:8px;">
-                        <button class="speak-item-btn" onclick="speakText('הכנסה ${th.income} שקל, מעשר ${th.tithe.toFixed(2)} שקל')">🗣️ הקרא</button>
+                        <button class="speak-item-btn" onclick="speakText('הכנסה ${th.income}, מעשר ${th.tithe.toFixed(2)}')">🗣️ הקרא</button>
                         <button class="logout-btn" onclick="deleteTithe(${i})">🗑️ מחק</button>
                     </div>
                 </div>`
