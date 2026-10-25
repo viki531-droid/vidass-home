@@ -746,17 +746,17 @@
 </div>
 
 <script>
-    // מפתחות שמירה עם גיבוי אוטומטי מהגרסאות הקודמות (v44 / v45)
-    const STORAGE_USER = 'vidass_persistent_user_v46';
-    const STORAGE_HOUSE = 'vidass_persistent_house_v46';
-    const STORAGE_PIN = 'vidass_persistent_pin_v46';
-    const STORAGE_RECOVERY = 'vidass_persistent_rec_v46';
-    const STORAGE_VAULT_PIN = 'vidass_persistent_vault_v46';
-    const STORAGE_LANG = 'vidass_persistent_lang_v46';
-    const STORAGE_THEME = 'vidass_persistent_theme_v46';
-    const STORAGE_DATA = 'vidass_persistent_local_backup_v46';
+    // מפתחות שמירה קבועים ויציבים לדורות הבאים (לא יתאפסו יותר לעולם בעדכוני גרסה!)
+    const STORAGE_USER = 'vidass_stable_user';
+    const STORAGE_HOUSE = 'vidass_stable_house';
+    const STORAGE_PIN = 'vidass_stable_pin';
+    const STORAGE_RECOVERY = 'vidass_stable_rec';
+    const STORAGE_VAULT_PIN = 'vidass_stable_vault';
+    const STORAGE_LANG = 'vidass_stable_lang';
+    const STORAGE_THEME = 'vidass_stable_theme';
+    const STORAGE_DATA = 'vidass_stable_local_backup';
 
-    // פונקציית שחזור נתונים מקודמים אם הקีย์ החדש ריק
+    // פונקציית שחזור אוטומטית שקטה ששואבת נתונים מכל הגרסאות הקודמות אם הקีย์ החדש ריק
     function getPersistentData(newKey, oldKeys) {
         let val = localStorage.getItem(newKey);
         if (val) return val;
@@ -770,10 +770,10 @@
         return null;
     }
 
-    let currentUser = getPersistentData(STORAGE_USER, ['vidass_persistent_user_v45', 'vidass_persistent_user_v44']);
-    let currentHouse = getPersistentData(STORAGE_HOUSE, ['vidass_persistent_house_v45', 'vidass_persistent_house_v44']);
-    let currentPin = getPersistentData(STORAGE_PIN, ['vidass_persistent_pin_v45', 'vidass_persistent_pin_v44']);
-    let currentRecovery = getPersistentData(STORAGE_RECOVERY, ['vidass_persistent_rec_v45', 'vidass_persistent_rec_v44']);
+    let currentUser = getPersistentData(STORAGE_USER, ['vidass_persistent_user_v46', 'vidass_persistent_user_v45', 'vidass_persistent_user_v44']);
+    let currentHouse = getPersistentData(STORAGE_HOUSE, ['vidass_persistent_house_v46', 'vidass_persistent_house_v45', 'vidass_persistent_house_v44']);
+    let currentPin = getPersistentData(STORAGE_PIN, ['vidass_persistent_pin_v46', 'vidass_persistent_pin_v45', 'vidass_persistent_pin_v44']);
+    let currentRecovery = getPersistentData(STORAGE_RECOVERY, ['vidass_persistent_rec_v46', 'vidass_persistent_rec_v45', 'vidass_persistent_rec_v44']);
     
     let isVaultUnlocked = false;
     let isFinancesUnlocked = false;
@@ -803,7 +803,7 @@
         chat: [{role: 'ai', text: "שלום! הנתונים וההגדרות שלך נשמרים באופן קבוע ומאובטח. איך לעזור לך היום?"}]
     };
 
-    let localBackup = getPersistentData(STORAGE_DATA, ['vidass_persistent_local_backup_v45', 'vidass_persistent_local_backup_v44']);
+    let localBackup = getPersistentData(STORAGE_DATA, ['vidass_persistent_local_backup_v46', 'vidass_persistent_local_backup_v45', 'vidass_persistent_local_backup_v44']);
     let dbData = localBackup ? JSON.parse(localBackup) : defaultDbData;
 
     let rtdb = null;
@@ -844,6 +844,7 @@
             houseField.value = currentHouse;
         }
 
+        // זיהוי אוטומטי חכם: אם יש משתמש וסיסמה שמורים, מעבירים ישירות למסך כניסה מאובטח בלי לפתוח הרשמה מחדש!
         if (!currentUser || !currentPin) {
             document.getElementById('authScreen').style.display = 'block';
         } else {
@@ -1077,7 +1078,7 @@
             inviteTitle: "👑 Gestión", inviteSub: "¡Envía el enlace al hogar (incluyendo niños y relojes inteligentes)!",
             btnCopyInvite: "📋 Copiar Enlace", linkCal: "📅 Calendario", linkWa: "💬 WhatsApp", linkMail: "📧 Correo",
             tabResidents: "👥 Residentes", tabKids: "🧒 Niños y Relojes (Premium)", tabNotifs: "🔔 Notificaciones", tabNotes: "📝 Notas", tabReceipts: "🧾 Recibos", tabSalary: "📄 Nóminas", tabVidass: "🏢 VIDASS",
-            tabFinances: "💰 Finanzas", tabTithes: "🤲 Diezmos", tabDevices: "🔌 Dispositivos", tabViajes: "🚗 Viajes",
+            tabFinances: "💰 Finanzas", tabTithes: "🤲 Diezmos", tabDevices: "🔌 Disdispositivos", tabViajes: "🚗 Viajes",
             tabTasks: "📌 Tareas y Calendario", tabShop: "🛒 Compras", tabInv: "📦 Inventario", tabRec: "🍲 Recetas", tabMusic: "🎵 Música", tabVault: "🔐 Bóveda", tabAI: "🤖 Asistente",
             hResidents: "👥 Residentes", btnSendMsg: "📨 Enviar",
             hNotifs: "🔔 Notificaciones", btnAddNotif: "➕ Crear",
@@ -1903,7 +1904,7 @@
 
     function unlockVault() {
         let pinInput = document.getElementById('vaultPasswordInput').value.trim();
-        let savedVaultPin = getPersistentData(STORAGE_VAULT_PIN, ['vidass_persistent_vault_v45', 'vidass_persistent_vault_v44']) || currentPin;
+        let savedVaultPin = getPersistentData(STORAGE_VAULT_PIN, ['vidass_stable_vault', 'vidass_persistent_vault_v46', 'vidass_persistent_vault_v45', 'vidass_persistent_vault_v44']) || currentPin;
         if (pinInput === savedVaultPin) {
             isVaultUnlocked = true;
             document.getElementById('vaultUnlockSection').style.display = 'none';
