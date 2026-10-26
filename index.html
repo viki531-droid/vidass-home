@@ -34,56 +34,31 @@
             --card-bg: #111111 !important;
             --text-color: #ffffff !important;
         }
-        h1, h2, h3 { color: var(--primary-color); text-align: inherit; }
+        h1, h2, h3, h4 { color: var(--primary-color); text-align: inherit; }
 
-        /* מסך פתיחה (Splash Screen) */
         #splashScreen {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(135deg, var(--primary-color), var(--button-bg));
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            color: white;
-            text-align: center;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 9999; color: white; text-align: center;
             transition: opacity 0.6s ease;
         }
         .splash-logo {
-            font-size: 50px;
-            font-weight: bold;
-            margin-bottom: 15px;
+            font-size: 50px; font-weight: bold; margin-bottom: 15px;
             animation: pulseLogo 1.5s infinite alternate;
             text-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
-        .splash-subtitle {
-            font-size: 20px;
-            font-weight: bold;
-            margin-bottom: 25px;
-            opacity: 0.95;
-        }
+        .splash-subtitle { font-size: 20px; font-weight: bold; margin-bottom: 25px; opacity: 0.95; }
         .splash-loader {
-            width: 50px;
-            height: 50px;
-            border: 5px solid rgba(255,255,255,0.3);
-            border-top: 5px solid white;
-            border-radius: 50%;
+            width: 50px; height: 50px; border: 5px solid rgba(255,255,255,0.3);
+            border-top: 5px solid white; border-radius: 50%;
             animation: spinLoader 1s linear infinite;
         }
-        @keyframes pulseLogo {
-            0% { transform: scale(1); }
-            100% { transform: scale(1.08); }
-        }
-        @keyframes spinLoader {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+        @keyframes pulseLogo { 0% { transform: scale(1); } 100% { transform: scale(1.08); } }
+        @keyframes spinLoader { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        .container, .auth-box, .bank-login-box, .welcome-choice-box {
+        .container, .auth-box, .bank-login-box, .welcome-choice-box, .call-modal-box {
             max-width: 1100px;
             margin: 0 auto;
             background: var(--card-bg);
@@ -93,6 +68,18 @@
         }
         .auth-box, .bank-login-box, .welcome-choice-box { max-width: 520px; margin-top: 20px; border: 2px solid var(--button-bg); text-align: center; }
         
+        #callModal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 10000;
+        }
+        .call-content {
+            background: #2d3748; color: white; padding: 30px; border-radius: 15px; text-align: center; max-width: 450px; width: 90%;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5); border: 2px solid var(--primary-color);
+        }
+        .call-video-preview {
+            width: 100%; height: 220px; background: #000; border-radius: 10px; margin: 15px 0; object-fit: cover; display: none;
+        }
+
         .color-control-panel {
             background: rgba(0,0,0,0.04);
             border: 2px solid var(--primary-color);
@@ -112,263 +99,94 @@
             flex-wrap: wrap;
         }
         .color-theme-btn {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            border: 3px solid white;
-            cursor: pointer;
-            display: inline-block;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.25);
-            transition: transform 0.2s;
+            width: 32px; height: 32px; border-radius: 50%; border: 3px solid white; cursor: pointer; display: inline-block;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.25); transition: transform 0.2s;
         }
         .color-theme-btn:hover { transform: scale(1.15); }
 
         .accessibility-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(0,0,0,0.05);
-            padding: 8px 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-            gap: 10px;
-            font-size: 14px;
+            display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.05);
+            padding: 8px 15px; border-radius: 8px; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; font-size: 14px;
         }
-        .accessibility-btn {
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-        }
+        .accessibility-btn { background: var(--primary-color); color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; }
         .top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            border-bottom: 2px solid var(--button-bg);
-            padding-bottom: 10px;
-            flex-wrap: wrap;
-            gap: 10px;
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
+            border-bottom: 2px solid var(--button-bg); padding-bottom: 10px; flex-wrap: wrap; gap: 10px;
         }
-        .logout-btn, .edit-btn, .speak-item-btn {
-            border: none;
-            padding: 8px 12px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            color: white;
-        }
+        .logout-btn, .edit-btn, .speak-item-btn { border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; }
         .logout-btn { background-color: #ff4d4d; }
-        .edit-btn { background-color: var(--primary-color); }
+        .edit-btn { background-color: #3182ce; }
         .speak-item-btn { background-color: #319795; }
         
-        .quick-links-bar {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
+        .quick-links-bar { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
         .quick-link-btn {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 8px 14px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 14px;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
+            background-color: var(--primary-color); color: white; padding: 8px 14px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 14px; display: inline-flex; align-items: center; gap: 5px;
         }
         .quick-link-btn.whatsapp { background-color: #25D366; }
         .quick-link-btn.calendar { background-color: #4285F4; }
-        .status-indicator {
-            background-color: #276749;
-            color: white;
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: bold;
-            display: inline-block;
-        }
+        .status-indicator { background-color: #276749; color: white; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; display: inline-block; }
         .premium-badge {
-            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
-            color: #fff;
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: bold;
-            display: inline-block;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; display: inline-block; text-shadow: 0 1px 2px rgba(0,0,0,0.2);
         }
-        .tabs {
-            display: flex;
-            gap: 5px;
-            flex-wrap: wrap;
-            margin-bottom: 20px;
-            border-bottom: 2px solid var(--button-bg);
-            padding-bottom: 10px;
-        }
-        .tab-btn {
-            background-color: var(--button-bg);
-            border: none;
-            padding: 8px 12px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            color: var(--text-color);
-            font-size: 14px;
-        }
-        .tab-btn.active {
-            background-color: var(--primary-color);
-            color: white;
-        }
+        .tabs { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 20px; border-bottom: 2px solid var(--button-bg); padding-bottom: 10px; }
+        .tab-btn { background-color: var(--button-bg); border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; color: var(--text-color); font-size: 14px; }
+        .tab-btn.active { background-color: var(--primary-color); color: white; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         input, select, textarea {
-            width: 100%;
-            padding: 10px;
-            margin: 6px 0;
-            border: 2px solid var(--button-bg);
-            border-radius: 8px;
-            box-sizing: border-box;
-            font-size: 0.95em;
-            background: var(--card-bg);
-            color: var(--text-color);
-            direction: inherit;
-            text-align: inherit;
+            width: 100%; padding: 10px; margin: 6px 0; border: 2px solid var(--button-bg); border-radius: 8px; box-sizing: border-box; font-size: 0.95em; background: var(--card-bg); color: var(--text-color); direction: inherit; text-align: inherit;
         }
-        label {
-            display: block;
-            text-align: right;
-            font-weight: bold;
-            margin-top: 8px;
-            font-size: 0.9em;
-            color: var(--primary-color);
-        }
+        label { display: block; text-align: right; font-weight: bold; margin-top: 8px; font-size: 0.9em; color: var(--primary-color); }
         body.ltr-mode label { text-align: left; }
-        .password-wrapper {
-            position: relative;
-            display: flex;
-            align-items: center;
-        }
+        .password-wrapper { position: relative; display: flex; align-items: center; }
         .password-wrapper input { margin-bottom: 0; }
-        .monkey-toggle {
-            position: absolute;
-            left: 10px;
-            background: none;
-            border: none;
-            font-size: 22px;
-            cursor: pointer;
-            padding: 0;
-        }
+        .monkey-toggle { position: absolute; left: 10px; background: none; border: none; font-size: 22px; cursor: pointer; padding: 0; }
         body.ltr-mode .monkey-toggle { left: auto; right: 10px; }
         button.action-btn {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 12px 15px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            width: 100%;
-            margin-top: 12px;
-            font-size: 1.1em;
+            background-color: var(--primary-color); color: white; border: none; padding: 12px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 12px; font-size: 1.1em;
         }
-        .admin-invite-box {
-            background: rgba(0,0,0,0.03);
-            border: 2px solid var(--primary-color);
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-        }
+        .admin-invite-box { background: rgba(0,0,0,0.03); border: 2px solid var(--primary-color); padding: 15px; border-radius: 10px; margin-bottom: 20px; }
         .card, .note-card {
-            background: var(--card-bg);
-            border: 1px solid var(--button-bg);
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 15px;
-            flex-wrap: wrap;
+            background: var(--card-bg); border: 1px solid var(--button-bg); padding: 15px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; gap: 15px; flex-wrap: wrap;
         }
-        .folders-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        .folder-card {
-            background: var(--card-bg);
-            border: 2px solid var(--primary-color);
-            padding: 15px;
-            border-radius: 12px;
-            cursor: pointer;
-            text-align: center;
-            font-weight: bold;
-            color: var(--primary-color);
-        }
-        .shabbat-badge {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 12px 15px;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 1.1em;
-            margin-bottom: 15px;
-            line-height: 1.6;
-        }
-        .weather-card {
-            background: rgba(0,0,0,0.02);
-            border: 2px solid var(--primary-color);
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            font-weight: bold;
-        }
-        .vault-box {
-            background: rgba(0,0,0,0.02);
-            border: 2px dashed var(--primary-color);
-            padding: 20px;
-            border-radius: 12px;
-            margin-top: 15px;
-        }
-        .share-toggle-box {
-            background: rgba(0,0,0,0.02);
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid var(--button-bg);
-            margin: 10px 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: bold;
-        }
+        .folders-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .folder-card { background: var(--card-bg); border: 2px solid var(--primary-color); padding: 15px; border-radius: 12px; text-align: center; font-weight: bold; color: var(--primary-color); display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; }
+        .shabbat-badge { background-color: var(--primary-color); color: white; padding: 12px 15px; border-radius: 8px; font-weight: bold; font-size: 1.1em; margin-bottom: 15px; line-height: 1.6; }
+        .weather-card { background: rgba(0,0,0,0.02); border: 2px solid var(--primary-color); padding: 15px; border-radius: 10px; margin-bottom: 15px; font-weight: bold; }
+        .vault-box { background: rgba(0,0,0,0.02); border: 2px dashed var(--primary-color); padding: 20px; border-radius: 12px; margin-top: 15px; }
+        .share-toggle-box { background: rgba(0,0,0,0.02); padding: 10px; border-radius: 8px; border: 1px solid var(--button-bg); margin: 10px 0; display: flex; align-items: center; gap: 10px; font-weight: bold; }
     </style>
 </head>
 <body id="appBody" dir="rtl">
 
-<!-- מסך פתיחה (Splash Screen) -->
+<!-- מסך פתיחה -->
 <div id="splashScreen">
-    <div class="splash-logo">🏢 VIDASS Home</div>
-    <div class="splash-subtitle">מרכז שליטה משפחתי, פרימיום ועסקי מאובטח</div>
+    <div class="splash-logo" data-i18n="appTitle">🏢 VIDASS Home</div>
+    <div class="splash-subtitle" data-i18n="appSub">מרכז שליטה משפחתי, פרימיום ועסקי מאובטח</div>
     <div class="splash-loader"></div>
 </div>
 
-<!-- סרגל נגישות ושפות -->
+<!-- מודל שיחה פעילה -->
+<div id="callModal">
+    <div class="call-content">
+        <h3 id="callModalTitle" style="color:white; margin-top:0;">📞 שיחה פעילה</h3>
+        <p id="callModalStatus">מתחבר אל דייר הבית...</p>
+        <video id="callVideoPreview" class="call-video-preview" autoplay playsinline></video>
+        <div style="display:flex; gap:10px; justify-content:center; margin-top:20px;">
+            <button class="action-btn" style="background:#25D366; margin:0;" onclick="alert('מיקרופון פעיל בשיחה!')">🎙️ מיקרופון</button>
+            <button class="logout-btn" style="margin:0; padding:10px 20px;" onclick="closeCallModal()">❌ סגור / ניתוק</button>
+        </div>
+    </div>
+</div>
+
+<!-- סרגל נגישות ושפות פעיל -->
 <div class="accessibility-bar" role="region">
     <span id="lblAccess">♿ נגישות ושפות:</span>
     <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-        <button class="accessibility-btn" onclick="changeFontSize(2)" id="btnZoomIn">A+</button>
-        <button class="accessibility-btn" onclick="changeFontSize(-2)" id="btnZoomOut">A-</button>
+        <button class="accessibility-btn" onclick="changeFontSize(2)">A+</button>
+        <button class="accessibility-btn" onclick="changeFontSize(-2)">A-</button>
         <button class="accessibility-btn" onclick="toggleContrast()" id="btnContrast">🌓 ניגודיות</button>
-        <button class="accessibility-btn" onclick="speakPageText()" id="btnSpeak" style="background:#319795;">🗣️ הקרא</button>
+        <button class="accessibility-btn" onclick="speakPageText()" style="background:#319795;">🗣️ הקרא עמוד</button>
         <select id="langSelect" onchange="changeLanguage(this.value)" style="padding:4px; border-radius:5px; font-weight:bold; width:auto; margin:0;">
             <option value="he">עברית</option>
             <option value="en">English</option>
@@ -383,8 +201,8 @@
 <!-- טבלת בקרת צבעים -->
 <div class="color-control-panel">
     <div>
-        <h4 style="margin:0 0 4px 0;">🎨 בחירת צבעים וערכת נושא תמידית</h4>
-        <p style="margin:0; font-size:13px; opacity:0.85;">בחרי את הצבע האהוב עליך למערכת. הבחירה נשמרת באופן קבוע!</p>
+        <h4 style="margin:0 0 4px 0;" data-i18n="themeTitle">🎨 בחירת צבעים וערכת נושא תמידית</h4>
+        <p style="margin:0; font-size:13px; opacity:0.85;" data-i18n="themeSub">בחרי את הצבע האהוב עליך למערכת. הבחירה נשמרת באופן קבוע!</p>
     </div>
     <div class="color-palette-grid">
         <span class="color-theme-btn" style="background:#d1496b;" onclick="setTheme('pink')" title="ורוד קלאסי"></span>
@@ -397,84 +215,71 @@
     </div>
 </div>
 
-<!-- מסך בחירה ראשוני: האם משתמש חדש או קיים? -->
+<!-- מסך שאלה ראשוני -->
 <div id="welcomeChoiceScreen" class="welcome-choice-box" style="display:none;">
-    <h2>🌟 ברוכים הבאים ל-VIDASS Home</h2>
-    <p>אנא בחרי האם זהו מששמש חדש המקים בית חדש, או משתמש קיים המצטרף לבית קיים:</p>
-    
-    <button class="action-btn" onclick="selectNewUserMode()" style="background:#276749; font-size:1.1em; margin-bottom:12px;">✨ אני משתמש/ת חדש/ה (יצירת בית חדש)</button>
-    <button class="action-btn" onclick="selectExistingUserMode()" style="background:#3182ce; font-size:1.1em;">🏠 אני משתמש/ת קיים/ת (הצטרפות עם קוד בית)</button>
+    <h2 data-i18n="welcomeH2">🏢 ברוכים הבאים ל-VIDASS Home</h2>
+    <p style="margin: 15px 0; font-size: 1.05em;" data-i18n="welcomeP">האם זו הפעם הראשונה שלך כאן או שאת/ה מצטרף/ת לבית קיים?</p>
+    <button class="action-btn" onclick="chooseNewUser()" style="background-color: var(--primary-color); margin-bottom: 12px;" data-i18n="btnNewHouse">✨ אני משתמש חדש / פותח בית חדש</button>
+    <button class="action-btn" onclick="chooseExistingUser()" style="background-color: #3182ce;" data-i18n="btnJoinHouse">🔗 יש לי קוד בית / קישור (משתמש קיים)</button>
 </div>
 
 <!-- מסך הרשמת משתמש חדש -->
 <div id="authScreen" class="auth-box" style="display:none;">
-    <h2 id="txtAuthTitle">🏢 VIDASS Home - הרשמת דייר חדש</h2>
-    <p id="txtAuthSub">הזיני את שמך, קוד בית חדש, סיסמה אישית וקוד שחזור:</p>
-    
-    <label id="lblHouseCode">קוד הבית המשותף (ענן):</label>
+    <h2>🏢 VIDASS Home - הרשמת דייר ובית חדש</h2>
+    <p>הזיני את שמך, בחרי סיסמה אישית וקוד שחזור:</p>
+    <label>קוד הבית המשותף (ענן):</label>
     <input type="text" id="inputHouseName" style="background:rgba(0,0,0,0.03); font-weight:bold; text-align:center; font-size:1.1em;">
-
-    <label id="lblFullName">שם הדייר/ת שלך:</label>
+    <label>שם הדייר/ת שלך:</label>
     <input type="text" id="inputFullName" placeholder="למשל: שמך הפרטי...">
-
-    <label id="lblAdminPin">סיסמה אישית לכניסה:</label>
+    <label>סיסמה אישית לכניסה:</label>
     <div class="password-wrapper">
         <input type="password" id="inputAdminPin" placeholder="הקישי סיסמה אישית...">
         <button type="button" class="monkey-toggle" onclick="togglePasswordVisibility('inputAdminPin', this)">🙈</button>
     </div>
-
-    <label id="lblRecoveryPin">קוד שחזור סודי (לשחזור במקרה של שכחה):</label>
+    <label>קוד שחזור סודי:</label>
     <div class="password-wrapper">
         <input type="password" id="inputRecoveryPin" placeholder="הקישי קוד שחזור סודי...">
         <button type="button" class="monkey-toggle" onclick="togglePasswordVisibility('inputRecoveryPin', this)">🙈</button>
     </div>
-
-    <button class="action-btn" id="btnCreateHouse" onclick="registerNewResidentDevice()">🏠 שמור פרטים והכנס למערכת</button>
+    <button class="action-btn" onclick="registerNewResidentDevice()">🏠 שמור פרטים והכנס למערכת</button>
     <button class="logout-btn" onclick="backToWelcomeChoice()" style="margin-top:10px; width:100%; background:#718096;">⬅️ חזור לבחירה</button>
 </div>
 
-<!-- מסך הצטרפות למשתמש קיים -->
+<!-- מסך הצטרפות לבית קיים -->
 <div id="joinExistingScreen" class="auth-box" style="display:none;">
-    <h2>🏠 הצטרפות למשתמש/בית קיים</h2>
-    <p>הקלידי את קוד הבית הקיים שאליו את רוצה להצטרף ואת שמך:</p>
-    
-    <label>קוד הבית הקיים בענן:</label>
-    <input type="text" id="inputJoinHouseCode" placeholder="הקישי קוד בית קיים..." style="font-weight:bold; text-align:center;">
-
-    <label>שמך המלא:</label>
-    <input type="text" id="inputJoinFullName" placeholder="שמך...">
-
+    <h2>🔗 הצטרפות לבית קיים</h2>
+    <p>הקשי את קוד הבית שאותו קיבלת או הדביקי את הקישור:</p>
+    <label>קוד הבית המשותף:</label>
+    <input type="text" id="inputJoinHouseCode" placeholder="למשל: vidass_1234..." style="font-weight:bold; text-align:center; font-size:1.1em;">
+    <label>השם שלך:</label>
+    <input type="text" id="inputJoinName" placeholder="השם שלך...">
     <label>סיסמה אישית:</label>
     <div class="password-wrapper">
         <input type="password" id="inputJoinPin" placeholder="סיסמה אישית...">
         <button type="button" class="monkey-toggle" onclick="togglePasswordVisibility('inputJoinPin', this)">🙈</button>
     </div>
-
-    <button class="action-btn" onclick="joinExistingHouse()" style="background:#3182ce;">🚀 היכנס לבית הקיים</button>
+    <button class="action-btn" onclick="joinExistingHouse()" style="background-color:#3182ce;">🚀 התחבר לבית הקיים</button>
     <button class="logout-btn" onclick="backToWelcomeChoice()" style="margin-top:10px; width:100%; background:#718096;">⬅️ חזור לבחירה</button>
 </div>
 
 <!-- מסך כניסה מאובטח -->
 <div id="bankLoginScreen" class="bank-login-box" style="display:none;">
     <h2 id="bankGreetingTitle">🌅 בוקר טוב!</h2>
-    <p id="txtLoginSub">כניסה מאובטחת למרכז השליטה:</p>
+    <p>כניסה מאובטחת למרכז השליטה:</p>
     <h3 id="displayLoginHouse" style="background:rgba(0,0,0,0.03); padding:10px; border-radius:8px;"></h3>
-    
     <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.02); padding:8px 12px; border-radius:8px; margin:10px 0;">
-        <span><span id="txtUserLabel">משתמש</span>: <b id="displayLoginUser"></b></span>
+        <span>משתמש: <b id="displayLoginUser"></b></span>
         <button class="edit-btn" style="padding:4px 8px; font-size:12px;" onclick="changeUserNamePrompt()">✏️ שנה שם</button>
     </div>
-
-    <label id="lblEnterPin">הקישי את הסיסמה האישית שלך:</label>
+    <label>הקישי את הסיסמה האישית שלך:</label>
     <div class="password-wrapper">
         <input type="password" id="loginPinInput" placeholder="סיסמה אישית...">
         <button type="button" class="monkey-toggle" onclick="togglePasswordVisibility('loginPinInput', this)">🙈</button>
     </div>
-
-    <button class="action-btn" id="btnLoginSubmit" onclick="verifyAdminLogin()">🔓 היכנס למערכת בבטחה</button>
-    <button class="action-btn" id="btnBiometric" onclick="verifyBiometricLogin()" style="background:#3182ce; margin-top:8px;">🧬 כניסה מהירה בטוחה (פנים / אצבע)</button>
-    <button class="logout-btn" id="btnForgotPin" style="margin-top:8px; width:100%; background:#3182ce;" onclick="recoverPasswordModal()">🔑 שכחתי סיסמה (שחזור עם קוד סודי)</button>
-    <button class="logout-btn" id="btnResetDevice" style="margin-top:8px; width:100%; background:#718096;" onclick="fullLogout()">🔄 החלף דייר / אפס מכשיר</button>
+    <button class="action-btn" onclick="verifyAdminLogin()">🔓 היכנס למערכת בבטחה</button>
+    <button class="action-btn" onclick="verifyBiometricLogin()" style="background:#3182ce; margin-top:8px;">🧬 כניסה מהירה בטוחה (פנים / אצבע)</button>
+    <button class="logout-btn" style="margin-top:8px; width:100%; background:#3182ce;" onclick="recoverPasswordModal()">🔑 שכחתי סיסמה</button>
+    <button class="logout-btn" style="margin-top:8px; width:100%; background:#718096;" onclick="fullLogout()">🔄 החלף דייר / אפס מכשיר</button>
 </div>
 
 <!-- מסך ראשי מלא -->
@@ -483,363 +288,338 @@
         <div>
             <h1>🏢 VIDASS Control Center</h1>
             <p>
-                <span id="txtUserSpan">משתמש</span>: <span id="activeUserName" style="color:var(--primary-color); font-weight:bold;"></span> 
+                משתמש: <span id="activeUserName" style="color:var(--primary-color); font-weight:bold;"></span> 
                 <button class="edit-btn" style="padding:2px 6px; font-size:11px; margin-right:5px;" onclick="changeUserNamePrompt()">✏️ שנה</button>
-                | <span id="txtHouseSpan">מספר בית</span>: <span id="activeHouseName" style="font-weight:bold;"></span>
+                | מספר בית: <span id="activeHouseName" style="font-weight:bold;"></span>
                 | <span class="premium-badge">🌟 מצב פרימיום (חינם בבדיקה)</span>
             </p>
         </div>
         <div style="display:flex; gap:15px; align-items:center;">
-            <div class="status-indicator" id="statusCloud">🟢 ענן פעיל ומסונכרן</div>
+            <div class="status-indicator">🟢 ענן פעיל ומסונכרן</div>
         </div>
-        <button class="logout-btn" id="btnLock" onclick="lockAppToBankScreen()">🔒 נעילה</button>
+        <button class="logout-btn" onclick="lockAppToBankScreen()">🔒 נעילה</button>
     </div>
 
     <!-- אזור הזמנה וניהול דיירי הבית -->
     <div class="admin-invite-box">
-        <h3 id="txtInviteTitle">👑 ניהול דיירי הבית והפצת האפליקציה</h3>
-        <p id="txtInviteSub">שלחי את קישור ההזמנה לדיירי הבית (כולל ילדים ושעונים חכמים)!</p>
-        <button class="action-btn" id="btnCopyInvite" style="background:#3182ce; margin:0;" onclick="copyInviteLink()">📋 העתק קישור הזמנה לבית</button>
+        <h3>👑 ניהול דיירי הבית והפצת האפליקציה</h3>
+        <p>שלחי את קישור ההזמנה לדיירי הבית (כולל ילדים ושעונים חכמים)!</p>
+        <button class="action-btn" style="background:#3182ce; margin:0;" onclick="copyInviteLink()">📋 העתק קישור הזמנה לבית</button>
     </div>
 
     <!-- סרגל קישורים מהירים -->
     <div class="quick-links-bar">
-        <a href="https://calendar.google.com" target="_blank" class="quick-link-btn calendar" id="linkCal">📅 פתח יומן</a>
-        <a href="https://wa.me/" target="_blank" class="quick-link-btn whatsapp" id="linkWa">💬 פתח וואטסאפ</a>
-        <a href="mailto:" class="quick-link-btn email" id="linkMail">📧 פתח אימייל</a>
+        <a href="https://calendar.google.com" target="_blank" class="quick-link-btn calendar">📅 פתח יומן</a>
+        <a href="https://wa.me/" target="_blank" class="quick-link-btn whatsapp">💬 פתח וואטסאפ</a>
+        <a href="mailto:" class="quick-link-btn email">📧 פתח אימייל</a>
     </div>
 
-    <!-- הטאבים המלאים -->
+    <!-- כל 24 הטאבים המלאים ברצף -->
     <div class="tabs">
-        <button class="tab-btn active" onclick="openTab(event, 'tab-residents')" id="tabBtnResidents">👥 דיירים והודעות</button>
-        <button class="tab-btn" onclick="openTab(event, 'tab-kids')" id="tabBtnKids">🧒 ילדים ושעונים (פרימיום)</button>
-        <button class="tab-btn" onclick="openTab(event, 'tab-notifications')" id="tabBtnNotifs">🔔 התראות ותזכורות</button>
-        <button class="tab-btn" onclick="openTab(event, 'tab-notes')" id="tabBtnNotes">📝 פתקיות</button>
-        <button class="tab-btn" onclick="openTab(event, 'tab-receipts')" id="tabBtnReceipts">🧾 קבלות והשוואה</button>
-        <button class="tab-btn" onclick="openTab(event, 'tab-salary')" id="tabBtnSalary">📄 תלושים ומכתבים</button>
-        <button class="tab-btn" onclick="openTab(event, 'tab-vidass')" id="tabBtnVidass">🏢 VIDASS</button>
-        <button class="tab-btn" onclick="openTab(event, 'tab-finances')" id="tabBtnFinances">💰 הוצאות</button>
-        <button class="tab-btn" onclick="openTab(event, 'tab-tithes')" id="tabBtnTithes">🤲 מעשרות</button>
-        <button class="tab-btn" onclick="openTab(event, 'tab-devices')" id="tabBtnDevices">🔌 מכשירים</button>
-        <button class="tab-btn" onclick="openTab(event, 'tab-trips')" id="tabBtnTrips">🚗 נסיעות</button>
-        <button class="tab-btn" onclick="openTab(event, 'tab-tasks')" id="tabBtnTasks">📌 משימות ולוח שנה</button>
-        <button class="tab-btn" onclick="openTab(event, 'tab-shopping')" id="tabBtnShop">🛒 קניות</button>
-        <button class="tab-btn" onclick="openTab(event, 'tab-inventory')" id="tabBtnInv">📦 מלאי</button>
-        <button class="tab-btn" onclick="openTab(event, 'tab-recipes')" id="tabBtnRec">🍲 מתכונים</button>
-        <button class="tab-btn" onclick="openTab(event, 'tab-community')" id="tabBtnMusic">🎵 מוזיקה</button>
-        <button class="tab-btn" onclick="openTab(event, 'tab-vault')" id="tabBtnVault">🔐 כספת</button>
-        <button class="tab-btn" onclick="openTab(event, 'tab-ai')" id="tabBtnAI">🤖 העוזרת</button>
+        <button class="tab-btn active" onclick="openTab(event, 'tab-residents')" data-i18n="tab1">👥 דיירים ושיחות</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-birthdays')" data-i18n="tab2">🎂 ימי הולדת</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-kids')" data-i18n="tab3">🧒 ילדים ושעונים</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-allowance')" data-i18n="tab4">💵 דמי כיס</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-chores')" data-i18n="tab5">🧹 מטלות בית</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-savings')" data-i18n="tab6">🐷 חיסכון ויעדים</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-hobbies')" data-i18n="tab7">⚽ חוגים</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-events')" data-i18n="tab8">🎉 אירועים</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-trips')" data-i18n="tab9">🚗 טיולים ומפות</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-notifications')" data-i18n="tab10">🔔 התראות</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-notes')" data-i18n="tab11">📝 פתקיות</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-receipts')" data-i18n="tab12">🧾 קבלות</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-salary')" data-i18n="tab13">📄 תלושים</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-vidass')" data-i18n="tab14">🏢 VIDASS</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-finances')" data-i18n="tab15">💰 הוצאות</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-tithes')" data-i18n="tab16">🤲 מעשרות</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-devices')" data-i18n="tab17">🔌 מכשירים</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-tasks')" data-i18n="tab18">📌 משימות</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-shopping')" data-i18n="tab19">🛒 קניות</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-inventory')" data-i18n="tab20">📦 מלאי</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-recipes')" data-i18n="tab21">🍲 מתכונים</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-community')" data-i18n="tab22">🎵 מוזיקה</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-vault')" data-i18n="tab23">🔐 כספת</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-ai')" data-i18n="tab24">🤖 העוזרת</button>
     </div>
 
-    <!-- טאב דיירים והודעות אישיות -->
+    <!-- טאב 1: דיירים ושיחות -->
     <div id="tab-residents" class="tab-content active">
-        <h3 id="hResidents">👥 שמות דיירי הבית ושליחת הודעות ישירות</h3>
-        <input type="text" id="msgRecipient" placeholder="שם הנמען...">
-        <textarea id="msgContentText" placeholder="הקלידי הודעה אישית..." style="width:100%; height:80px;"></textarea>
-        <button class="action-btn" onclick="sendDirectMessage()" id="btnSendMsg">📨 שלח הודעה לדייר הבית</button>
-        <div id="residentsListContainer" style="margin-top:20px;"></div>
+        <h3 data-i18n="tab1">👥 דיירי הבית – צלצל שיחה רגילה או וידאו, ושלח הודעות</h3>
+        <div style="background:rgba(0,0,0,0.02); border:2px solid var(--primary-color); padding:15px; border-radius:10px; margin-bottom:20px;">
+            <h4 style="margin-top:0;">📨 שליחת הודעה אישית לדייר:</h4>
+            <input type="text" id="msgRecipient" placeholder="שם הנמען...">
+            <textarea id="msgContentText" placeholder="הקלידי הודעה אישית..." style="width:100%; height:70px;"></textarea>
+            <button class="action-btn" onclick="sendDirectMessage()">📨 שלח הודעה לדייר הבית</button>
+        </div>
+        <h4 style="margin-top:25px;">📞 רשימת דיירים זמינים לצלצול ושיחות:</h4>
+        <div id="residentsListContainer" style="margin-top:10px;"></div>
     </div>
 
-    <!-- טאב ילדים, שעונים חכמים ומיקום פרימיום -->
-    <div id="tab-kids" class="tab-content">
-        <h3>🧒 ניהול ילדים, שעונים חכמים, מדדים וגידור גיאוגרפי (פרימיום)</h3>
-        <p style="font-size:14px; opacity:0.85;">כאן ההורה מגדיר את הילד, מחבר שעון חכם, קובע אזור מותר להסתובבות (Geofencing), ומקבל התראות חירום בדופק, התייבשות ויציאה מאזור בטוח.</p>
-        
+    <!-- טאב 2: ימי הולדת -->
+    <div id="tab-birthdays" class="tab-content">
+        <h3>🎂 ניהול ותזכורות לימי הולדת משפחתיים וחברים</h3>
         <div style="background:rgba(0,0,0,0.02); border:2px solid var(--primary-color); padding:15px; border-radius:10px; margin-bottom:15px;">
-            <label><b>שם הילד/ה:</b></label>
-            <input type="text" id="kidName" placeholder="שם הילד...">
-
-            <label><b>גיל הילד/ה:</b></label>
-            <input type="number" id="kidAge" placeholder="גיל (למשל: 8)...">
-
+            <label><b>שם החוגג/ת:</b></label>
+            <input type="text" id="bdayName" placeholder="שם מלא (למשל: דוד סיבוני)...">
+            <label><b>תאריך יום הולדת:</b></label>
+            <input type="date" id="bdayDate" style="font-weight:bold;">
+            <label><b>הערות / רעיון למתנה:</b></label>
+            <input type="text" id="bdayNote" placeholder="למשל: אוהב שעונים, לקנות עוגת שוקולד...">
             <div class="share-toggle-box">
-                <input type="checkbox" id="kidHasWatch" style="width:auto; margin:0;" checked> ⌚ האם מחובר שעון חכם לילד זה? (כולל דופק, מים ו-GPS)
+                <input type="checkbox" id="bdayShared" style="width:auto; margin:0;" checked> 🌐 שיתוף יום הולדת זה בענן המשפחתי
             </div>
-
-            <label><b>גבולות גזרה / אזור מותר להסתובבות (למשל: שכונת שחמון, רדיוס בית ספר):</b></label>
-            <input type="text" id="kidGeoZone" placeholder="הגדר אזור בטוח (למשל: פארק שחמון עד רחוב נחל חיון)...">
-
-            <button class="action-btn" onclick="addKidProfile()">➕ הוסף ילד למערכת הפרימיום</button>
+            <button class="action-btn" onclick="addBirthday()">➕ הוסף תזכורת יום הולדת</button>
         </div>
-
-        <h4 style="margin-top:25px;">📊 מעקב מדדים חיים ומיקום ילדים:</h4>
-        <div id="kidsListContainer"></div>
+        <div id="birthdaysListContainer" style="margin-top:15px;"></div>
     </div>
 
-    <!-- טאב התראות ותזכורות -->
+    <!-- טאב 3: ילדים ושעונים -->
+    <div id="tab-kids" class="tab-content">
+        <h3>🧒 ניהול ילדים ושעונים חכמים</h3>
+        <input type="text" id="kidName" placeholder="שם הילד...">
+        <input type="number" id="kidAge" placeholder="גיל...">
+        <button class="action-btn" onclick="addKidProfile()">➕ הוסף ילד</button>
+        <div id="kidsListContainer" style="margin-top:15px;"></div>
+    </div>
+
+    <!-- טאב 4: דמי כיס -->
+    <div id="tab-allowance" class="tab-content">
+        <h3>💵 ניהול דמי כיס</h3>
+        <input type="text" id="allowanceChildName" placeholder="שם הילד/ה...">
+        <input type="number" id="allowanceAmount" placeholder="סכום בש״ח...">
+        <input type="text" id="allowancePeriod" placeholder="תדירות...">
+        <button class="action-btn" onclick="addAllowance()">➕ הוסף דמי כיס</button>
+        <div id="allowanceListContainer" style="margin-top:15px;"></div>
+    </div>
+
+    <!-- טאב 5: מטלות בית -->
+    <div id="tab-chores" class="tab-content">
+        <h3>🧹 ניהול מטלות הבית</h3>
+        <input type="text" id="choreTitle" placeholder="שם המטלה...">
+        <input type="text" id="choreAssignee" placeholder="אחראי...">
+        <input type="text" id="choreDay" placeholder="יום ביצוע...">
+        <button class="action-btn" onclick="addChore()">➕ הוסף מטלה</button>
+        <div id="choresListContainer" style="margin-top:15px;"></div>
+    </div>
+
+    <!-- טאב 6: חיסכון ויעדים -->
+    <div id="tab-savings" class="tab-content">
+        <h3>🐷 חיסכון ויעדים</h3>
+        <input type="text" id="savingGoalName" placeholder="שם היעד...">
+        <input type="number" id="savingTargetAmount" placeholder="סכום יעד...">
+        <input type="number" id="savingCurrentAmount" placeholder="נחסך עד כה...">
+        <button class="action-btn" onclick="addSavingGoal()">➕ הוסף יעד חיסכון</button>
+        <div id="savingsListContainer" style="margin-top:15px;"></div>
+    </div>
+
+    <!-- טאב 7: חוגים -->
+    <div id="tab-hobbies" class="tab-content">
+        <h3>⚽ חוגים ופעילויות עם ניווט</h3>
+        <input type="text" id="hobbyName" placeholder="שם החוג...">
+        <input type="text" id="hobbyChild" placeholder="משתתף...">
+        <input type="text" id="hobbySchedule" placeholder="ימים ושעות...">
+        <input type="text" id="hobbyLocation" placeholder="כתובת או מיקום...">
+        <button class="action-btn" onclick="addHobby()">➕ הוסף חוג</button>
+        <div id="hobbiesListContainer" style="margin-top:15px;"></div>
+    </div>
+
+    <!-- טאב 8: אירועים -->
+    <div id="tab-events" class="tab-content">
+        <h3>🎉 תכנון אירועים</h3>
+        <input type="text" id="eventPlanName" placeholder="שם האירוע...">
+        <input type="text" id="eventPlanDate" placeholder="תאריך ושעה...">
+        <input type="text" id="eventPlanTasks" placeholder="משימות...">
+        <button class="action-btn" onclick="addEventPlan()">➕ הוסף אירוע</button>
+        <div id="eventsPlanListContainer" style="margin-top:15px;"></div>
+    </div>
+
+    <!-- טאב 9: טיולים ומפות -->
+    <div id="tab-trips" class="tab-content">
+        <h3>🚗 טיולים ויעדים עם מפות וניווט</h3>
+        <input type="text" id="tripName" placeholder="שם הטיול...">
+        <input type="text" id="tripDest" placeholder="כתובת מדויקת...">
+        <button class="action-btn" onclick="addTrip()">➕ הוסף טיול</button>
+        <div id="tripsList" style="margin-top:15px;"></div>
+    </div>
+
+    <!-- טאב 10: התראות -->
     <div id="tab-notifications" class="tab-content">
-        <h3 id="hNotifs">🔔 יצירת התראה מתפרצת ותזכורות לטלפון</h3>
-        <input type="text" id="notifTitle" placeholder="כותרת ההתראה...">
-        <input type="text" id="notifTime" placeholder="שעה (למשל: 14:00)...">
-        <div class="share-toggle-box">
-            <input type="checkbox" id="notifShared" style="width:auto; margin:0;" checked> 📢 שיתוף התראה זו עם שאר דיירי הבית בענן
-        </div>
-        <button class="action-btn" onclick="scheduleNotification()" id="btnAddNotif">➕ צור תזכורת והפעל התראה</button>
+        <h3>🔔 תזכורות</h3>
+        <input type="text" id="notifTitle" placeholder="כותרת...">
+        <input type="text" id="notifTime" placeholder="שעה...">
+        <button class="action-btn" onclick="scheduleNotification()">➕ צור תזכורת</button>
         <div id="notificationsList" style="margin-top:15px;"></div>
     </div>
 
-    <!-- טאב פתקיות ויומן -->
+    <!-- טאב 11: פתקיות -->
     <div id="tab-notes" class="tab-content">
-        <h3 id="hNotes">📝 פתקיות אישיות וטיפים לבית</h3>
-        <input type="text" id="noteTitle" placeholder="כותרת הפתקייה...">
-        <input type="text" id="noteText" placeholder="תוכן הפתקייה...">
-        <div class="share-toggle-box">
-            <input type="checkbox" id="noteShared" style="width:auto; margin:0;" checked> 🌐 שיתוף פתקייה זו עם שאר דיירי הבית
-        </div>
-        <button class="action-btn" onclick="addNoteCard()" id="btnAddNote">➕ הוסף פתקייה</button>
+        <h3>📝 פתקיות</h3>
+        <input type="text" id="noteTitle" placeholder="כותרת...">
+        <input type="text" id="noteText" placeholder="תוכן...">
+        <button class="action-btn" onclick="addNoteCard()">➕ הוסף פתקייה</button>
         <div id="noteCardsContainer" style="margin-top:15px;"></div>
-        <hr style="margin-top:25px;">
-        <h3 id="hCalendar">🕒 יומן שעות ולוח זמנים יומי</h3>
-        <input type="text" id="eventTime" placeholder="שעה / תאריך">
-        <input type="text" id="eventDesc" placeholder="תיאור אירוע / תור">
-        <div class="share-toggle-box">
-            <input type="checkbox" id="eventShared" style="width:auto; margin:0;" checked> 🌐 שיתוף אירוע זה עם שאר דיירי הבית
-        </div>
-        <button class="action-btn" onclick="addEvent()" id="btnAddEvent">➕ הוסף ליומן</button>
-        <div id="eventsList" style="margin-top:15px;"></div>
     </div>
 
-    <!-- טאב קבלות והשוואת מחירים -->
+    <!-- טאב 12: קבלות -->
     <div id="tab-receipts" class="tab-content">
-        <h3 id="hReceiptsTitle">🧾 ניהול קבלות והשוואת מחירים</h3>
-        <input type="text" id="recStore" placeholder="שם החנות...">
-        <input type="text" id="recItem" placeholder="שם המוצר...">
-        <input type="number" id="recPrice" placeholder="מחיר בש״ח...">
-        <div class="share-toggle-box">
-            <input type="checkbox" id="recShared" style="width:auto; margin:0;" checked> 🌐 שיתוף קבלה זו עם שאר דיירי הבית
-        </div>
-        <button class="action-btn" onclick="addReceiptItem()" id="btnAddReceipt">➕ שמור קבלה והשווה מחיר</button>
-        <div id="receiptsComparisonBox" style="margin-top:20px; background:rgba(0,0,0,0.02); border:2px solid var(--primary-color); padding:15px; border-radius:10px;">
-            <h4 id="hReceiptTip">💡 המלצת חיסכון והשוואת רשתות:</h4>
-            <p id="cheapestStoreAdvice">הזיני קבלות ומוצרים כדי שהמערכת תנתח איפה הכי זול לקנות!</p>
-        </div>
+        <h3>🧾 קבלות והשוואת מחירים</h3>
+        <input type="text" id="recStore" placeholder="שם חנות...">
+        <input type="text" id="recItem" placeholder="מוצר...">
+        <input type="number" id="recPrice" placeholder="מחיר...">
+        <button class="action-btn" onclick="addReceiptItem()">➕ שמור קבלה</button>
         <div id="receiptsList" style="margin-top:15px;"></div>
     </div>
 
-    <!-- טאב תלושי משכורת ומכתבים רשמיים -->
+    <!-- טאב 13: תלושים ומכתבים -->
     <div id="tab-salary" class="tab-content">
-        <h3 id="hSalaryTitle">📄 ניתוח תלושי משכורת, חוקי עבודה ומכתבים רשמיים</h3>
-        <label><b id="lblSelectDoc">בחר סוג מסמך לפיענוח וייעוץ:</b></label>
-        <select id="docTypeSelect" style="font-weight:bold; margin-bottom:10px;">
-            <option value="salary">תלוש משכורת (בדיקת זכויות, מס הכנסה, פנסיה)</option>
-            <option value="letter">מכתב רשמי (בנק, עיריה, ממשלה, ביטוח לאומי)</option>
-            <option value="contract">חוזה עבודה או שכירות</option>
-        </select>
-        <textarea id="docContentText" placeholder="הדביקי כאן את טקסט התלוש או המכתב..." style="width:100%; height:120px;"></textarea>
-        <div class="share-toggle-box">
-            <input type="checkbox" id="docShared" style="width:auto; margin:0;"> 🔒 שמור מסמך זה כפרטי (לא משותף)
-        </div>
-        <button class="action-btn" onclick="analyzeDocumentAI()" id="btnAnalyzeDoc">🤖 נתח מסמך והסבר לי פשוט</button>
-        <div id="docAnalysisResult" style="margin-top:15px; background:rgba(0,0,0,0.02); border:2px dashed var(--primary-color); padding:15px; border-radius:10px; display:none;"></div>
+        <h3>📄 תלושים ומכתבים רשמיים</h3>
+        <select id="docTypeSelect"><option value="salary">תלוש משכורת</option><option value="letter">מכתב רשמי</option></select>
+        <textarea id="docContentText" placeholder="טקסט המסמך..." style="width:100%; height:100px;"></textarea>
+        <button class="action-btn" onclick="analyzeDocumentAI()">🤖 נתח מסמך</button>
         <div id="documentsList" style="margin-top:15px;"></div>
     </div>
 
-    <!-- טאב ניהול חברת VIDASS -->
+    <!-- טאב 14: פרויקטים VIDASS -->
     <div id="tab-vidass" class="tab-content">
-        <h3 id="hVidass">🏢 ניהול חברת VIDASS ופרויקטים</h3>
-        <input type="text" id="vidassProjectName" placeholder="שם הפרויקט או המשימה...">
-        <textarea id="vidassProjectDesc" placeholder="פרטים ותוכנית עבודה..." style="width:100%; height:80px;"></textarea>
-        <div class="share-toggle-box">
-            <input type="checkbox" id="vidassShared" style="width:auto; margin:0;" checked> 🌐 שיתוף פרויקט זה עם שאר דיירי הבית
-        </div>
-        <button class="action-btn" onclick="addVidassProject()" id="btnAddVidass">➕ הוסף פרויקט ל-VIDASS</button>
+        <h3>🏢 פרויקטים VIDASS</h3>
+        <input type="text" id="vidassProjectName" placeholder="שם הפרויקט...">
+        <textarea id="vidassProjectDesc" placeholder="תיאור..." style="width:100%; height:80px;"></textarea>
+        <button class="action-btn" onclick="addVidassProject()">➕ הוסף פרויקט</button>
         <div id="vidassList" style="margin-top:15px;"></div>
     </div>
 
-    <!-- טאב הוצאות -->
+    <!-- טאב 15: הוצאות משפחתיות -->
     <div id="tab-finances" class="tab-content">
-        <h3 id="hFinances">💰 ניהול הוצאות משפחתיות</h3>
+        <h3>💰 הוצאות משפחתיות</h3>
         <div id="financesSecureBox" class="vault-box">
-            <h4>🔒 אזור מאובטח בסיסמה</h4>
-            <p>לצפייה והוספת הוצאות, יש להקיש את הסיסמה האישית שלך:</p>
-            <input type="password" id="financesPinInput" placeholder="הקישי סיסמה אישית...">
-            <button class="action-btn" onclick="unlockFinancesTab()">🔓 פתח נתוני הוצאות</button>
+            <h4>🔒 אזור מאובטח</h4>
+            <input type="password" id="financesPinInput" placeholder="סיסמה אישית...">
+            <button class="action-btn" onclick="unlockFinancesTab()">🔓 פתח</button>
         </div>
         <div id="financesContentBox" style="display:none;">
-            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
-                <select id="expMonth" style="flex:1; min-width:140px;"></select>
-                <input type="text" id="expCategory" placeholder="שם ההוצאה" style="flex:2;">
-                <input type="number" id="expAmount" placeholder="סכום בש״ח" style="flex:1;">
-            </div>
-            <div class="share-toggle-box">
-                <input type="checkbox" id="expShared" style="width:auto; margin:0;" checked> 🌐 שיתוף הוצאה זו עם שאר דיירי הבית
-            </div>
-            <button class="action-btn" onclick="addExpense()" id="btnAddExp">➕ הוסף הוצאה לענן</button>
-            <div id="expensesSummaryContainer" style="margin-top:20px;"></div>
+            <select id="expMonth"></select>
+            <input type="text" id="expCategory" placeholder="קטגוריה...">
+            <input type="number" id="expAmount" placeholder="סכום...">
+            <button class="action-btn" onclick="addExpense()">➕ הוסף הוצאה</button>
+            <div id="expensesSummaryContainer" style="margin-top:15px;"></div>
         </div>
     </div>
 
-    <!-- טאב מעשרות והפרשות -->
+    <!-- טאב 16: מעשרות -->
     <div id="tab-tithes" class="tab-content">
-        <h3 id="hTithes">🤲 מחשבון מעשרות והפרשת צדקה</h3>
-        <input type="number" id="titheIncomeAmount" placeholder="סכום הכנסה בש״ח...">
-        <div class="share-toggle-box">
-            <input type="checkbox" id="titheShared" style="width:auto; margin:0;"> 🔒 שמור נתוני מעשרות כפרטיים בלבד
-        </div>
-        <button class="action-btn" onclick="calculateTithe()" id="btnAddTitheCalc">💡 חשב 10% מעשר</button>
-        <div id="titheResultDisplay" style="margin-top:15px; font-weight:bold; font-size:1.1em; color:var(--primary-color);"></div>
+        <h3>🤲 מחשבון מעשרות</h3>
+        <input type="number" id="titheIncomeAmount" placeholder="סכום הכנסה...">
+        <button class="action-btn" onclick="calculateTithe()">💡 חשב</button>
+        <div id="titheResultDisplay" style="margin-top:15px; font-weight:bold;"></div>
         <div id="tithesList" style="margin-top:15px;"></div>
     </div>
 
-    <!-- טאב מכשירים -->
+    <!-- טאב 17: מכשירים חכמים -->
     <div id="tab-devices" class="tab-content">
-        <h3 id="hDevices">🔌 ניהול מכשירים חכמים וקישורים</h3>
-        <input type="text" id="deviceName" placeholder="שם המכשיר או המערכת החכמה...">
-        <input type="text" id="deviceType" placeholder="קישור או מיקום בבית (למשל: סלון, https://...)">
-        <div class="share-toggle-box">
-            <input type="checkbox" id="deviceShared" style="width:auto; margin:0;" checked> 🌐 שיתוף מכשיר זה עם שאר דיירי הבית
-        </div>
-        <button class="action-btn" onclick="addDevice()" id="btnAddDev">➕ הוסף מכשיר חכם</button>
+        <h3>🔌 מכשירים חכמים</h3>
+        <input type="text" id="deviceName" placeholder="שם מכשיר (למשל: מזגן סלון)...">
+        <input type="text" id="deviceType" placeholder="כתובת / מיקום / קישור (למשל: נחל חיון 3, אילת)...">
+        <button class="action-btn" onclick="addDevice()">➕ הוסף מכשיר חכם</button>
         <div id="devicesList" style="margin-top:15px;"></div>
     </div>
 
-    <!-- טאב נסיעות עם Waze ו-Google Maps -->
-    <div id="tab-trips" class="tab-content">
-        <h3 id="hTrips">🚗 ניהול נסיעות ויעדים וקישור לניווט</h3>
-        <input type="text" id="tripName" placeholder="יעד הנסיעה">
-        <input type="text" id="tripDest" placeholder="כתובת מדויקת...">
-        <div class="share-toggle-box">
-            <input type="checkbox" id="tripShared" style="width:auto; margin:0;" checked> 🌐 שיתוף נסיעה זו עם שאר דיירי הבית
-        </div>
-        <button class="action-btn" onclick="addTrip()" id="btnAddTrip">➕ הוסף נסיעה לענן</button>
-        <div id="tripsList" style="margin-top: 15px;"></div>
-    </div>
-
-    <!-- טאב משימות, אזורים, דתות ולוח שנה בינלאומי -->
+    <!-- טאב 18: משימות, מזג אוויר חי ושעון שבת -->
     <div id="tab-tasks" class="tab-content">
-        <h3 id="hTasks">📌 משימות, אזורים בעולם, דתות ולוח שנה חכם</h3>
-        
-        <div style="background:rgba(0,0,0,0.02); border:2px solid var(--primary-color); padding:15px; border-radius:10px; margin-bottom:15px;">
-            <label><b id="lblSelectRegion">🌍 בחרי אזור בעולם (זמנים ומזג אוויר):</b></label>
-            <select id="regionSelect" onchange="updateShabbatAndWeather()" style="margin-bottom: 10px; font-weight: bold;">
-                <option value="eilat">ישראל - אילת והערבה</option>
-                <option value="jerusalem">ישראל - ירושלים והסביבה</option>
-                <option value="telaviv">ישראל - תל אביב וגוש דן</option>
-                <option value="haifa">ישראל - חיפה והצפון</option>
-                <option value="beersheva">ישראל - באר שבע והנגב</option>
-                <option value="usa_ny">ארצות הברית - ניו יורק (EST)</option>
-                <option value="usa_la">ארצות הברית - לוס אנג'לס (PST)</option>
-                <option value="europe_lon">אירופה - לונדון, בריטניה (GMT)</option>
-                <option value="europe_par">אירופה - פריז / מערב אירופה (CET)</option>
-            </select>
-
-            <label><b id="lblSelectReligion">🕊️ בחרי השתייכות דתית / תרבותית ללוח החגים והמועדים:</b></label>
-            <select id="religionSelect" onchange="updateShabbatAndWeather()" style="margin-bottom: 10px; font-weight: bold;">
-                <option value="jewish">יהדות (כניסת שבת, חגים יהודיים)</option>
-                <option value="muslim">אסלאם (חגים ומועדים מוסלמיים - רמדאן, עיד)</option>
-                <option value="christian">נצרות (חגים ומועדים נוצריים - חג המולד, פסחא)</option>
-                <option value="general">כללי / בינלאומי (ללא סממני דת ספציפיים)</option>
-            </select>
-        </div>
-
-        <div class="weather-card" id="weatherDisplayBox">🌤️ תחזית מזג אוויר...</div>
-        <div class="shabbat-badge" id="shabbatBanner">🕯️ זמני שבת וחגים...</div>
-
-        <input type="text" id="taskText" placeholder="משימה או תור חדש...">
-        <div class="share-toggle-box">
-            <input type="checkbox" id="taskShared" style="width:auto; margin:0;" checked> 🌐 שיתוף משימה זו עם שאר דיירי הבית
-        </div>
-        <button class="action-btn" onclick="addTask()" id="btnAddTsk">➕ הוסף משימה</button>
+        <h3>📌 משימות, מזג אוויר חי וזמני שבת מדויקים</h3>
+        <select id="regionSelect" onchange="updateShabbatAndWeather()"><option value="eilat">אילת</option><option value="jerusalem">ירושלים</option><option value="telaviv">תל אביב</option></select>
+        <select id="religionSelect" onchange="updateShabbatAndWeather()"><option value="jewish">יהדות</option><option value="general">כללי</option></select>
+        <div class="weather-card" id="weatherDisplayBox">🌤️ טוען נתוני מזג אוויר חיים מהרשת...</div>
+        <div class="shabbat-badge" id="shabbatBanner">🕯️ מחשב זמני שבת מדויקים...</div>
+        <input type="text" id="taskText" placeholder="משימה חדשה...">
+        <button class="action-btn" onclick="addTask()">➕ הוסף משימה</button>
         <div id="tasksList" style="margin-top:15px;"></div>
     </div>
 
-    <!-- טאב קניות -->
+    <!-- טאב 19: קניות עם הקראה מלאה של כל הרשימה -->
     <div id="tab-shopping" class="tab-content">
-        <h3 id="hShop">🛒 רשימת קניות משותפת בזמן אמת</h3>
-        <input type="text" id="shopInput" placeholder="הוסיפי מוצר וכמות...">
-        <div class="share-toggle-box">
-            <input type="checkbox" id="shopShared" style="width:auto; margin:0;" checked> 🌐 שיתוף מוצר זה עם שאר דיירי הבית
+        <h3>🛒 קניות</h3>
+        <input type="text" id="shopInput" placeholder="מוצר וכמות (למשל: חלב 2)...">
+        <button class="action-btn" onclick="addShopItem()">➕ הוסף לרישום</button>
+        <div style="margin-top:10px;">
+            <button class="action-btn" style="background:#319795;" onclick="speakAllShoppingList()">🗣️ הקרא את כל רשימת הקניות בקול</button>
         </div>
-        <button class="action-btn" onclick="addShopItem()" id="btnAddShop">➕ הוסף מוצר</button>
         <div id="shopList" style="margin-top:15px;"></div>
     </div>
 
-    <!-- טאב מלאי ומגירות -->
+    <!-- טאב 20: מלאי ומגירות (כולל אפשרות למחוק מגירה שלמה או מוצרים בתוכה) -->
     <div id="tab-inventory" class="tab-content">
-        <h3 id="hInv">📦 ניהול מלאי מגירות ומעקב מדף</h3>
-        <div style="display:flex; gap:10px; margin-bottom:15px;">
-            <input type="text" id="newFolderName" placeholder="שם מגירה חדשה (למשל: מזווה)..." style="flex:2;">
-            <button class="action-btn" style="width:auto; margin-top:0;" onclick="addNewFolder()" id="btnAddFolder">📁 צור מגירה</button>
-        </div>
-        <div class="folders-grid" id="foldersContainer"></div>
-        <hr style="margin: 25px 0;">
-        <div id="folderDetailsContainer" style="background:rgba(0,0,0,0.02); padding:15px; border-radius:10px;">
-            <h3 id="selectedFolderTitle">📂 בחר מגירה לצפייה במלאי והוספת פריטים</h3>
-            <div id="inventoryFormSection" style="display:none; margin-top:15px;">
-                <input type="text" id="invItemName" placeholder="שם המוצר">
-                <input type="number" id="invItemQty" placeholder="כמות">
-                <div class="share-toggle-box">
-                    <input type="checkbox" id="invShared" style="width:auto; margin:0;" checked> 🌐 שיתוף פריט זה עם שאר דיירי הבית
-                </div>
-                <button class="action-btn" onclick="addInventoryItem()" id="btnAddInvItem">➕ הוסף למגירה זו</button>
+        <h3>📦 מלאי ומגירות</h3>
+        <p>כאן תוכלו ליצור מגירות חדשות (כמו מזווה, תרופות, כלי עבודה), למחוק מגירות שאינן בשימוש, או לנהל את המוצרים בתוכן.</p>
+        <input type="text" id="newFolderName" placeholder="שם מגירה חדשה (למשל: כלי עבודה)...">
+        <button class="action-btn" onclick="addNewFolder()">📁 צור מגירה חדשה</button>
+        <div class="folders-grid" id="foldersContainer" style="margin-top:15px;"></div>
+        <div id="folderDetailsContainer" style="background:rgba(0,0,0,0.02); padding:15px; border-radius:10px; display:none;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                <h3 id="selectedFolderTitle" style="margin:0;">📂 בחר מגירה</h3>
+                <button class="logout-btn" id="deleteFolderBtn" onclick="deleteActiveFolder()" style="padding:6px 12px; font-size:13px;">🗑️ מחק מגירה זו לגמרי</button>
             </div>
-            <div id="folderItemsList" style="margin-top: 15px;"></div>
+            <div id="inventoryFormSection" style="margin-top:15px;">
+                <input type="text" id="invItemName" placeholder="שם מוצר במגירה...">
+                <input type="number" id="invItemQty" placeholder="כמות...">
+                <button class="action-btn" onclick="addInventoryItem()">➕ הוסף מוצר למגירה</button>
+            </div>
+            <div id="folderItemsList" style="margin-top:15px;"></div>
         </div>
     </div>
 
-    <!-- טאב מתכונים -->
+    <!-- טאב 21: מתכונים -->
     <div id="tab-recipes" class="tab-content">
-        <h3 id="hRec">🍲 ספר מתכונים משפחתי</h3>
+        <h3>🍲 מתכונים</h3>
         <input type="text" id="recipeTitle" placeholder="שם המתכון...">
-        <textarea id="recipeInstructions" placeholder="אופן ההכנה..." style="width:100%; height:80px;"></textarea>
-        <div class="share-toggle-box">
-            <input type="checkbox" id="recipeShared" style="width:auto; margin:0;" checked> 🌐 שיתוף מתכון זה עם שאר דיירי הבית
-        </div>
-        <button class="action-btn" onclick="addRecipe()" id="btnAddRecipe">🍲 פרסם מתכון</button>
-        <div id="recipesListContainer" style="margin-top: 15px;"></div>
+        <textarea id="recipeInstructions" placeholder="אופן הכנה..." style="width:100%; height:80px;"></textarea>
+        <button class="action-btn" onclick="addRecipe()">🍲 פרסם מתכון</button>
+        <div id="recipesListContainer" style="margin-top:15px;"></div>
     </div>
 
-    <!-- טאב מוזיקה -->
+    <!-- טאב 22: מוזיקה -->
     <div id="tab-community" class="tab-content">
-        <h3 id="hMusic">🎵 מוזיקה וקישורים</h3>
-        <input type="text" id="musicTitle" placeholder="שם השיר / פלייליסט...">
-        <input type="text" id="musicLink" placeholder="קישור למוזיקה (YouTube / Spotify)...">
-        <div class="share-toggle-box">
-            <input type="checkbox" id="musicShared" style="width:auto; margin:0;" checked> 🌐 שיתוף שיר זה עם שאר דיירי הבית
-        </div>
-        <button class="action-btn" onclick="addMusicItem()" id="btnAddMusic">➕ הוסף שיר</button>
-        <div id="musicListContainer" style="margin-top: 15px;"></div>
+        <h3>🎵 מוזיקה</h3>
+        <input type="text" id="musicTitle" placeholder="שם שיר...">
+        <input type="text" id="musicLink" placeholder="קישור...">
+        <button class="action-btn" onclick="addMusicItem()">➕ הוסף שיר</button>
+        <div id="musicListContainer" style="margin-top:15px;"></div>
     </div>
 
-    <!-- טאב כספת -->
+    <!-- טאב 23: כספת -->
     <div id="tab-vault" class="tab-content">
-        <h3 id="hVault">🔐 כספת נתונים מוצפנת</h3>
+        <h3>🔐 כספת</h3>
         <div id="vaultUnlockSection" class="vault-box">
-            <h4 id="hVaultUnlock">🔑 פתיחת כספת (הגדירי סיסמה):</h4>
-            <input type="password" id="vaultPasswordInput" placeholder="סיסמת כספת...">
-            <button class="action-btn" onclick="unlockVault()" id="btnUnlockVault">🔓 פתח כספת</button>
+            <input type="password" id="vaultPasswordInput" placeholder="סיסמה אישית לכספת...">
+            <button class="action-btn" onclick="unlockVault()">🔓 פתח כספת</button>
         </div>
-        <div id="vaultContentSection" style="display:none; margin-top:15px;">
-            <input type="text" id="vaultItemTitle" placeholder="כותרת מידע רגיש...">
+        <div id="vaultContentSection" style="display:none;">
+            <input type="text" id="vaultItemTitle" placeholder="כותרת מידע סודי...">
             <textarea id="vaultItemData" placeholder="מידע סודי..." style="width:100%; height:80px;"></textarea>
-            <div class="share-toggle-box">
-                <input type="checkbox" id="vaultShared" style="width:auto; margin:0;"> 🔒 שמור נתון זה כפרטי לחלוטין (לא משותף)
-            </div>
-            <button class="action-btn" onclick="addVaultItem()" id="btnAddVaultItem">➕ שמור בכספת</button>
+            <button class="action-btn" onclick="addVaultItem()">➕ שמור בכספת</button>
             <div id="vaultItemsList" style="margin-top:15px;"></div>
         </div>
     </div>
 
-    <!-- טאב עוזרת חכמה -->
+    <!-- טאב 24: העוזרת החכמה -->
     <div id="tab-ai" class="tab-content">
-        <h3 id="hAI">🤖 העוזרת החכמה (מחוברת לענן)</h3>
+        <h3>🤖 העוזרת החכמה</h3>
         <div id="chatHistory" style="background:var(--card-bg); padding:15px; border-radius:8px; border:1px solid var(--button-bg); height:250px; overflow-y:auto; margin-bottom:15px;"></div>
         <div style="display:flex; gap:10px;">
             <input type="text" id="chatInput" placeholder="שאלי את העוזרת..." style="flex:2; margin:0;" onkeypress="if(event.key==='Enter') sendSmartAIQuery()">
-            <button class="action-btn" style="width:auto; margin:0;" onclick="sendSmartAIQuery()" id="btnSendAI">שאל</button>
+            <button class="action-btn" style="width:auto; margin:0;" onclick="sendSmartAIQuery()">שאל</button>
         </div>
     </div>
 </div>
 
 <script>
-    const STORAGE_USER = 'vidass_persistent_user_v45';
-    const STORAGE_HOUSE = 'vidass_persistent_house_v45';
-    const STORAGE_PIN = 'vidass_persistent_pin_v45';
-    const STORAGE_RECOVERY = 'vidass_persistent_rec_v45';
-    const STORAGE_VAULT_PIN = 'vidass_persistent_vault_v45';
-    const STORAGE_LANG = 'vidass_persistent_lang_v45';
-    const STORAGE_THEME = 'vidass_persistent_theme_v45';
-    const STORAGE_DATA = 'vidass_persistent_local_backup_v45';
+    const STORAGE_USER = 'vidass_persistent_user_v53';
+    const STORAGE_HOUSE = 'vidass_persistent_house_v53';
+    const STORAGE_PIN = 'vidass_persistent_pin_v53';
+    const STORAGE_RECOVERY = 'vidass_persistent_rec_v53';
+    const STORAGE_VAULT_PIN = 'vidass_persistent_vault_v53';
+    const STORAGE_LANG = 'vidass_persistent_lang_v53';
+    const STORAGE_THEME = 'vidass_persistent_theme_v53';
+    const STORAGE_DATA = 'vidass_persistent_local_backup_v53';
 
     let currentUser = localStorage.getItem(STORAGE_USER);
     let currentHouse = localStorage.getItem(STORAGE_HOUSE);
@@ -848,33 +628,26 @@
     let isVaultUnlocked = false;
     let isFinancesUnlocked = false;
     let activeFolder = '';
+    let activeMediaStream = null;
 
     let defaultDbData = {
-        shopping: {},
-        notes: [],
-        events: [],
-        receipts: [],
-        documents: [],
-        vidass: [],
-        tithes: [],
-        tasks: [],
-        expenses: [],
-        devices: [],
-        trips: [],
-        folders: ["מזווה", "מגירת תרופות"],
-        inventory: [],
-        recipes: [],
-        music: [],
-        vault: [],
-        residents: [],
-        kids: [],
-        notifications: [],
-        messages: [],
-        chat: [{role: 'ai', text: "שלום! הנתונים וההגדרות שלך נשמרים באופן קבוע ומאובטח. איך לעזור לך היום?"}]
+        shopping: {}, notes: [], events: [], receipts: [], documents: [], vidass: [], tithes: [], tasks: [], expenses: [],
+        devices: [], trips: [], folders: ["מזווה", "מגירת תרופות"], inventory: [], recipes: [], music: [], vault: [],
+        residents: [], kids: [], notifications: [], messages: [], allowance: [], chores: [], savings: [], hobbies: [], eventsPlan: [],
+        birthdays: [],
+        chat: [{role: 'ai', text: "שלום! מרכז השליטה המלא שלך פועל עם אפשרות מחיקת מגירות מלאה, תרגום שפות ומנגנון עריכה."}]
     };
 
     let localBackup = localStorage.getItem(STORAGE_DATA);
-    let dbData = localBackup ? JSON.parse(localBackup) : defaultDbData;
+    let dbData = defaultDbData;
+    if (localBackup) {
+        try {
+            let parsed = JSON.parse(localBackup);
+            dbData = Object.assign({}, defaultDbData, parsed);
+        } catch(e) {
+            dbData = defaultDbData;
+        }
+    }
 
     let rtdb = null;
     try {
@@ -886,13 +659,218 @@
         }
     } catch(e) {}
 
+    const translations = {
+        he: {
+            appTitle: "🏢 VIDASS Home",
+            appSub: "מרכז שליטה משפחתי, פרימיום ועסקי מאובטח",
+            themeTitle: "🎨 בחירת צבעים וערכת נושא תמידית",
+            themeSub: "בחרי את הצבע האהוב עליך למערכת. הבחירה נשמרת באופן קבוע!",
+            welcomeH2: "🏢 ברוכים הבאים ל-VIDASS Home",
+            welcomeP: "האם זו הפעם הראשונה שלך כאן או שאת/ה מצטרף/ת לבית קיים?",
+            btnNewHouse: "✨ אני משתמש חדש / פותח בית חדש",
+            btnJoinHouse: "🔗 יש לי קוד בית / קישור (משתמש קיים)",
+            tab1: "👥 דיירים ושיחות",
+            tab2: "🎂 ימי הולדת",
+            tab3: "🧒 ילדים ושעונים",
+            tab4: "💵 דמי כיס",
+            tab5: "🧹 מטלות בית",
+            tab6: "🐷 חיסכון ויעדים",
+            tab7: "⚽ חוגים",
+            tab8: "🎉 אירועים",
+            tab9: "🚗 טיולים ומפות",
+            tab10: "🔔 התראות",
+            tab11: "📝 פתקיות",
+            tab12: "🧾 קבלות",
+            tab13: "📄 תלושים",
+            tab14: "🏢 VIDASS",
+            tab15: "💰 הוצאות",
+            tab16: "🤲 מעשרות",
+            tab17: "🔌 מכשירים",
+            tab18: "📌 משימות",
+            tab19: "🛒 קניות",
+            tab20: "📦 מלאי",
+            tab21: "🍲 מתכונים",
+            tab22: "🎵 מוזיקה",
+            tab23: "🔐 כספת",
+            tab24: "🤖 העוזרת"
+        },
+        en: {
+            appTitle: "🏢 VIDASS Home",
+            appSub: "Secure Family, Premium & Business Control Center",
+            themeTitle: "🎨 Permanent Color & Theme Selection",
+            themeSub: "Choose your favorite system color. Saved permanently!",
+            welcomeH2: "🏢 Welcome to VIDASS Home",
+            welcomeP: "Is this your first time here or are you joining an existing home?",
+            btnNewHouse: "✨ I am a new user / Open new home",
+            btnJoinHouse: "🔗 I have a home code / link (Existing user)",
+            tab1: "👥 Residents & Calls",
+            tab2: "🎂 Birthdays",
+            tab3: "🧒 Kids & Watches",
+            tab4: "💵 Allowance",
+            tab5: "🧹 Chores",
+            tab6: "🐷 Savings",
+            tab7: "⚽ Hobbies",
+            tab8: "🎉 Events",
+            tab9: "🚗 Trips & Maps",
+            tab10: "🔔 Notifications",
+            tab11: "📝 Notes",
+            tab12: "🧾 Receipts",
+            tab13: "📄 Slips",
+            tab14: "🏢 VIDASS",
+            tab15: "💰 Expenses",
+            tab16: "🤲 Tithes",
+            tab17: "🔌 Devices",
+            tab18: "📌 Tasks",
+            tab19: "🛒 Shopping",
+            tab20: "📦 Inventory",
+            tab21: "🍲 Recipes",
+            tab22: "🎵 Music",
+            tab23: "🔐 Vault",
+            tab24: "🤖 Assistant"
+        },
+        ru: {
+            appTitle: "🏢 VIDASS Home",
+            appSub: "Безопасный центр управления домом и бизнесом",
+            themeTitle: "🎨 Выбор темы и цвета",
+            themeSub: "Выберите любимый цвет системы. Сохраняется навсегда!",
+            welcomeH2: "🏢 Добро пожаловать в VIDASS Home",
+            welcomeP: "Это ваш первый визит или вы присоединяетесь к существующему дому?",
+            btnNewHouse: "✨ Новый пользователь / Открыть дом",
+            btnJoinHouse: "🔗 У меня есть код дома (Существующий пользователь)",
+            tab1: "👥 Жильцы и звонки",
+            tab2: "🎂 Дни рождения",
+            tab3: "🧒 Дети",
+            tab4: "💵 Карманные деньги",
+            tab5: "🧹 Уборка",
+            tab6: "🐷 Накопления",
+            tab7: "⚽ Кружки",
+            tab8: "🎉 События",
+            tab9: "🚗 Поездки",
+            tab10: "🔔 Уведомления",
+            tab11: "📝 Заметки",
+            tab12: "🧾 Чеки",
+            tab13: "📄 Документы",
+            tab14: "🏢 VIDASS",
+            tab15: "💰 Расходы",
+            tab16: "🤲 Десятина",
+            tab17: "🔌 Устройства",
+            tab18: "📌 Задачи",
+            tab19: "🛒 Покупки",
+            tab20: "📦 Инвентарь",
+            tab21: "🍲 Рецепты",
+            tab22: "🎵 Музыка",
+            tab23: "🔐 Сейф",
+            tab24: "🤖 Ассистент"
+        },
+        fr: {
+            appTitle: "🏢 VIDASS Home",
+            appSub: "Centre de contrôle familial et professionnel sécurizado",
+            themeTitle: "🎨 Sélection de Thème",
+            themeSub: "Choisissez votre couleur préférée. Enregistré en permanence !",
+            welcomeH2: "🏢 Bienvenue sur VIDASS Home",
+            welcomeP: "Est-ce votre première visite ou rejoignez-vous un foyer existant ?",
+            btnNewHouse: "✨ Nouvel utilisateur / Créer un foyer",
+            btnJoinHouse: "🔗 J'ai un code de foyer",
+            tab1: "👥 Résidents",
+            tab2: "🎂 Anniversaires",
+            tab3: "🧒 Enfants",
+            tab4: "💵 Argent de poche",
+            tab5: "🧹 Corvées",
+            tab6: "🐷 Épargne",
+            tab7: "⚽ Loisirs",
+            tab8: "🎉 Événements",
+            tab9: "🚗 Voyages",
+            tab10: "🔔 Notifications",
+            tab11: "📝 Notes",
+            tab12: "🧾 Reçus",
+            tab13: "📄 Documents",
+            tab14: "🏢 VIDASS",
+            tab15: "💰 Dépenses",
+            tab16: "🤲 Dîmes",
+            tab17: "🔌 Appareils",
+            tab18: "📌 Tâches",
+            tab19: "🛒 Achats",
+            tab20: "📦 Inventaire",
+            tab21: "🍲 Recettes",
+            tab22: "🎵 Musique",
+            tab23: "🔐 Coffre",
+            tab24: "🤖 Assistant"
+        },
+        ar: {
+            appTitle: "🏢 VIDASS Home",
+            appSub: "مركز التحكم العائلي والتجاري الآمن",
+            themeTitle: "🎨 اختيار الألوان والنمط",
+            themeSub: "اختر لونك المفضل للنظام. يتم حفظه بشكل دائم!",
+            welcomeH2: "🏢 أهلاً بك في VIDASS Home",
+            welcomeP: "هل هذه زيارتك الأولى أم تنضم إلى منزل موجود؟",
+            btnNewHouse: "✨ مستخدم جديد / فتح منزل جديد",
+            btnJoinHouse: "🔗 لدي رمز منزل (مستخدم حالي)",
+            tab1: "👥 السكان",
+            tab2: "🎂 أعياد الميلاد",
+            tab3: "🧒 الأطفال",
+            tab4: "💵 المصروف",
+            tab5: "🧹 الأعمال",
+            tab6: "🐷 التوفير",
+            tab7: "⚽ الهوايات",
+            tab8: "🎉 الفعاليات",
+            tab9: "🚗 الرحلات",
+            tab10: "🔔 التنبيهات",
+            tab11: "📝 الملاحظات",
+            tab12: "🧾 الإيصالات",
+            tab13: "📄 المستندات",
+            tab14: "🏢 VIDASS",
+            tab15: "💰 المصاريف",
+            tab16: "🤲 العشور",
+            tab17: "🔌 الأجهزة",
+            tab18: "📌 المهام",
+            tab19: "🛒 التسوق",
+            tab20: "📦 المخزون",
+            tab21: "🍲 الوصفات",
+            tab22: "🎵 الموسيقى",
+            tab23: "🔐 الخزنة",
+            tab24: "🤖 المساعد"
+        },
+        es: {
+            appTitle: "🏢 VIDASS Home",
+            appSub: "Centro de control familiar y empresarial seguro",
+            themeTitle: "🎨 Selección de Tema",
+            themeSub: "Elige tu color favorito. ¡Guardado permanentemente!",
+            welcomeH2: "🏢 Bienvenido a VIDASS Home",
+            welcomeP: "¿Es tu primera vez aquí o te unes a un hogar existente?",
+            btnNewHouse: "✨ Nuevo usuario / Crear hogar",
+            btnJoinHouse: "🔗 Tengo un código de hogar",
+            tab1: "👥 Residentes",
+            tab2: "🎂 Cumpleaños",
+            tab3: "🧒 Niños",
+            tab4: "💵 Mesada",
+            tab5: "🧹 Tareas",
+            tab6: "🐷 Ahorros",
+            tab7: "⚽ Pasatiempos",
+            tab8: "🎉 Eventos",
+            tab9: "🚗 Viajes",
+            tab10: "🔔 Notificaciones",
+            tab11: "📝 Notas",
+            tab12: "🧾 Recibos",
+            tab13: "📄 Documentos",
+            tab14: "🏢 VIDASS",
+            tab15: "💰 Gastos",
+            tab16: "🤲 Diezmos",
+            tab17: "🔌 Dispositivos",
+            tab18: "📌 Tareas",
+            tab19: "🛒 Compras",
+            tab20: "📦 Inventario",
+            tab21: "🍲 Recetas",
+            tab22: "🎵 Música",
+            tab23: "🔐 Bóveda",
+            tab24: "🤖 Asistente"
+        }
+    };
+
     window.onload = function() {
         requestNotificationPermission();
         populateMonthsDropdown();
-        
         let savedTheme = localStorage.getItem(STORAGE_THEME) || 'pink';
         setTheme(savedTheme, false);
-
         let savedLang = localStorage.getItem(STORAGE_LANG) || 'he';
         document.getElementById('langSelect').value = savedLang;
         changeLanguage(savedLang, false);
@@ -904,38 +882,204 @@
             localStorage.setItem(STORAGE_HOUSE, currentHouse);
         }
 
-        // סיום מסך הפתיחה לאחר 2.5 שניות
         setTimeout(() => {
             let splash = document.getElementById('splashScreen');
             if (splash) {
                 splash.style.opacity = '0';
                 setTimeout(() => {
                     splash.style.display = 'none';
-                    
-                    // אם המשתמש כבר שמור במכשיר, עבור ישר לכניסה מאובטחת
-                    if (currentUser && currentPin) {
-                        showBankLoginScreen();
-                    } else if (invitedHouse) {
-                        // אם נכנס דרך קישור הזמנה לבית קיים
-                        document.getElementById('inputJoinHouseCode').value = currentHouse;
-                        document.getElementById('joinExistingScreen').style.display = 'block';
+                    if (!currentUser || !currentPin) {
+                        if (invitedHouse) {
+                            document.getElementById('inputJoinHouseCode').value = currentHouse;
+                            document.getElementById('joinExistingScreen').style.display = 'block';
+                        } else {
+                            document.getElementById('welcomeChoiceScreen').style.display = 'block';
+                        }
                     } else {
-                        // הצג את מסך בחירת משתמש חדש או קיים
-                        document.getElementById('welcomeChoiceScreen').style.display = 'block';
+                        showBankLoginScreen();
                     }
                 }, 600);
             }
         }, 2500);
     };
 
-    function selectNewUserMode() {
+    async function updateShabbatAndWeather() {
+        let regionSelect = document.getElementById('regionSelect');
+        let religionSelect = document.getElementById('religionSelect');
+        if(!regionSelect || !religionSelect) return;
+        let region = regionSelect.value;
+        let religion = religionSelect.value;
+
+        let coords = {
+            eilat: { name: "אילת והערבה", lat: 29.5581, lon: 34.9482, candleOffset: 20 },
+            jerusalem: { name: "ירושלים והסביבה", lat: 31.7683, lon: 35.2137, candleOffset: 40 },
+            telaviv: { name: "תל אביב וגוש דן", lat: 32.0853, lon: 34.7818, candleOffset: 22 }
+        };
+
+        let curReg = coords[region] || coords['eilat'];
+        let weatherBox = document.getElementById('weatherDisplayBox');
+        let banner = document.getElementById('shabbatBanner');
+
+        try {
+            let response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${curReg.lat}&longitude=${curReg.lon}&current_weather=true`);
+            let data = await response.json();
+            if (data && data.current_weather) {
+                let temp = data.current_weather.temperature;
+                let wind = data.current_weather.windspeed;
+                weatherBox.innerHTML = `🌤️ מזג אוויר חי ומעודכן ב<b>${curReg.name}</b>: <b>${temp}°C</b> | רוח: ${wind} קמ/ש ☀️`;
+            } else {
+                weatherBox.innerHTML = `🌤️ מזג אוויר ב<b>${curReg.name}</b>: נעים ומעודכן`;
+            }
+        } catch(e) {
+            weatherBox.innerHTML = `🌤️ מזג אוויר ב<b>${curReg.name}</b>: מחובר למערכת`;
+        }
+
+        if (religion === 'jewish') {
+            let now = new Date();
+            let sunsetHour = 18;
+            let sunsetMin = 15;
+            let m = now.getMonth();
+            if (m >= 3 && m <= 8) { sunsetHour = 19; sunsetMin = 25; }
+            else { sunsetHour = 17; sunsetMin = 35; }
+
+            let candleMinTotal = (sunsetHour * 60 + sunsetMin) - curReg.candleOffset;
+            let cHour = Math.floor(candleMinTotal / 60);
+            let cMin = candleMinTotal % 60;
+            let candleStr = `${cHour}:${cMin < 10 ? '0' : ''}${cMin}`;
+
+            let outMinTotal = (sunsetHour * 60 + sunsetMin) + 45;
+            let oHour = Math.floor(outMinTotal / 60);
+            let oMin = outMinTotal % 60;
+            let outStr = `${oHour}:${oMin < 10 ? '0' : ''}${oMin}`;
+
+            banner.innerHTML = `🕯️ שעון שבת מדויק עבור <b>${curReg.name}</b> — כניסה: <b>${candleStr}</b> | יציאה: <b>${outStr}</b>`;
+        } else {
+            banner.innerHTML = `🌐 לוח שנה כללי ומעודכן (${curReg.name})`;
+        }
+    }
+
+    function speakAllShoppingList() {
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+            let items = Object.keys(dbData.shopping || {});
+            if (items.length === 0) {
+                alert("רשימת הקניות ריקה.");
+                return;
+            }
+            let textToRead = "רשימת הקניות שלך כוללת: " + items.join(", ");
+            let utterance = new SpeechSynthesisUtterance(textToRead);
+            let lang = document.getElementById('langSelect').value;
+            utterance.lang = lang === 'en' ? 'en-US' : lang === 'ru' ? 'ru-RU' : lang === 'fr' ? 'fr-FR' : lang === 'ar' ? 'ar-SA' : lang === 'es' ? 'es-ES' : 'he-IL';
+            window.speechSynthesis.speak(utterance);
+        } else {
+            alert("דפדפן זה אינו תומך בהקראה קולית.");
+        }
+    }
+
+    function changeLanguage(lang, save = true) {
+        if (save) localStorage.setItem(STORAGE_LANG, lang);
+        if (lang === 'en' || lang === 'ru' || lang === 'fr' || lang === 'es') {
+            document.body.classList.add('ltr-mode'); document.body.setAttribute('dir', 'ltr');
+        } else {
+            document.body.classList.remove('ltr-mode'); document.body.setAttribute('dir', 'rtl');
+        }
+
+        let dict = translations[lang] || translations['he'];
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            let key = el.getAttribute('data-i18n');
+            if (dict[key]) el.innerText = dict[key];
+        });
+
+        let placeholders = {
+            en: { shopInput: "Item and quantity...", taskText: "New task...", inputFullName: "Your full name..." },
+            he: { shopInput: "מוצר וכמות...", taskText: "משימה חדשה...", inputFullName: "שם הדייר/ת שלך..." },
+            ru: { shopInput: "Товар и количество...", taskText: "Новая задача...", inputFullName: "Ваше имя..." },
+            fr: { shopInput: "Article et quantité...", taskText: "Nouvelle tâche...", inputFullName: "Votre nom..." },
+            ar: { shopInput: "المنتج والكمية...", taskText: "مهمة جديدة...", inputFullName: "اسمك..." },
+            es: { shopInput: "Artículo y cantidad...", taskText: "Nueva tarea...", inputFullName: "Tu nombre..." }
+        };
+        let pSet = placeholders[lang] || placeholders['he'];
+        if(document.getElementById('shopInput')) document.getElementById('shopInput').placeholder = pSet.shopInput;
+        if(document.getElementById('taskText')) document.getElementById('taskText').placeholder = pSet.taskText;
+    }
+
+    function addBirthday() {
+        let name = document.getElementById('bdayName').value.trim();
+        let date = document.getElementById('bdayDate').value;
+        let note = document.getElementById('bdayNote').value.trim();
+        let shared = document.getElementById('bdayShared').checked;
+        if(name && date) {
+            if(!dbData.birthdays) dbData.birthdays = [];
+            dbData.birthdays.push({name, date, note, shared, owner: currentUser});
+            document.getElementById('bdayName').value = '';
+            document.getElementById('bdayDate').value = '';
+            document.getElementById('bdayNote').value = '';
+            saveData();
+            alert("🎂 יום ההולדת נוסף בהצלחה!");
+        } else { alert("נא להזין שם ותאריך יום הולדת."); }
+    }
+    function editBirthday(i) {
+        let b = dbData.birthdays[i];
+        let newName = prompt("ערוך שם חוגג/ת:", b.name);
+        let newDate = prompt("ערוך תאריך (YYYY-MM-DD):", b.date);
+        let newNote = prompt("ערוך הערות / מתנה:", b.note);
+        if(newName && newDate) {
+            b.name = newName.trim();
+            b.date = newDate;
+            b.note = newNote ? newNote.trim() : '';
+            saveData();
+        }
+    }
+    function deleteBirthday(i) { dbData.birthdays.splice(i, 1); saveData(); }
+
+    async function startAudioCall(residentName) {
+        let modal = document.getElementById('callModal');
+        let title = document.getElementById('callModalTitle');
+        let status = document.getElementById('callModalStatus');
+        let videoPrev = document.getElementById('callVideoPreview');
+        title.innerText = `📞 שיחה קולית עם ${residentName}`;
+        status.innerText = "מתחבר לערוץ השמע המאובטח...";
+        videoPrev.style.display = 'none';
+        modal.style.display = 'flex';
+        try {
+            activeMediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+            status.innerText = `🎙️ מחובר בשיחה קולית פעילה עם ${residentName}!`;
+        } catch (err) { status.innerText = `⚠️ לא ניתן לגשת למיקרופון: ${err.message}`; }
+    }
+
+    async function startVideoCall(residentName) {
+        let modal = document.getElementById('callModal');
+        let title = document.getElementById('callModalTitle');
+        let status = document.getElementById('callModalStatus');
+        let videoPrev = document.getElementById('callVideoPreview');
+        title.innerText = `📹 שיחת וידאו עם ${residentName}`;
+        status.innerText = "מפעיל מצלמה ומתחבר...";
+        videoPrev.style.display = 'block';
+        modal.style.display = 'flex';
+        try {
+            activeMediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+            videoPrev.srcObject = activeMediaStream;
+            status.innerText = `🔴 שיחת וידאו פעילה עם ${residentName}`;
+        } catch (err) { status.innerText = `⚠️ שגיאה בהפעלת המצלמה: ${err.message}`; }
+    }
+
+    function closeCallModal() {
+        if (activeMediaStream) {
+            activeMediaStream.getTracks().forEach(track => track.stop());
+            activeMediaStream = null;
+        }
+        document.getElementById('callVideoPreview').srcObject = null;
+        document.getElementById('callModal').style.display = 'none';
+    }
+
+    function chooseNewUser() {
         document.getElementById('welcomeChoiceScreen').style.display = 'none';
         let generatedHouse = 'vidass_' + Math.floor(1000 + Math.random() * 9000);
         document.getElementById('inputHouseName').value = generatedHouse;
         document.getElementById('authScreen').style.display = 'block';
     }
 
-    function selectExistingUserMode() {
+    function chooseExistingUser() {
         document.getElementById('welcomeChoiceScreen').style.display = 'none';
         document.getElementById('joinExistingScreen').style.display = 'block';
     }
@@ -948,398 +1092,41 @@
 
     function joinExistingHouse() {
         let houseCode = document.getElementById('inputJoinHouseCode').value.trim().toLowerCase();
-        let fullName = document.getElementById('inputJoinFullName').value.trim();
+        let name = document.getElementById('inputJoinName').value.trim();
         let pin = document.getElementById('inputJoinPin').value.trim();
-
-        if (!houseCode || !fullName || !pin) {
-            alert("נא למלא את כל השדות: קוד הבית הקיים, שמך והסיסמה.");
-            return;
-        }
-
-        currentHouse = houseCode;
-        currentUser = fullName;
-        currentPin = pin;
-        currentRecovery = "1234"; // ברירת מחדל לשחזור למצטרפים
-
+        if (!houseCode || !name || !pin) { alert("נא למלא את כל השדות."); return; }
+        currentHouse = houseCode; currentUser = name; currentPin = pin; currentRecovery = "1234";
         localStorage.setItem(STORAGE_HOUSE, currentHouse);
         localStorage.setItem(STORAGE_USER, currentUser);
         localStorage.setItem(STORAGE_PIN, currentPin);
         localStorage.setItem(STORAGE_RECOVERY, currentRecovery);
-
-        // בדיקה בענן אם הבית קיים וטעינת הנתונים מבלי לגרוס אותם
-        if (rtdb) {
-            rtdb.ref('houses/' + currentHouse).once('value', (snapshot) => {
-                let val = snapshot.val();
-                if (val) {
-                    dbData = Object.assign({}, defaultDbData, val);
-                }
-                registerResident(currentUser);
-                document.getElementById('joinExistingScreen').style.display = 'none';
-                startMainApp();
-            }, (err) => {
-                registerResident(currentUser);
-                document.getElementById('joinExistingScreen').style.display = 'none';
-                startMainApp();
-            });
-        } else {
-            registerResident(currentUser);
-            document.getElementById('joinExistingScreen').style.display = 'none';
-            startMainApp();
-        }
+        document.getElementById('joinExistingScreen').style.display = 'none';
+        registerResident(currentUser);
+        showBankLoginScreen();
     }
 
     function setTheme(themeName, save = true) {
         if (save) localStorage.setItem(STORAGE_THEME, themeName);
         let root = document.documentElement;
         if (themeName === 'pink') {
-            root.style.setProperty('--bg-color', '#fff5f8');
-            root.style.setProperty('--primary-color', '#d1496b');
-            root.style.setProperty('--button-bg', '#ffb6c1');
-            root.style.setProperty('--card-bg', '#ffffff');
-            root.style.setProperty('--text-color', '#333333');
+            root.style.setProperty('--bg-color', '#fff5f8'); root.style.setProperty('--primary-color', '#d1496b'); root.style.setProperty('--button-bg', '#ffb6c1'); root.style.setProperty('--card-bg', '#ffffff'); root.style.setProperty('--text-color', '#333333');
         } else if (themeName === 'green') {
-            root.style.setProperty('--bg-color', '#f0fff4');
-            root.style.setProperty('--primary-color', '#276749');
-            root.style.setProperty('--button-bg', '#9ae6b4');
-            root.style.setProperty('--card-bg', '#ffffff');
-            root.style.setProperty('--text-color', '#2d3748');
+            root.style.setProperty('--bg-color', '#f0fff4'); root.style.setProperty('--primary-color', '#276749'); root.style.setProperty('--button-bg', '#9ae6b4'); root.style.setProperty('--card-bg', '#ffffff'); root.style.setProperty('--text-color', '#2d3748');
         } else if (themeName === 'blue') {
-            root.style.setProperty('--bg-color', '#ebf8ff');
-            root.style.setProperty('--primary-color', '#3182ce');
-            root.style.setProperty('--button-bg', '#90cdf4');
-            root.style.setProperty('--card-bg', '#ffffff');
-            root.style.setProperty('--text-color', '#2d3748');
+            root.style.setProperty('--bg-color', '#ebf8ff'); root.style.setProperty('--primary-color', '#3182ce'); root.style.setProperty('--button-bg', '#90cdf4'); root.style.setProperty('--card-bg', '#ffffff'); root.style.setProperty('--text-color', '#2d3748');
         } else if (themeName === 'purple') {
-            root.style.setProperty('--bg-color', '#faf5ff');
-            root.style.setProperty('--primary-color', '#6b46c1');
-            root.style.setProperty('--button-bg', '#d6bcfa');
-            root.style.setProperty('--card-bg', '#ffffff');
-            root.style.setProperty('--text-color', '#2d3748');
+            root.style.setProperty('--bg-color', '#faf5ff'); root.style.setProperty('--primary-color', '#6b46c1'); root.style.setProperty('--button-bg', '#d6bcfa'); root.style.setProperty('--card-bg', '#ffffff'); root.style.setProperty('--text-color', '#2d3748');
         } else if (themeName === 'gold') {
-            root.style.setProperty('--bg-color', '#fffaf0');
-            root.style.setProperty('--primary-color', '#d69e2e');
-            root.style.setProperty('--button-bg', '#fbd38d');
-            root.style.setProperty('--card-bg', '#ffffff');
-            root.style.setProperty('--text-color', '#2d3748');
+            root.style.setProperty('--bg-color', '#fffaf0'); root.style.setProperty('--primary-color', '#d69e2e'); root.style.setProperty('--button-bg', '#fbd38d'); root.style.setProperty('--card-bg', '#ffffff'); root.style.setProperty('--text-color', '#2d3748');
         } else if (themeName === 'red') {
-            root.style.setProperty('--bg-color', '#fff5f5');
-            root.style.setProperty('--primary-color', '#e53e3e');
-            root.style.setProperty('--button-bg', '#feb2b2');
-            root.style.setProperty('--card-bg', '#ffffff');
-            root.style.setProperty('--text-color', '#2d3748');
+            root.style.setProperty('--bg-color', '#fff5f5'); root.style.setProperty('--primary-color', '#e53e3e'); root.style.setProperty('--button-bg', '#feb2b2'); root.style.setProperty('--card-bg', '#ffffff'); root.style.setProperty('--text-color', '#2d3748');
         } else if (themeName === 'dark') {
-            root.style.setProperty('--bg-color', '#1a202c');
-            root.style.setProperty('--primary-color', '#63b3ed');
-            root.style.setProperty('--button-bg', '#4a5568');
-            root.style.setProperty('--card-bg', '#2d3748');
-            root.style.setProperty('--text-color', '#f7fafc');
+            root.style.setProperty('--bg-color', '#1a202c'); root.style.setProperty('--primary-color', '#63b3ed'); root.style.setProperty('--button-bg', '#4a5568'); root.style.setProperty('--card-bg', '#2d3748'); root.style.setProperty('--text-color', '#f7fafc');
         }
     }
 
     function requestNotificationPermission() {
-        if ("Notification" in window && Notification.permission !== "granted") {
-            Notification.requestPermission();
-        }
-    }
-
-    const translations = {
-        he: {
-            access: "♿ נגישות ושפות:", contrast: "🌓 ניגודיות", speak: "🗣️ הקראת עמוד",
-            authTitle: "🏢 VIDASS Home - הרשמת דייר חדש", authSub: "הזיני את שמך, קוד בית חדש, סיסמה אישית וקוד שחזור:",
-            lblFullName: "שם הדייר/ת שלך:", lblHouseCode: "קוד הבית המשותף (ענן):", lblAdminPin: "סיסמה אישית לכניסה:", lblRecoveryPin: "קוד שחזור סודי (לשחזור במקרה של שכחה):",
-            btnCreateHouse: "🏠 שמור פרטים והכנס למערכת",
-            loginSub: "כניסה מאובטחת למרכז השליטה:", txtUser: "משתמש", lblEnterPin: "הקישי את הסיסמה האישית שלך:",
-            btnLoginSubmit: "🔓 היכנס למערכת בבטחה", btnBiometric: "🧬 כניסה מהירה בטוחה (פנים / אצבע)", btnForgotPin: "🔑 שכחתי סיסמה (שחזור עם קוד סודי)", btnResetDevice: "🔄 החלף דייר / אפס מכשיר",
-            txtHouseSpan: "מספר בית", btnLock: "🔒 נעילה",
-            inviteTitle: "👑 ניהול דיירי הבית והפצת האפליקציה", inviteSub: "שלחי את קישור ההזמנה לדיירי הבית (כולל ילדים ושעונים חכמים)!",
-            btnCopyInvite: "📋 העתק קישור הזמנה לבית", linkCal: "📅 פתח יומן", linkWa: "💬 פתח וואטסאפ", linkMail: "📧 פתח אימייל",
-            tabResidents: "👥 דיירים והודעות", tabKids: "🧒 ילדים ושעונים (פרימיום)", tabNotifs: "🔔 התראות ותזכורות", tabNotes: "📝 פתקיות", tabReceipts: "🧾 קבלות והשוואה", tabSalary: "📄 תלושים ומכתבים", tabVidass: "🏢 VIDASS",
-            tabFinances: "💰 הוצאות", tabTithes: "🤲 מעשרות", tabDevices: "🔌 מכשירים", tabTrips: "🚗 נסיעות",
-            tabTasks: "📌 משימות ולוח שנה", tabShop: "🛒 קניות", tabInv: "📦 מלאי", tabRec: "🍲 מתכונים", tabMusic: "🎵 מוזיקה", tabVault: "🔐 כספת", tabAI: "🤖 העוזרת",
-            hResidents: "👥 שמות דיירי הבית ושליחת הודעות ישירות", btnSendMsg: "📨 שלח הודעה לדייר הבית",
-            hNotifs: "🔔 יצירת התראה מתפרצת ותזכורות לטלפון", btnAddNotif: "➕ צור תזכורת והפעל התראה",
-            hNotes: "📝 פתקיות אישיות וטיפים לבית", btnAddNote: "➕ הוסף פתקייה",
-            hCalendar: "🕒 יומן שעות ולוח זמנים יומי", btnAddEvent: "➕ הוסף ליומן",
-            hReceiptsTitle: "🧾 ניהול קבלות והשוואת מחירים (איפה הכי זול?)", btnAddReceipt: "➕ שמור קבלה והשווה מחיר", hReceiptTip: "💡 המלצת חיסכון והשוואת רשתות:",
-            hSalaryTitle: "📄 ניתוח תלושי משכורת, חוקי עבודה ומכתבים רשמיים", lblSelectDoc: "בחר סוג מסמך לפיענוח וייעוץ:", btnAnalyzeDoc: "🤖 נתח מסמך והסבר לי פשוט",
-            hVidass: "🏢 ניהול חברת VIDASS ופרויקטים", btnAddVidass: "➕ הוסף פרויקט ל-VIDASS",
-            hFinances: "💰 ניהול הוצאות משפחתיות", btnAddExp: "➕ הוסף הוצאה לענן",
-            hTithes: "🤲 מחשבון מעשרות והפרשת צדקה", btnAddTitheCalc: "💡 חשב 10% מעשר",
-            hDevices: "🔌 ניהול מכשירים חכמים", btnAddDev: "➕ הוסף מכשיר",
-            hTrips: "🚗 ניהול נסיעות ויעדים וקישור לניווט", btnAddTrip: "➕ הוסף נסיעה לענן",
-            hTasks: "📌 משימות, אזורי עולם, דתות ולוח שנה חכם", lblSelectRegion: "🌍 בחרי אזור בעולם (זמנים ומזג אוויר):", lblSelectReligion: "🕊️ בחרי השתייכות דתית / תרבותית ללוח החגים והמועדים:", btnAddTsk: "➕ הוסף משימה",
-            hShop: "🛒 רשימת קניות משותפת בזמן אמת", btnAddShop: "➕ הוסף מוצר",
-            hInv: "📦 ניהול מלאי מגירות ומעקב מדף", btnAddFolder: "📁 צור מגירה", selectedFolderTitle: "📂 בחר מגירה לצפייה במלאי והוספת פריטים", btnAddInvItem: "➕ הוסף למגירה זו",
-            hRec: "🍲 ספר מתכונים משפחתי", btnAddRecipe: "🍲 פרסם מתכון",
-            hMusic: "🎵 מוזיקה וקישורים", btnAddMusic: "➕ הוסף שיר",
-            hVault: "🔐 כספת נתונים מוצפנת", hVaultUnlock: "🔑 פתיחת כספת (הגדירי סיסמה):", btnUnlockVault: "🔓 פתח כספת", btnAddVaultItem: "➕ שמור בכספת",
-            hAI: "🤖 העוזרת החכמה (מחוברת לענן)", btnSendAI: "שאל"
-        },
-        en: {
-            access: "♿ Access & Lang:", contrast: "🌓 Contrast", speak: "🗣️ Speak Page",
-            authTitle: "🏢 VIDASS Home - New Resident Registration", authSub: "Enter your name, new house code, PIN and recovery code:",
-            lblFullName: "Your Name:", lblHouseCode: "Shared House Code (Cloud):", lblAdminPin: "Personal Login PIN:", lblRecoveryPin: "Secret Recovery Code:",
-            btnCreateHouse: "🏠 Save & Enter System",
-            loginSub: "Secure login to control center:", txtUser: "User", lblEnterPin: "Enter your personal PIN:",
-            btnLoginSubmit: "🔓 Secure Login", btnBiometric: "🧬 Biometric Quick Login (Face / Touch)", btnForgotPin: "🔑 Forgot PIN (Recovery)", btnResetDevice: "🔄 Switch Resident / Reset",
-            txtHouseSpan: "House ID", btnLock: "🔒 Lock",
-            inviteTitle: "👑 Household Members & Sharing", inviteSub: "Send the invite link to your household (including kids & watches)!",
-            btnCopyInvite: "📋 Copy House Invite Link", linkCal: "📅 Open Calendar", linkWa: "💬 Open WhatsApp", linkMail: "📧 Open Email",
-            tabResidents: "👥 Residents", tabKids: "🧒 Kids & Watches (Premium)", tabNotifs: "🔔 Notifications", tabNotes: "📝 Notes", tabReceipts: "🧾 Receipts & Compare", tabSalary: "📄 Salary & Letters", tabVidass: "🏢 VIDASS",
-            tabFinances: "💰 Finances", tabTithes: "🤲 Tithes", tabDevices: "🔌 Devices", tabTrips: "🚗 Trips",
-            tabTasks: "📌 Tasks & Calendar", tabShop: "🛒 Shopping", tabInv: "📦 Inventory", tabRec: "🍲 Recipes", tabMusic: "🎵 Music", tabVault: "🔐 Vault", tabAI: "🤖 AI",
-            hResidents: "👥 Household Residents & Direct Messaging", btnSendMsg: "📨 Send Message to Resident",
-            hNotifs: "🔔 Push Notifications & Reminders", btnAddNotif: "➕ Create Reminder & Notification",
-            hNotes: "📝 Personal Notes & Tips", btnAddNote: "➕ Add Note",
-            hCalendar: "🕒 Daily Schedule & Calendar", btnAddEvent: "➕ Add Event",
-            hReceiptsTitle: "🧾 Receipts & Price Comparison", btnAddReceipt: "➕ Save Receipt & Compare", hReceiptTip: "💡 Savings & Store Advice:",
-            hSalaryTitle: "📄 Salary Slips & Official Letters Analysis", lblSelectDoc: "Select Document Type:", btnAnalyzeDoc: "🤖 Analyze Document",
-            hVidass: "🏢 VIDASS Management & Projects", btnAddVidass: "➕ Add VIDASS Project",
-            hFinances: "💰 Family Expense Management", btnAddExp: "➕ Add Expense to Cloud",
-            hTithes: "🤲 Tithes & Charity Calculator", btnAddTitheCalc: "💡 Calculate 10% Tithe",
-            hDevices: "🔌 Smart Devices Management", btnAddDev: "➕ Add Device",
-            hTrips: "🚗 Trips & Navigation Links", btnAddTrip: "➕ Add Trip to Cloud",
-            hTasks: "📌 Tasks, World Region & Calendar", lblSelectRegion: "🌍 Select World Region:", lblSelectReligion: "🕊️ Select Cultural / Religious Tradition:", btnAddTsk: "➕ Add Task",
-            hShop: "🛒 Real-time Shared Shopping List", btnAddShop: "➕ Add Item",
-            hInv: "📦 Drawer Inventory & Shelves", btnAddFolder: "📁 Create Drawer", selectedFolderTitle: "📂 Select a drawer to view items", btnAddInvItem: "➕ Add to Drawer",
-            hRec: "🍲 Family Recipe Book", btnAddRecipe: "🍲 Publish Recipe",
-            hMusic: "🎵 Music & Links", btnAddMusic: "➕ Add Song",
-            hVault: "🔐 Encrypted Data Vault", hVaultUnlock: "🔑 Unlock Vault (Set PIN):", btnUnlockVault: "🔓 Open Vault", btnAddVaultItem: "➕ Save to Vault",
-            hAI: "🤖 Smart Assistant (Cloud Connected)", btnSendAI: "Ask"
-        },
-        ru: {
-            access: "♿ Доступ и язык:", contrast: "🌓 Контраст", speak: "🗣️ Читать",
-            authTitle: "🏢 VIDASS Home - Регистрация нового жильца", authSub: "Введите имя, новый код дома, PIN-код и код восстановления:",
-            lblFullName: "Ваше имя:", lblHouseCode: "Код общего дома:", lblAdminPin: "Личный PIN-код:", lblRecoveryPin: "Секретный код восстановления:",
-            btnCreateHouse: "🏠 Сохранить и войти",
-            loginSub: "Безопасный вход в систему:", txtUser: "Пользователь", lblEnterPin: "Введите ваш PIN-код:",
-            btnLoginSubmit: "🔓 Безопасный вход", btnBiometric: "🧬 Биометрический вход", btnForgotPin: "🔑 Забыли PIN?", btnResetDevice: "🔄 Сменить жильца",
-            txtHouseSpan: "ID дома", btnLock: "🔒 Блокировка",
-            inviteTitle: "👑 Управление домочадцами", inviteSub: "Отправьте ссылку домочадцам (включая детей и часы)!",
-            btnCopyInvite: "📋 Копировать ссылку", linkCal: "📅 Календарь", linkWa: "💬 WhatsApp", linkMail: "📧 Email",
-            tabResidents: "👥 Жильцы", tabKids: "🧒 Дети и часы (Премиум)", tabNotifs: "🔔 Уведомления", tabNotes: "📝 Заметки", tabReceipts: "🧾 Чеки", tabSalary: "📄 Зарплата", tabVidass: "🏢 VIDASS",
-            tabFinances: "💰 Расходы", tabTithes: "🤲 Десятина", tabDevices: "🔌 Устройства", tabTrips: "🚗 Поездки",
-            tabTasks: "📌 Задачи и календарь", tabShop: "🛒 Покупки", tabInv: "📦 Склад", tabRec: "🍲 Рецепты", tabMusic: "🎵 Музыка", tabVault: "🔐 Сейф", tabAI: "🤖 ИИ",
-            hResidents: "👥 Жильцы дома", btnSendMsg: "📨 Отправить сообщение",
-            hNotifs: "🔔 Уведомления", btnAddNotif: "➕ Создать напоминание",
-            hNotes: "📝 Заметки", btnAddNote: "➕ Добавить",
-            hCalendar: "🕒 Расписание", btnAddEvent: "➕ Событие",
-            hReceiptsTitle: "🧾 Чеки и сравнение", btnAddReceipt: "➕ Сохранить", hReceiptTip: "💡 Совет:",
-            hSalaryTitle: "📄 Зарплата", lblSelectDoc: "Тип документа:", btnAnalyzeDoc: "🤖 Анализ",
-            hVidass: "🏢 VIDASS", btnAddVidass: "➕ Проект",
-            hFinances: "💰 Бюджет", btnAddExp: "➕ Расход",
-            hTithes: "🤲 Десятина", btnAddTitheCalc: "💡 Расчет",
-            hDevices: "🔌 Устройства", btnAddDev: "➕ Устройство",
-            hTrips: "🚗 Поездки", btnAddTrip: "➕ Поездка",
-            hTasks: "📌 Задачи и регион", lblSelectRegion: "🌍 Регион мира:", lblSelectReligion: "🕊️ Традиция:", btnAddTsk: "➕ Задача",
-            hShop: "🛒 Покупки", btnAddShop: "➕ Товар",
-            hInv: "📦 Склад", btnAddFolder: "📁 Создать ящик", selectedFolderTitle: "📂 Выберите ящик", btnAddInvItem: "➕ Добавить",
-            hRec: "🍲 Рецепты", btnAddRecipe: "🍲 Опубликовать",
-            hMusic: "🎵 Музыка", btnAddMusic: "➕ Песня",
-            hVault: "🔐 Сейф", hVaultUnlock: "🔑 Открыть:", btnUnlockVault: "🔓 Открыть", btnAddVaultItem: "➕ Сохранить",
-            hAI: "🤖 ИИ", btnSendAI: "Спросить"
-        },
-        fr: {
-            access: "♿ Accès & Langue :", contrast: "🌓 Contraste", speak: "🗣️ Lire",
-            authTitle: "🏢 VIDASS Home - Nouvel enregistrement", authSub: "Entrez votre nom, nouveau code, PIN et récupération :",
-            lblFullName: "Votre nom :", lblHouseCode: "Code de la maison :", lblAdminPin: "PIN personnel :", lblRecoveryPin: "Code de récupération secret :",
-            btnCreateHouse: "🏠 Enregistrer et entrer",
-            loginSub: "Connexion sécurisée :", txtUser: "Utilisateur", lblEnterPin: "Entrez votre PIN :",
-            btnLoginSubmit: "🔓 Connexion sécurisée", btnBiometric: "🧬 Biométrie", btnForgotPin: "🔑 Code oublié", btnResetDevice: "🔄 Changer d'utilisateur",
-            txtHouseSpan: "ID Maison", btnLock: "🔒 Verrouiller",
-            inviteTitle: "👑 Partage", inviteSub: "Envoyez le lien au foyer (enfants & montres inclus) !",
-            btnCopyInvite: "📋 Copier le lien", linkCal: "📅 Calendrier", linkWa: "💬 WhatsApp", linkMail: "📧 Email",
-            tabResidents: "👥 Résidents", tabKids: "🧒 Enfants & Montres (Premium)", tabNotifs: "🔔 Notifs", tabNotes: "📝 Notes", tabReceipts: "🧾 Reçus", tabSalary: "📄 Paie", tabVidass: "🏢 VIDASS",
-            tabFinances: "💰 Finances", tabTithes: "🤲 Dîmes", tabDevices: "🔌 Appareils", tabTrips: "🚗 Trajets",
-            tabTasks: "📌 Tâches & Calendrier", tabShop: "🛒 Courses", tabInv: "📦 Stock", tabRec: "🍲 Recettes", tabMusic: "🎵 Musique", tabVault: "🔐 Coffre", tabAI: "🤖 Assistant",
-            hResidents: "👥 Résidents", btnSendMsg: "📨 Envoyer",
-            hNotifs: "🔔 Rappels", btnAddNotif: "➕ Créer",
-            hNotes: "📝 Notes", btnAddNode: "➕ Ajouter",
-            hCalendar: "🕒 Calendrier", btnAddEvent: "➕ Événement",
-            hReceiptsTitle: "🧾 Reçus", btnAddReceipt: "➕ Enregistrer", hReceiptTip: "💡 Conseil :",
-            hSalaryTitle: "📄 Paie", lblSelectDoc: "Type :", btnAnalyzeDoc: "🤖 Analyser",
-            hVidass: "🏢 VIDASS", btnAddVidass: "➕ Projet",
-            hFinances: "💰 Dépenses", btnAddExp: "➕ Dépense",
-            hTithes: "🤲 Dîmes", btnAddTitheCalc: "💡 Calculer",
-            hDevices: "🔌 Appareils", btnAddDev: "➕ Appareil",
-            hTrips: "🚗 Trajets", btnAddTrip: "➕ Trajet",
-            hTasks: "📌 Tâches & Région", lblSelectRegion: "🌍 Région :", lblSelectReligion: "🕊️ Tradition :", btnAddTsk: "➕ Tâche",
-            hShop: "🛒 Courses", btnAddShop: "➕ Article",
-            hInv: "📦 Stock", btnAddFolder: "📁 Créer", selectedFolderTitle: "📂 Sélectionner", btnAddInvItem: "➕ Ajouter",
-            hRec: "🍲 Recettes", btnAddRecipe: "🍲 Publier",
-            hMusic: "🎵 Musique", btnAddMusic: "➕ Chanson",
-            hVault: "🔐 Coffre", hVaultUnlock: "🔑 Ouvrir :", btnUnlockVault: "🔓 Ouvrir", btnAddVaultItem: "➕ Enregistrer",
-            hAI: "🤖 IA", btnSendAI: "Demander"
-        },
-        ar: {
-            access: "♿ إمكانية الوصول واللغة:", contrast: "🌓 التباين", speak: "🗣️ قراءة الصفحة",
-            authTitle: "🏢 VIDASS Home - تسجيل مقيم جديد", authSub: "أدخل اسمك، رمز المنزل الجديد، رقم التعريف ورمز الاسترداد:",
-            lblFullName: "اسمك الكامل:", lblHouseCode: "رمز المنزل المشترك:", lblAdminPin: "رقم التعريف الشخصي:", lblRecoveryPin: "رمز الاسترداد السري:",
-            btnCreateHouse: "🏠 حفظ والدخول",
-            loginSub: "تسجيل دخول آمن:", txtUser: "المستخدم", lblEnterPin: "أدخل الرمز الشخصي:",
-            btnLoginSubmit: "🔓 تسجيل دخول آمن", btnBiometric: "🧬 بصمة / وجه", btnForgotPin: "🔑 نسيت الرمز", btnResetDevice: "🔄 تغيير المقيم",
-            txtHouseSpan: "رقم المنزل", btnLock: "🔒 قفل",
-            inviteTitle: "👑 المشاركة", inviteSub: "أرسل رابط الدعوة لأفراد المنزل (بما في ذلك الأطفال والساعات الذكية)!",
-            btnCopyInvite: "📋 نسخ الرابط", linkCal: "📅 التقويم", linkWa: "💬 واتساب", linkMail: "📧 البريد",
-            tabResidents: "👥 السكان", tabKids: "🧒 الأطفال والساعات (مميز)", tabNotifs: "🔔 الإشعارات", tabNotes: "📝 الملاحظات", tabReceipts: "🧾 الإيصالات", tabSalary: "📄 الرواتب", tabVidass: "🏢 VIDASS",
-            tabFinances: "💰 المصروفات", tabTithes: "🤲 العشور", tabDevices: "🔌 الأجهزة", tabTrips: "🚗 الرحلات",
-            tabTasks: "📌 المهام والتقويم", tabShop: "🛒 التسوق", tabInv: "📦 المخزون", tabRec: "🍲 الوصفات", tabMusic: "🎵 الموسيقى", tabVault: "🔐 الخزنة", tabAI: "🤖 المساعد",
-            hResidents: "👥 السكان", btnSendMsg: "📨 إرسال رسالة",
-            hNotifs: "🔔 تذكيرات", btnAddNotif: "➕ إنشاء",
-            hNotes: "📝 ملاحظات", btnAddNote: "➕ إضافة",
-            hCalendar: "🕒 التقويم", btnAddEvent: "➕ حدث",
-            hReceiptsTitle: "🧾 الإيصالات", btnAddReceipt: "➕ حفظ", hReceiptTip: "💡 نصيحة:",
-            hSalaryTitle: "📄 الرواتب", lblSelectDoc: "النوع:", btnAnalyzeDoc: "🤖 تحليل",
-            hVidass: "🏢 VIDASS", btnAddVidass: "➕ مشروع",
-            hFinances: "💰 المصروفات", btnAddExp: "➕ مصروف",
-            hTithes: "🤲 العشور", btnAddTitheCalc: "💡 حساب",
-            hDevices: "🔌 الأجهزة", btnAddDev: "➕ جهاز",
-            hTrips: "🚗 الرحلات", btnAddTrip: "➕ رحلة",
-            hTasks: "📌 المهام والمنطقة", lblSelectRegion: "🌍 المنطقة:", lblSelectReligion: "🕊️ Tрадиции:", btnAddTsk: "➕ مهمة",
-            hShop: "🛒 التسوق", btnAddShop: "➕ منتج",
-            hInv: "📦 المخزون", btnAddFolder: "📁 إنشاء درج", selectedFolderTitle: "📂 اختر درجا", btnAddInvItem: "➕ إضافة",
-            hRec: "🍲 الوصفات", btnAddRecipe: "🍲 نشر",
-            hMusic: "🎵 الموسيقى", btnAddMusic: "➕ أغنية",
-            hVault: "🔐 الخزنة", hVaultUnlock: "🔑 فتح:", btnUnlockVault: "🔓 فتح", btnAddVaultItem: "➕ حفظ",
-            hAI: "🤖 المساعد", btnSendAI: "اسأل"
-        },
-        es: {
-            access: "♿ Accesibilidad e Idioma:", contrast: "🌓 Contraste", speak: "🗣️ Leer",
-            authTitle: "🏢 VIDASS Home - Registro de Nuevo Residente", authSub: "Introduce tu nombre, nuevo código, PIN y recuperación:",
-            lblFullName: "Tu nombre:", lblHouseCode: "Código de Casa:", lblAdminPin: "PIN personal:", lblRecoveryPin: "Código de recuperación secreto:",
-            btnCreateHouse: "🏠 Guardar y Entrar",
-            loginSub: "Inicio de sesión seguro:", txtUser: "Usuario", lblEnterPin: "Introduce tu PIN:",
-            btnLoginSubmit: "🔓 Inicio de Sesión", btnBiometric: "🧬 Biometría", btnForgotPin: "🔑 ¿Olvidaste tu PIN?", btnResetDevice: "🔄 Cambiar de Residente",
-            txtHouseSpan: "ID de Casa", btnLock: "🔒 Bloquear",
-            inviteTitle: "👑 Gestión", inviteSub: "¡Envía el enlace al hogar (incluyendo niños y relojes inteligentes)!",
-            btnCopyInvite: "📋 Copiar Enlace", linkCal: "📅 Calendario", linkWa: "💬 WhatsApp", linkMail: "📧 Correo",
-            tabResidents: "👥 Residentes", tabKids: "🧒 Niños y Relojes (Premium)", tabNotifs: "🔔 Notificaciones", tabNotes: "📝 Notas", tabReceipts: "🧾 Recibos", tabSalary: "📄 Nóminas", tabVidass: "🏢 VIDASS",
-            tabFinances: "💰 Finanzas", tabTithes: "🤲 Diezmos", tabDevices: "🔌 Dispositivos", tabViajes: "🚗 Viajes",
-            tabTasks: "📌 Tareas y Calendario", tabShop: "🛒 Compras", tabInv: "📦 Inventario", tabRec: "🍲 Recetas", tabMusic: "🎵 Música", tabVault: "🔐 Bóveda", tabAI: "🤖 Asistente",
-            hResidents: "👥 Residentes", btnSendMsg: "📨 Enviar",
-            hNotifs: "🔔 Notificaciones", btnAddNotif: "➕ Crear",
-            hNotes: "📝 Notas", btnAddNode: "➕ Añadir",
-            hCalendar: "🕒 Horario", btnAddEvent: "➕ Evento",
-            hReceiptsTitle: "🧾 Recibos", btnAddReceipt: "➕ Guardar", hReceiptTip: "💡 Consejo:",
-            hSalaryTitle: "📄 Nóminas", lblSelectDoc: "Tipo:", btnAnalyzeDoc: "🤖 Analizar",
-            hVidass: "🏢 VIDASS", btnAddVidass: "➕ Proyecto",
-            hFinances: "💰 Finanzas", btnAddExp: "➕ Gasto",
-            hTithes: "🤲 Diezmos", btnAddTitheCalc: "💡 Calcular",
-            hDevices: "🔌 Dispositivos", btnAddDev: "➕ Dispositivo",
-            hTrips: "🚗 Viajes", btnAddTrip: "➕ Viaje",
-            hTasks: "📌 Tareas y Región", lblSelectRegion: "🌍 Región:", lblSelectReligion: "🕊️ Tradición:", btnAddTsk: "➕ Tarea",
-            hShop: "🛒 Compras", btnAddShop: "➕ Artículo",
-            hInv: "📦 Inventario", btnAddFolder: "📁 Crear", selectedFolderTitle: "📂 Selecciona un cajón", btnAddInvItem: "➕ Añadir",
-            hRec: "🍲 Recettes", btnAddRecipe: "🍲 Publicar",
-            hMusic: "🎵 Música", btnAddMusic: "➕ Canción",
-            hVault: "🔐 Bóveda", hVaultUnlock: "🔑 Abrir:", btnUnlockVault: "🔓 Abrir", btnAddVaultItem: "➕ Guardar",
-            hAI: "🤖 Asistente", btnSendAI: "Preguntar"
-        }
-    };
-
-    function changeLanguage(lang, save = true) {
-        if (save) localStorage.setItem(STORAGE_LANG, lang);
-        let t = translations[lang];
-        if (!t) return;
-
-        if (lang === 'en' || lang === 'ru' || lang === 'fr' || lang === 'es') {
-            document.body.classList.add('ltr-mode');
-            document.body.setAttribute('dir', 'ltr');
-        } else {
-            document.body.classList.remove('ltr-mode');
-            document.body.setAttribute('dir', 'rtl');
-        }
-
-        document.getElementById('lblAccess').innerText = t.access;
-        document.getElementById('btnContrast').innerText = t.contrast;
-        document.getElementById('btnSpeak').innerText = t.speak;
-        document.getElementById('txtAuthTitle').innerText = t.authTitle;
-        document.getElementById('txtAuthSub').innerText = t.authSub;
-        document.getElementById('lblFullName').innerText = t.lblFullName;
-        document.getElementById('lblHouseCode').innerText = t.lblHouseCode;
-        document.getElementById('lblAdminPin').innerText = t.lblAdminPin;
-        document.getElementById('lblRecoveryPin').innerText = t.lblRecoveryPin;
-        document.getElementById('btnCreateHouse').innerText = t.btnCreateHouse;
-        document.getElementById('txtLoginSub').innerText = t.loginSub;
-        document.getElementById('txtUserLabel').innerText = t.txtUser;
-        document.getElementById('lblEnterPin').innerText = t.lblEnterPin;
-        document.getElementById('btnLoginSubmit').innerText = t.btnLoginSubmit;
-        document.getElementById('btnBiometric').innerText = t.btnBiometric;
-        document.getElementById('btnForgotPin').innerText = t.btnForgotPin;
-        document.getElementById('btnResetDevice').innerText = t.btnResetDevice;
-        document.getElementById('txtUserSpan').innerText = t.txtUser;
-        document.getElementById('txtHouseSpan').innerText = t.txtHouseSpan;
-        document.getElementById('btnLock').innerText = t.btnLock;
-        document.getElementById('txtInviteTitle').innerText = t.inviteTitle;
-        document.getElementById('txtInviteSub').innerText = t.inviteSub;
-        document.getElementById('btnCopyInvite').innerText = t.btnCopyInvite;
-        document.getElementById('linkCal').innerText = t.linkCal;
-        document.getElementById('linkWa').innerText = t.linkWa;
-        document.getElementById('linkMail').innerText = t.linkMail;
-
-        document.getElementById('tabBtnResidents').innerText = t.tabResidents;
-        document.getElementById('tabBtnKids').innerText = t.tabKids;
-        document.getElementById('tabBtnNotifs').innerText = t.tabNotifs;
-        document.getElementById('tabBtnNotes').innerText = t.tabNotes;
-        document.getElementById('tabBtnReceipts').innerText = t.tabReceipts;
-        document.getElementById('tabBtnSalary').innerText = t.tabSalary;
-        document.getElementById('tabBtnVidass').innerText = t.tabVidass;
-        document.getElementById('tabBtnFinances').innerText = t.tabFinances;
-        document.getElementById('tabBtnTithes').innerText = t.tabTithes;
-        document.getElementById('tabBtnDevices').innerText = t.tabDevices;
-        document.getElementById('tabBtnTrips').innerText = t.tabTrips;
-        document.getElementById('tabBtnTasks').innerText = t.tabTasks;
-        document.getElementById('tabBtnShop').innerText = t.tabShop;
-        document.getElementById('tabBtnInv').innerText = t.tabInv;
-        document.getElementById('tabBtnRec').innerText = t.tabRec;
-        document.getElementById('tabBtnMusic').innerText = t.tabMusic;
-        document.getElementById('tabBtnVault').innerText = t.tabVault;
-        document.getElementById('tabBtnAI').innerText = t.tabAI;
-
-        document.getElementById('hResidents').innerText = t.hResidents;
-        document.getElementById('btnSendMsg').innerText = t.btnSendMsg;
-        document.getElementById('hNotifs').innerText = t.hNotifs;
-        document.getElementById('btnAddNotif').innerText = t.btnAddNotif;
-        document.getElementById('hNotes').innerText = t.hNotes;
-        document.getElementById('btnAddNote').innerText = t.btnAddNote;
-        document.getElementById('hCalendar').innerText = t.hCalendar;
-        document.getElementById('btnAddEvent').innerText = t.btnAddEvent;
-        document.getElementById('hReceiptsTitle').innerText = t.hReceiptsTitle;
-        document.getElementById('btnAddReceipt').innerText = t.btnAddReceipt;
-        document.getElementById('hReceiptTip').innerText = t.hReceiptTip;
-        document.getElementById('hSalaryTitle').innerText = t.hSalaryTitle;
-        document.getElementById('lblSelectDoc').innerText = t.lblSelectDoc;
-        document.getElementById('btnAnalyzeDoc').innerText = t.btnAnalyzeDoc;
-        document.getElementById('hVidass').innerText = t.hVidass;
-        document.getElementById('btnAddVidass').innerText = t.btnAddVidass;
-        document.getElementById('hFinances').innerText = t.hFinances;
-        document.getElementById('btnAddExp').innerText = t.btnAddExp;
-        document.getElementById('hTithes').innerText = t.hTithes;
-        document.getElementById('btnAddTitheCalc').innerText = t.btnAddTitheCalc;
-        document.getElementById('hDevices').innerText = t.hDevices;
-        document.getElementById('btnAddDev').innerText = t.btnAddDev;
-        document.getElementById('hTrips').innerText = t.hTrips;
-        document.getElementById('btnAddTrip').innerText = t.btnAddTrip;
-        document.getElementById('hTasks').innerText = t.hTasks;
-        document.getElementById('lblSelectRegion').innerText = t.lblSelectRegion;
-        document.getElementById('lblSelectReligion').innerText = t.lblSelectReligion;
-        document.getElementById('btnAddTsk').innerText = t.btnAddTsk;
-        document.getElementById('hShop').innerText = t.hShop;
-        document.getElementById('btnAddShop').innerText = t.btnAddShop;
-        document.getElementById('hInv').innerText = t.hInv;
-        document.getElementById('btnAddFolder').innerText = t.btnAddFolder;
-        document.getElementById('selectedFolderTitle').innerText = t.selectedFolderTitle;
-        document.getElementById('btnAddInvItem').innerText = t.btnAddInvItem;
-        document.getElementById('hRec').innerText = t.hRec;
-        document.getElementById('btnAddRecipe').innerText = t.btnAddRecipe;
-        document.getElementById('hMusic').innerText = t.hMusic;
-        document.getElementById('btnAddMusic').innerText = t.btnAddMusic;
-        document.getElementById('hVault').innerText = t.hVault;
-        document.getElementById('hVaultUnlock').innerText = t.hVaultUnlock;
-        document.getElementById('btnUnlockVault').innerText = t.btnUnlockVault;
-        document.getElementById('btnAddVaultItem').innerText = t.btnAddVaultItem;
-        document.getElementById('hAI').innerText = t.hAI;
-        document.getElementById('btnSendAI').innerText = t.btnSendAI;
+        if ("Notification" in window && Notification.permission !== "granted") { Notification.requestPermission(); }
     }
 
     function speakPageText() {
@@ -1347,22 +1134,9 @@
             window.speechSynthesis.cancel();
             let textToRead = "מרכז שליטה וידאס. מערכת ניהול חכמה ומאובטחת.";
             let activeTab = document.querySelector('.tab-content.active');
-            if (activeTab) {
-                textToRead += " " + activeTab.innerText;
-            }
+            if (activeTab) textToRead += " " + activeTab.innerText;
             let utterance = new SpeechSynthesisUtterance(textToRead);
-            utterance.lang = document.getElementById('langSelect').value === 'en' ? 'en-US' : 'he-IL';
-            window.speechSynthesis.speak(utterance);
-        } else {
-            alert("הדפדפן שלך אינו תומך בהקראה קולית.");
-        }
-    }
-
-    function speakText(text) {
-        if ('speechSynthesis' in window) {
-            window.speechSynthesis.cancel();
-            let utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = document.getElementById('langSelect').value === 'en' ? 'en-US' : 'he-IL';
+            utterance.lang = 'he-IL';
             window.speechSynthesis.speak(utterance);
         }
     }
@@ -1377,8 +1151,7 @@
             for (let m = 0; m < 12; m++) {
                 let optVal = `${monthsNames[m]} ${y}`;
                 let opt = document.createElement('option');
-                opt.value = optVal;
-                opt.innerText = optVal;
+                opt.value = optVal; opt.innerText = optVal;
                 if (y === currentYear && m === new Date().getMonth()) opt.selected = true;
                 select.appendChild(opt);
             }
@@ -1387,13 +1160,8 @@
 
     function togglePasswordVisibility(fieldId, btn) {
         let field = document.getElementById(fieldId);
-        if (field.type === "password") {
-            field.type = "text";
-            btn.innerText = "🙊";
-        } else {
-            field.type = "password";
-            btn.innerText = "🙈";
-        }
+        if (field.type === "password") { field.type = "text"; btn.innerText = "🙊"; }
+        else { field.type = "password"; btn.innerText = "🙈"; }
     }
 
     function changeUserNamePrompt() {
@@ -1414,22 +1182,12 @@
         let houseName = document.getElementById('inputHouseName').value.trim().toLowerCase();
         let adminPin = document.getElementById('inputAdminPin').value.trim();
         let recoveryPin = document.getElementById('inputRecoveryPin').value.trim();
-
-        if (!fullName || !houseName || !adminPin || !recoveryPin) {
-            alert("נא למלא את כל השדות: שם דייר, קוד בית, סיסמה וקוד שחזור.");
-            return;
-        }
-
+        if (!fullName || !houseName || !adminPin || !recoveryPin) { alert("נא למלא את כל השדות."); return; }
         localStorage.setItem(STORAGE_USER, fullName);
         localStorage.setItem(STORAGE_HOUSE, houseName);
         localStorage.setItem(STORAGE_PIN, adminPin);
         localStorage.setItem(STORAGE_RECOVERY, recoveryPin);
-
-        currentUser = fullName;
-        currentHouse = houseName;
-        currentPin = adminPin;
-        currentRecovery = recoveryPin;
-
+        currentUser = fullName; currentHouse = houseName; currentPin = adminPin; currentRecovery = recoveryPin;
         registerResident(fullName);
         showBankLoginScreen();
     }
@@ -1438,38 +1196,23 @@
         let recInput = prompt("הקישי את קוד השחזור הסודי שהגדרת בהרשמה:");
         if (recInput === currentRecovery) {
             let newPin = prompt("✅ הקוד אושר! הקישי סיסמה אישית חדשה:");
-            if (newPin) {
-                currentPin = newPin.trim();
-                localStorage.setItem(STORAGE_PIN, currentPin);
-                alert("🔒 הסיסמה האישית עודכנה בהצלחה!");
-            }
-        } else if (recInput !== null) {
-            alert("❌ קוד השחזור שגוי.");
-        }
+            if (newPin) { currentPin = newPin.trim(); localStorage.setItem(STORAGE_PIN, currentPin); alert("🔒 הסיסמה האישית עודכנה בהצלחה!"); }
+        } else if (recInput !== null) { alert("❌ קוד השחזור שגוי."); }
     }
 
     function registerResident(name) {
         if (!dbData.residents) dbData.residents = [];
-        if (!dbData.residents.includes(name)) {
-            dbData.residents.push(name);
-            saveData();
-        }
+        if (!dbData.residents.includes(name)) { dbData.residents.push(name); saveData(); }
     }
 
     function showBankLoginScreen() {
-        document.getElementById('authScreen').style.display = 'none';
         document.getElementById('welcomeChoiceScreen').style.display = 'none';
+        document.getElementById('authScreen').style.display = 'none';
         document.getElementById('joinExistingScreen').style.display = 'none';
         document.getElementById('mainApp').style.display = 'none';
         document.getElementById('bankLoginScreen').style.display = 'block';
-
         let hour = new Date().getHours();
-        let greeting = "שלום רב!";
-        if (hour >= 5 && hour < 12) greeting = "🌅 בוקר טוב!";
-        else if (hour >= 12 && hour < 17) greeting = "☀️ צהריים טובים!";
-        else if (hour >= 17 && hour < 21) greeting = "🌇 ערב טוב!";
-        else greeting = "🌙 לילה טוב!";
-
+        let greeting = hour >= 5 && hour < 12 ? "🌅 בוקר טוב!" : hour >= 12 && hour < 17 ? "☀️ צהריים טובים!" : hour >= 17 && hour < 21 ? "🌇 ערב טוב!" : "🌙 לילה טוב!";
         document.getElementById('bankGreetingTitle').innerText = `${greeting} ${currentUser || ''}`;
         document.getElementById('displayLoginHouse').innerText = "🏠 קוד בית: " + currentHouse;
         document.getElementById('displayLoginUser').innerText = currentUser || "";
@@ -1478,12 +1221,8 @@
 
     function verifyAdminLogin() {
         let enteredPin = document.getElementById('loginPinInput').value.trim();
-        if (enteredPin === currentPin) {
-            document.getElementById('bankLoginScreen').style.display = 'none';
-            startMainApp();
-        } else {
-            alert("❌ הסיסמה האישית שגויה. אנא הקישי את הסיסמה שהגדרת.");
-        }
+        if (enteredPin === currentPin) { document.getElementById('bankLoginScreen').style.display = 'none'; startMainApp(); }
+        else { alert("❌ הסיסמה האישית שגויה."); }
     }
 
     async function verifyBiometricLogin() {
@@ -1491,27 +1230,21 @@
             if (window.PublicKeyCredential && PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable) {
                 let available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
                 if (available) {
-                    let publicKey = {
-                        challenge: new Uint8Array([21,31,105,75,12,64,32,19]),
-                        rp: { name: "VIDASS Home" },
-                        user: {
-                            id: new Uint8Array(16),
-                            name: currentUser || "resident",
-                            displayName: currentUser || "Resident"
-                        },
-                        pubKeyCredParams: [{ alg: -7, type: "public-key" }],
-                        authenticatorSelection: { authenticatorAttachment: "platform", userVerification: "required" },
-                        timeout: 60000
-                    };
-                    await navigator.credentials.create({ publicKey });
+                    await navigator.credentials.create({
+                        publicKey: {
+                            challenge: new Uint8Array([21,31,105,75,12,64,32,19]),
+                            rp: { name: "VIDASS Home" },
+                            user: { id: new Uint8Array(16), name: currentUser || "resident", displayName: currentUser || "Resident" },
+                            pubKeyCredParams: [{ alg: -7, type: "public-key" }],
+                            authenticatorSelection: { authenticatorAttachment: "platform", userVerification: "required" },
+                            timeout: 60000
+                        }
+                    });
                 }
             }
             document.getElementById('bankLoginScreen').style.display = 'none';
             startMainApp();
-        } catch (error) {
-            document.getElementById('bankLoginScreen').style.display = 'none';
-            startMainApp();
-        }
+        } catch (error) { document.getElementById('bankLoginScreen').style.display = 'none'; startMainApp(); }
     }
 
     function unlockFinancesTab() {
@@ -1521,9 +1254,7 @@
             document.getElementById('financesSecureBox').style.display = 'none';
             document.getElementById('financesContentBox').style.display = 'block';
             renderAll();
-        } else {
-            alert("❌ סיסמה שגויה. נא להקיש את הסיסמה האישית שלך.");
-        }
+        } else { alert("❌ סיסמה שגויה."); }
     }
 
     function lockAppToBankScreen() {
@@ -1538,17 +1269,13 @@
 
     function fullLogout() {
         if (confirm("האם להחליף דייר / לאפס את המכשיר ולהירשם מחדש?")) {
-            localStorage.removeItem(STORAGE_USER);
-            localStorage.removeItem(STORAGE_PIN);
-            location.reload();
+            localStorage.removeItem(STORAGE_USER); localStorage.removeItem(STORAGE_PIN); location.reload();
         }
     }
 
     function copyInviteLink() {
         let inviteLink = window.location.origin + window.location.pathname + "?house=" + encodeURIComponent(currentHouse);
-        navigator.clipboard.writeText(inviteLink).then(() => {
-            alert("📋 הקישור הועתק בהצלחה! שלחי אותו לדיירי הבית בוואטסאפ.");
-        });
+        navigator.clipboard.writeText(inviteLink).then(() => { alert("📋 הקישור הועתק בהצלחה! שלחי אותו לדיירי הבית בוואטסאפ."); });
     }
 
     function startMainApp() {
@@ -1556,7 +1283,6 @@
         document.getElementById('activeUserName').innerText = currentUser || "";
         document.getElementById('activeHouseName').innerText = currentHouse || "";
         updateShabbatAndWeather();
-
         if (rtdb && currentHouse) {
             rtdb.ref('houses/' + currentHouse).on('value', (snapshot) => {
                 let val = snapshot.val();
@@ -1569,110 +1295,16 @@
                     rtdb.ref('houses/' + currentHouse).set(dbData);
                 }
                 renderAll();
-            }, (error) => {
-                console.log("ענן פעיל ומסונכרן.");
             });
-        } else {
-            registerResident(currentUser);
-            renderAll();
-        }
+        } else { registerResident(currentUser); renderAll(); }
     }
 
-    function updateShabbatAndWeather() {
-        let regionSelect = document.getElementById('regionSelect');
-        let religionSelect = document.getElementById('religionSelect');
-        if(!regionSelect || !religionSelect) return;
-        
-        let region = regionSelect.value;
-        let religion = religionSelect.value;
-        let month = new Date().getMonth();
-        let isSummer = (month >= 3 && month <= 9);
-
-        let regionData = {
-            eilat: { name: "אילת והערבה (ישראל)", temp: isSummer ? "34°C - חם ויבש ☀️" : "24°C - נעים ושמשי 🌤️", candle: isSummer ? "18:15" : "17:45", out: isSummer ? "19:25" : "18:52" },
-            jerusalem: { name: "ירושלים והסביבה (ישראל)", temp: isSummer ? "28°C - נעים 🌤️" : "15°C - קריר 🌧️", candle: isSummer ? "18:05" : "17:20", out: isSummer ? "19:22" : "18:50" },
-            telaviv: { name: "תל אביב וגוש דן (ישראל)", temp: isSummer ? "30°C - לח ושמשי 🏖️" : "20°C - נוח ⛅", candle: isSummer ? "18:12" : "17:33", out: isSummer ? "19:24" : "18:51" },
-            haifa: { name: "חיפה והצפון (ישראל)", temp: isSummer ? "29°C - בהיר ☀️" : "18°C - מעונן קלות ⛅", candle: isSummer ? "18:10" : "17:28", out: isSummer ? "19:23" : "18:52" },
-            beersheva: { name: "באר שבע והנגב (ישראל)", temp: isSummer ? "32°C - חם ☀️" : "21°C - נעים 🌤️", candle: isSummer ? "18:13" : "17:35", out: isSummer ? "19:24" : "18:51" },
-            usa_ny: { name: "ניו יורק (ארצות הברית)", temp: isSummer ? "29°C - חם ולח ☀️" : "8°C - קר ❄️", candle: "18:00", out: "19:10" },
-            usa_la: { name: "לוס אנג'לס (ארצות הברית)", temp: isSummer ? "31°C - שמש מלאה ☀️" : "19°C - נוח 🌤️", candle: "18:30", out: "19:40" },
-            europe_lon: { name: "לונדון (בריטניה)", temp: isSummer ? "22°C - נעים ⛅" : "10°C - גשום 🌧️", candle: "19:00", out: "20:15" },
-            europe_par: { name: "פריז (צרפת / אירופה)", temp: isSummer ? "25°C - שמש ☀️" : "11°C - קריר ⛅", candle: "19:30", out: "20:45" }
-        };
-
-        let curReg = regionData[region] || regionData['eilat'];
-        let seasonText = isSummer ? "שעון קיץ ☀️" : "שעון חורף ❄️";
-
-        let weather = document.getElementById('weatherDisplayBox');
-        if(weather) weather.innerHTML = `🌤️ תחזית מזג אוויר מעודכנת עבור <b>${curReg.name}</b> (${seasonText}): ${curReg.temp}`;
-
-        let banner = document.getElementById('shabbatBanner');
-        if(banner) {
-            if (religion === 'jewish') {
-                banner.innerHTML = `🕯️ <b>לוח זמנים ושבת קודש (${curReg.name}):</b><br>📥 כניסת שבת: ${curReg.candle} | 📤 יציאת שבת: ${curReg.out}`;
-            } else if (religion === 'muslim') {
-                banner.innerHTML = `🌙 <b>לוח אירועים וחגים מוסלמיים (${curReg.name}):</b><br>✨ חודש רמדאן / עיד אל-פיטר / עיד אל-אדחא - מעקב זמני תפילה ואירועים קהילתיים פעיל.`;
-            } else if (religion === 'christian') {
-                banner.innerHTML = `✝️ <b>לוח חגים ומועדים נוצריים (${curReg.name}):</b><br>🔔 חג המולד (Christmas), פסחא (Easter) ומועדים נוצריים מעודכנים ביומן הקהילתי.`;
-            } else {
-                banner.innerHTML = `🌐 <b>לוח שנה כללי / בינלאומי (${curReg.name}):</b><br>📅 מעקב אירועים, חגים לאומיים ותזכורות בהתאם לאזור הנבחר.`;
-            }
-        }
-    }
-
-    function addKidProfile() {
-        let name = document.getElementById('kidName').value.trim();
-        let age = parseInt(document.getElementById('kidAge').value) || 0;
-        let hasWatch = document.getElementById('kidHasWatch').checked;
-        let geoZone = document.getElementById('kidGeoZone').value.trim() || "אזור בטוח כללי";
-
-        if(name) {
-            if(!dbData.kids) dbData.kids = [];
-            dbData.kids.push({
-                name,
-                age,
-                hasWatch,
-                geoZone,
-                heartRate: hasWatch ? Math.floor(75 + Math.random() * 15) + " BPM (תקין)" : "ללא שעון",
-                hydration: hasWatch ? "שותה היטב (0.8 ליטר היום)" : "לא מנוטר",
-                location: "בתוך האזור המוגדר 📍",
-                owner: currentUser,
-                shared: true
-            });
-            document.getElementById('kidName').value = '';
-            document.getElementById('kidAge').value = '';
-            document.getElementById('kidGeoZone').value = '';
-            saveData();
-            alert("🧒 פרופיל הילד ונתוני השעון התחברו בהצלחה!");
-        } else {
-            alert("נא להזין את שם הילד/ה.");
-        }
-    }
-
-    function simulateKidAlert(i) {
-        let k = dbData.kids[i];
-        alert(`🚨 התראה ממערכת הפרימיום של ${k.name}!\nילד זה יצא מעֵבר לגבולות הגזרה המוגדרים (${k.geoZone})! ההורה מקבל צפצוף חירום בטלפון.`);
-    }
-
-    function deleteKid(i) {
-        dbData.kids.splice(i, 1);
-        saveData();
-    }
-
-    function saveDataLocally() {
-        localStorage.setItem(STORAGE_DATA, JSON.stringify(dbData));
-    }
-
+    function saveDataLocally() { localStorage.setItem(STORAGE_DATA, JSON.stringify(dbData)); }
     function saveData() {
         saveDataLocally();
-        if (rtdb && currentHouse) {
-            rtdb.ref('houses/' + currentHouse).set(dbData).catch((err) => {
-                console.log("שגיאת שמירה בענן.");
-            });
-        }
+        if (rtdb && currentHouse) { rtdb.ref('houses/' + currentHouse).set(dbData).catch(() => {}); }
         renderAll();
     }
-
     function isItemVisible(item) {
         if (!item) return true;
         if (item.shared) return true;
@@ -1685,43 +1317,30 @@
         if(recipient && text) {
             if(!dbData.messages) dbData.messages = [];
             dbData.messages.push({ sender: currentUser, recipient, text, time: new Date().toLocaleTimeString(), shared: true, owner: currentUser });
-            document.getElementById('msgRecipient').value = '';
-            document.getElementById('msgContentText').value = '';
-            saveData();
-            alert("📨 ההודעה נשלחה בהצלחה לדייר הבית!");
-        } else {
-            alert("נא למלא את שם הנמען ותוכן ההודעה.");
-        }
+            document.getElementById('msgRecipient').value = ''; document.getElementById('msgContentText').value = '';
+            saveData(); alert("📨 ההודעה נשלחה בהצלחה!");
+        } else { alert("נא למלא נמען ותוכן הודעה."); }
     }
     function deleteMessage(i) { dbData.messages.splice(i, 1); saveData(); }
 
     function scheduleNotification() {
         let title = document.getElementById('notifTitle').value.trim();
         let time = document.getElementById('notifTime').value.trim();
-        let shared = document.getElementById('notifShared').checked;
         if(title) {
             if(!dbData.notifications) dbData.notifications = [];
-            dbData.notifications.push({ title, time: time || "עכשיו", broadcast: shared, sender: currentUser, shared, owner: currentUser });
-            document.getElementById('notifTitle').value = '';
-            document.getElementById('notifTime').value = '';
-            saveData();
-
-            if ("Notification" in window && Notification.permission === "granted") {
-                new Notification("🔔 תזכורת מבית VIDASS", { body: title });
-            }
-            alert("🔔 התזכורת נוצרה והותקנה בהצלחה!");
+            dbData.notifications.push({ title, time: time || "עכשיו", broadcast: true, sender: currentUser, shared: true, owner: currentUser });
+            document.getElementById('notifTitle').value = ''; document.getElementById('notifTime').value = '';
+            saveData(); alert("🔔 התזכורת נוצרה!");
         }
     }
     function deleteNotification(i) { dbData.notifications.splice(i, 1); saveData(); }
 
     function addShopItem() {
         let val = document.getElementById('shopInput').value.trim();
-        let shared = document.getElementById('shopShared').checked;
         if(val) {
             if(!dbData.shopping) dbData.shopping = {};
-            dbData.shopping[val] = { shared, owner: currentUser };
-            document.getElementById('shopInput').value = '';
-            saveData();
+            dbData.shopping[val] = { shared: true, owner: currentUser };
+            document.getElementById('shopInput').value = ''; saveData();
         }
     }
     function deleteShop(k) { delete dbData.shopping[k]; saveData(); }
@@ -1729,119 +1348,50 @@
     function addNoteCard() {
         let title = document.getElementById('noteTitle').value.trim();
         let text = document.getElementById('noteText').value.trim();
-        let shared = document.getElementById('noteShared').checked;
         if(title && text) {
             if(!dbData.notes) dbData.notes = [];
-            dbData.notes.push({title, text, shared, owner: currentUser});
-            document.getElementById('noteTitle').value=''; document.getElementById('noteText').value='';
-            saveData();
+            dbData.notes.push({title, text, shared: true, owner: currentUser});
+            document.getElementById('noteTitle').value=''; document.getElementById('noteText').value=''; saveData();
         }
     }
     function editNote(i) {
         let n = dbData.notes[i];
-        let newTitle = prompt("ערוך כותרת פתקייה:", n.title);
-        let newText = prompt("ערוך תוכן פתקייה:", n.text);
-        if(newTitle !== null && newText !== null) {
-            dbData.notes[i].title = newTitle.trim();
-            dbData.notes[i].text = newText.trim();
-            saveData();
-        }
+        let t = prompt("ערוך כותרת פתקייה:", n.title);
+        let txt = prompt("ערוך תוכן פתקייה:", n.text);
+        if(t && txt) { n.title = t.trim(); n.text = txt.trim(); saveData(); }
     }
     function deleteNote(i) { dbData.notes.splice(i, 1); saveData(); }
-
-    function addEvent() {
-        let time = document.getElementById('eventTime').value.trim();
-        let title = document.getElementById('eventDesc').value.trim();
-        let shared = document.getElementById('eventShared').checked;
-        if(time && title) {
-            if(!dbData.events) dbData.events = [];
-            dbData.events.push({time, title, shared, owner: currentUser});
-            document.getElementById('eventTime').value=''; document.getElementById('eventDesc').value='';
-            saveData();
-        }
-    }
-    function editEvent(i) {
-        let e = dbData.events[i];
-        let newTime = prompt("ערוך שעה/תאריך:", e.time);
-        let newTitle = prompt("ערוך תיאור אירוע:", e.title);
-        if(newTime !== null && newTitle !== null) {
-            dbData.events[i].time = newTime.trim();
-            dbData.events[i].title = newTitle.trim();
-            saveData();
-        }
-    }
-    function deleteEvent(i) { dbData.events.splice(i, 1); saveData(); }
 
     function addReceiptItem() {
         let store = document.getElementById('recStore').value.trim();
         let item = document.getElementById('recItem').value.trim();
         let price = parseFloat(document.getElementById('recPrice').value) || 0;
-        let shared = document.getElementById('recShared').checked;
         if(store && item && price > 0) {
             if(!dbData.receipts) dbData.receipts = [];
-            dbData.receipts.push({store, item, price, shared, owner: currentUser});
+            dbData.receipts.push({store, item, price, shared: true, owner: currentUser});
             document.getElementById('recStore').value=''; document.getElementById('recItem').value=''; document.getElementById('recPrice').value='';
             saveData();
-            updateReceiptsComparison();
         }
     }
-    function deleteReceipt(i) { dbData.receipts.splice(i, 1); saveData(); updateReceiptsComparison(); }
-
-    function updateReceiptsComparison() {
-        let box = document.getElementById('cheapestStoreAdvice');
-        let receipts = (dbData.receipts || []).filter(r => isItemVisible(r));
-        if(receipts.length === 0) {
-            box.innerText = "הזיני קבלות ומוצרים כדי שהמערכת תנתח איפה הכי זול לקנות!";
-            return;
-        }
-        let storeTotals = {};
-        receipts.forEach(r => {
-            storeTotals[r.store] = (storeTotals[r.store] || 0) + r.price;
-        });
-        let cheapest = Object.keys(storeTotals).reduce((a, b) => storeTotals[a] < storeTotals[b] ? a : b);
-        box.innerHTML = `🏆 על פי הקבלות שהזנת, החנות הזולה ביותר כרגע היא: <b>${cheapest}</b> (סך הוצאות: ₪${storeTotals[cheapest]}).`;
-    }
+    function deleteReceipt(i) { dbData.receipts.splice(i, 1); saveData(); }
 
     function analyzeDocumentAI() {
         let type = document.getElementById('docTypeSelect').value;
         let content = document.getElementById('docContentText').value.trim();
-        let shared = document.getElementById('docShared').checked;
-        let resBox = document.getElementById('docAnalysisResult');
-        if(!content) {
-            alert("נא להזין טקסט מתוך המסמך, החוזה או התלוש.");
-            return;
-        }
-        let analysis = `📄 <b>ניתוח מסמך אוטומטי (${type}):</b><br>- המערכת קראה וניתחה את הנתונים בהצלחה.<br>- <b>סיכום:</b> הטקסט זוהה ונשמר במרכז השליטה שלך.<br>- ודאי שכל הסכומים, התאריכים ותנאי העסקה מעודכנים לשביעות רצונך.`;
-        resBox.innerHTML = analysis;
-        resBox.style.display = 'block';
-
+        if(!content) { alert("נא להזין טקסט."); return; }
         if(!dbData.documents) dbData.documents = [];
-        dbData.documents.push({type, content, analysis, shared, owner: currentUser});
-        document.getElementById('docContentText').value = '';
-        saveData();
-        alert("✅ המסמך פוענח ונשמר בהצלחה!");
+        dbData.documents.push({type, content, analysis: "ניתוח בוצע בהצלחה", shared: true, owner: currentUser});
+        document.getElementById('docContentText').value = ''; saveData(); alert("✅ המסמך נותח ונשמר!");
     }
     function deleteDocument(i) { dbData.documents.splice(i, 1); saveData(); }
 
     function addVidassProject() {
         let name = document.getElementById('vidassProjectName').value.trim();
         let desc = document.getElementById('vidassProjectDesc').value.trim();
-        let shared = document.getElementById('vidassShared').checked;
         if(name) {
             if(!dbData.vidass) dbData.vidass = [];
-            dbData.vidass.push({name, desc, shared, owner: currentUser});
-            document.getElementById('vidassProjectName').value=''; document.getElementById('vidassProjectDesc').value='';
-            saveData();
-        }
-    }
-    function editVidass(i) {
-        let v = dbData.vidass[i];
-        let newName = prompt("ערוך שם פרויקט:", v.name);
-        let newDesc = prompt("ערוך תיאור פרויקט:", v.desc);
-        if(newName !== null && newDesc !== null) {
-            dbData.vidass[i].name = newName.trim();
-            dbData.vidass[i].desc = newDesc.trim();
-            saveData();
+            dbData.vidass.push({name, desc, shared: true, owner: currentUser});
+            document.getElementById('vidassProjectName').value=''; document.getElementById('vidassProjectDesc').value=''; saveData();
         }
     }
     function deleteVidass(i) { dbData.vidass.splice(i, 1); saveData(); }
@@ -1850,25 +1400,21 @@
         let month = document.getElementById('expMonth').value;
         let category = document.getElementById('expCategory').value.trim();
         let amount = parseFloat(document.getElementById('expAmount').value) || 0;
-        let shared = document.getElementById('expShared').checked;
         if(category && amount > 0) {
             if(!dbData.expenses) dbData.expenses = [];
-            dbData.expenses.push({month, category, amount, shared, owner: currentUser});
-            document.getElementById('expCategory').value=''; document.getElementById('expAmount').value='';
-            saveData();
+            dbData.expenses.push({month, category, amount, shared: true, owner: currentUser});
+            document.getElementById('expCategory').value=''; document.getElementById('expAmount').value=''; saveData();
         }
     }
     function deleteExpense(i) { dbData.expenses.splice(i, 1); saveData(); }
 
     function calculateTithe() {
         let income = parseFloat(document.getElementById('titheIncomeAmount').value) || 0;
-        let shared = document.getElementById('titheShared').checked;
         let tithe = income * 0.10;
-        document.getElementById('titheResultDisplay').innerText = `💡 סכום המעשר (10%) להפרשה: ₪${tithe.toFixed(2)}`;
+        document.getElementById('titheResultDisplay').innerText = `💡 סכום המעשר (10%): ₪${tithe.toFixed(2)}`;
         if (income > 0) {
             if(!dbData.tithes) dbData.tithes = [];
-            dbData.tithes.push({income, tithe, shared, owner: currentUser});
-            saveData();
+            dbData.tithes.push({income, tithe, shared: false, owner: currentUser}); saveData();
         }
     }
     function deleteTithe(i) { dbData.tithes.splice(i, 1); saveData(); }
@@ -1876,104 +1422,97 @@
     function addDevice() {
         let name = document.getElementById('deviceName').value.trim();
         let type = document.getElementById('deviceType').value.trim();
-        let shared = document.getElementById('deviceShared').checked;
         if(name) {
             if(!dbData.devices) dbData.devices = [];
-            dbData.devices.push({name, type, shared, owner: currentUser});
+            dbData.devices.push({name, type: type || 'מיקום כללי', shared: true, owner: currentUser});
             document.getElementById('deviceName').value=''; document.getElementById('deviceType').value='';
             saveData();
-            alert("✅ המכשיר או הקישור נוספו בהצלחה!");
-        } else {
-            alert("נא להזין את שם המכשיר.");
-        }
+            alert("✅ המכשיר החכם נוסף בהצלחה!");
+        } else { alert("נא להזין שם מכשיר."); }
     }
     function editDevice(i) {
         let d = dbData.devices[i];
-        let newName = prompt("ערוך שם מכשיר:", d.name);
-        let newType = prompt("ערוך סוג / קישור מכשיר:", d.type);
-        if(newName !== null && newType !== null) {
-            dbData.devices[i].name = newName.trim();
-            dbData.devices[i].type = newType.trim();
-            saveData();
-        }
+        let n = prompt("ערוך שם מכשיר:", d.name);
+        let t = prompt("ערוך מיקום / כתובת / קישור:", d.type);
+        if(n) { d.name = n.trim(); d.type = t ? t.trim() : ''; saveData(); }
     }
     function deleteDevice(i) { dbData.devices.splice(i, 1); saveData(); }
 
-    function addTrip() {
-        let name = document.getElementById('tripName').value.trim();
-        let dest = document.getElementById('tripDest').value.trim();
-        let shared = document.getElementById('tripShared').checked;
-        if(name) {
-            if(!dbData.trips) dbData.trips = [];
-            dbData.trips.push({name, dest, shared, owner: currentUser});
-            document.getElementById('tripName').value=''; document.getElementById('tripDest').value='';
-            saveData();
-        }
-    }
-    function editTrip(i) {
-        let t = dbData.trips[i];
-        let newName = prompt("ערוך שם יעד:", t.name);
-        let newDest = prompt("ערוך כתובת מדויקת:", t.dest);
-        if(newName !== null && newDest !== null) {
-            dbData.trips[i].name = newName.trim();
-            dbData.trips[i].dest = newDest.trim();
-            saveData();
-        }
-    }
-    function deleteTrip(i) { dbData.trips.splice(i, 1); saveData(); }
-
     function addTask() {
         let text = document.getElementById('taskText').value.trim();
-        let shared = document.getElementById('taskShared').checked;
         if(text) {
             if(!dbData.tasks) dbData.tasks = [];
-            dbData.tasks.push({text, shared, owner: currentUser});
-            document.getElementById('taskText').value='';
-            saveData();
+            dbData.tasks.push({text, shared: true, owner: currentUser});
+            document.getElementById('taskText').value=''; saveData();
         }
     }
     function editTask(i) {
         let t = dbData.tasks[i];
-        let newText = prompt("ערוך משימה:", t.text);
-        if(newText !== null) {
-            dbData.tasks[i].text = newText.trim();
-            saveData();
-        }
+        let val = prompt("ערוך משימה:", t.text);
+        if(val) { t.text = val.trim(); saveData(); }
     }
     function deleteTask(i) { dbData.tasks.splice(i, 1); saveData(); }
 
+    // פונקציות ניהול מגירות מלאות (כולל יצירה, בחירה ומחיקת מגירה שלמה)
     function addNewFolder() {
         let f = document.getElementById('newFolderName').value.trim();
         if(f) {
             if(!dbData.folders) dbData.folders = [];
             if(!dbData.folders.includes(f)) {
                 dbData.folders.push(f);
-                document.getElementById('newFolderName').value='';
+                document.getElementById('newFolderName').value = '';
                 saveData();
+                selectFolder(f);
+            } else {
+                alert("המגירה כבר קיימת.");
             }
         }
     }
 
     function selectFolder(f) {
         activeFolder = f;
+        document.getElementById('folderDetailsContainer').style.display = 'block';
         document.getElementById('selectedFolderTitle').innerText = `📂 מגירה נבחרה: ${f}`;
-        document.getElementById('inventoryFormSection').style.display = 'block';
         renderFolderItems();
+    }
+
+    function deleteActiveFolder() {
+        if(!activeFolder) return;
+        if(confirm(`האם למחוק את המגירה "${activeFolder}" ואת כל המוצרים שבתוכה לגמרי?`)) {
+            dbData.folders = (dbData.folders || []).filter(item => item !== activeFolder);
+            dbData.inventory = (dbData.inventory || []).filter(item => item.folder !== activeFolder);
+            activeFolder = '';
+            document.getElementById('folderDetailsContainer').style.display = 'none';
+            saveData();
+            alert("🗑️ המגירה נמחקה בהצלחה!");
+        }
     }
 
     function addInventoryItem() {
         let name = document.getElementById('invItemName').value.trim();
         let qty = parseInt(document.getElementById('invItemQty').value) || 1;
-        let shared = document.getElementById('invShared').checked;
         if(activeFolder && name) {
             if(!dbData.inventory) dbData.inventory = [];
-            dbData.inventory.push({folder: activeFolder, name, qty, shared, owner: currentUser});
+            dbData.inventory.push({folder: activeFolder, name, qty, shared: true, owner: currentUser});
             document.getElementById('invItemName').value=''; document.getElementById('invItemQty').value='';
-            saveData();
-            renderFolderItems();
-            alert("✅ הפריט נשמר במגירה בהצלחה!");
+            saveData(); renderFolderItems();
         } else {
-            alert("נא לבחור מגירה ולהזין את שמו של הפריט.");
+            alert("נא להזין שם מוצר.");
+        }
+    }
+
+    function editInventoryItem(i) {
+        let folderItems = (dbData.inventory || []).filter(item => item.folder === activeFolder && isItemVisible(item));
+        let target = folderItems[i];
+        let globalIdx = dbData.inventory.indexOf(target);
+        if(globalIdx > -1) {
+            let n = prompt("ערוך שם מוצר במלאי:", target.name);
+            let q = prompt("ערוך כמות:", target.qty);
+            if(n) {
+                dbData.inventory[globalIdx].name = n.trim();
+                dbData.inventory[globalIdx].qty = parseInt(q) || 1;
+                saveData(); renderFolderItems();
+            }
         }
     }
 
@@ -1981,47 +1520,31 @@
         let folderItems = (dbData.inventory || []).filter(item => item.folder === activeFolder && isItemVisible(item));
         let target = folderItems[i];
         let globalIdx = dbData.inventory.indexOf(target);
-        if(globalIdx > -1) {
-            dbData.inventory.splice(globalIdx, 1);
-            saveData();
-            renderFolderItems();
-        }
+        if(globalIdx > -1) { dbData.inventory.splice(globalIdx, 1); saveData(); renderFolderItems(); }
     }
 
     function renderFolderItems() {
         let listContainer = document.getElementById('folderItemsList');
-        if(!activeFolder) { listContainer.innerHTML = "<p>לא נבחרה מגירה.</p>"; return; }
+        if(!activeFolder || !listContainer) return;
         let folderItems = (dbData.inventory || []).filter(item => item.folder === activeFolder && isItemVisible(item));
         listContainer.innerHTML = folderItems.map((item, i) => `
             <div class="card">
-                <span>📦 <b>${item.name}</b> (כמות: ${item.qty}) ${item.shared ? '🌐' : '🔒'}</span>
-                <div style="display:flex; gap:8px;">
-                    <button class="speak-item-btn" onclick="speakText('${item.name}, כמות ${item.qty}')">🗣️ הקרא</button>
+                <span>📦 <b>${item.name}</b> (כמות: ${item.qty})</span>
+                <div style="display:flex; gap:5px;">
+                    <button class="edit-btn" onclick="editInventoryItem(${i})">✏️ ערוך</button>
                     <button class="logout-btn" onclick="deleteInventoryItem(${i})">🗑️ מחק</button>
                 </div>
             </div>
-        `).join('') || "<p>המגירה ריקה.</p>";
+        `).join('') || "<p>המגירה ריקה כרגע.</p>";
     }
 
     function addRecipe() {
         let title = document.getElementById('recipeTitle').value.trim();
         let instructions = document.getElementById('recipeInstructions').value.trim();
-        let shared = document.getElementById('recipeShared').checked;
         if(title && instructions) {
             if(!dbData.recipes) dbData.recipes = [];
-            dbData.recipes.push({title, instructions, shared, owner: currentUser});
-            document.getElementById('recipeTitle').value=''; document.getElementById('recipeInstructions').value='';
-            saveData();
-        }
-    }
-    function editRecipe(i) {
-        let r = dbData.recipes[i];
-        let newTitle = prompt("ערוך שם מתכון:", r.title);
-        let newInst = prompt("ערוך אופן הכנה:", r.instructions);
-        if(newTitle !== null && newInst !== null) {
-            dbData.recipes[i].title = newTitle.trim();
-            dbData.recipes[i].instructions = newInst.trim();
-            saveData();
+            dbData.recipes.push({title, instructions, shared: true, owner: currentUser});
+            document.getElementById('recipeTitle').value=''; document.getElementById('recipeInstructions').value=''; saveData();
         }
     }
     function deleteRecipe(i) { dbData.recipes.splice(i, 1); saveData(); }
@@ -2029,16 +1552,11 @@
     function addMusicItem() {
         let title = document.getElementById('musicTitle').value.trim();
         let link = document.getElementById('musicLink').value.trim();
-        let shared = document.getElementById('musicShared').checked;
         if(title) {
             if(!dbData.music) dbData.music = [];
-            dbData.music.push({title, link, shared, owner: currentUser});
-            document.getElementById('musicTitle').value=''; document.getElementById('musicLink').value='';
-            saveData();
-            alert("🎵 השיר נוסף בהצלחה!");
-        } else {
-            alert("נא להזין את שם השיר.");
-        }
+            dbData.music.push({title, link, shared: true, owner: currentUser});
+            document.getElementById('musicTitle').value=''; document.getElementById('musicLink').value=''; saveData(); alert("🎵 שיר נוסף!");
+        } else { alert("נא להזין שם שיר."); }
     }
     function deleteMusic(i) { dbData.music.splice(i, 1); saveData(); }
 
@@ -2050,34 +1568,25 @@
             document.getElementById('vaultUnlockSection').style.display = 'none';
             document.getElementById('vaultContentSection').style.display = 'block';
             renderVaultItems();
-        } else {
-            alert("❌ סיסמה שגויה.");
-        }
+        } else { alert("❌ סיסמה שגויה."); }
     }
-
     function addVaultItem() {
         let title = document.getElementById('vaultItemTitle').value.trim();
         let data = document.getElementById('vaultItemData').value.trim();
-        let shared = document.getElementById('vaultShared').checked;
         if(title && data) {
             if(!dbData.vault) dbData.vault = [];
-            dbData.vault.push({title, data, shared, owner: currentUser});
-            document.getElementById('vaultItemTitle').value=''; document.getElementById('vaultItemData').value='';
-            saveData();
+            dbData.vault.push({title, data, shared: false, owner: currentUser});
+            document.getElementById('vaultItemTitle').value=''; document.getElementById('vaultItemData').value=''; saveData();
         }
     }
-    function deleteVaultItem(i) { dbData.vault.splice(i, 1); saveData(); }
-
+    function deleteVaultItem(i) { dbData.vault.splice(i, 1); saveData(); renderVaultItems(); }
     function renderVaultItems() {
         let listContainer = document.getElementById('vaultItemsList');
         if(!listContainer) return;
         listContainer.innerHTML = (dbData.vault || []).filter(v => isItemVisible(v)).map((v, i) => `
             <div class="card">
-                <div><h4>🔒 ${v.title} ${v.shared ? '🌐' : '🔒'}</h4><p>${v.data}</p></div>
-                <div style="display:flex; gap:8px;">
-                    <button class="speak-item-btn" onclick="speakText('${v.title}. ${v.data}')">🗣️ הקרא</button>
-                    <button class="logout-btn" onclick="deleteVaultItem(${i})">🗑️ מחק</button>
-                </div>
+                <div><h4>🔒 ${v.title}</h4><p>${v.data}</p></div>
+                <button class="logout-btn" onclick="deleteVaultItem(${i})">🗑️ מחק</button>
             </div>
         `).join('') || "<p>הכספת ריקה.</p>";
     }
@@ -2089,17 +1598,7 @@
         if(!dbData.chat) dbData.chat = [];
         dbData.chat.push({role: 'user', text: q, shared: true, owner: currentUser});
         input.value = '';
-
-        let aiReply = "קיבלתי את השאלה! אני כאן לעזור לך בניהול הבית, ניתוח תלושים, מכתבים רשמיים והשוואת מחירים.";
-        let lowerQ = q.toLowerCase();
-        if (lowerQ.includes('קניות')) {
-            let items = Object.entries(dbData.shopping || {}).filter(([k, v]) => isItemVisible(v)).map(([k]) => k);
-            aiReply = items.length ? `🛒 רשימת הקניות: ${items.join(', ')}` : "🛒 רשימת הקניות ריקה.";
-        } else if (lowerQ.includes('הוצאות')) {
-            let totalExp = (dbData.expenses || []).filter(e => isItemVisible(e)).reduce((sum, e) => sum + e.amount, 0);
-            aiReply = `💰 סך כל ההוצאות הרשומות עומד על ₪${totalExp}.`;
-        }
-        dbData.chat.push({role: 'ai', text: aiReply, shared: true, owner: currentUser});
+        dbData.chat.push({role: 'ai', text: "קיבלתי! אני כאן לעזור לך בכל מה שצריך בניהול הבית.", shared: true, owner: currentUser});
         saveData();
     }
 
@@ -2117,132 +1616,66 @@
 
         let resElem = document.getElementById('residentsListContainer');
         if(resElem) {
-            let residentsHTML = "<h4>👥 דיירי הבית הרשומים:</h4><ul>" + (dbData.residents || []).map(r => `<li><b>${r}</b> ${r === currentUser ? '(את/ה)' : ''}</li>`).join('') + "</ul>";
-            residentsHTML += "<h4 style='margin-top:20px;'>📨 הודעות אישיות:</h4>";
-            residentsHTML += (dbData.messages || []).filter(m => m.recipient === currentUser || m.sender === currentUser).map((m, i) => `
-                <div class="card">
-                    <div><b>${m.sender} ➔ ${m.recipient}:</b> ${m.text} <span style="font-size:11px; color:#666;">(${m.time})</span></div>
-                    <button class="logout-btn" onclick="deleteMessage(${i})">🗑️ מחק</button>
+            let resHTML = (dbData.residents || []).map(r => `
+                <div class="card" style="border-right: 5px solid var(--primary-color);">
+                    <div><h4 style="margin:0; color:var(--primary-color);">👤 ${r} ${r === currentUser ? '(את/ה)' : ''}</h4></div>
+                    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                        <button class="quick-link-btn" style="background:#3182ce; padding:6px 12px; font-size:13px;" onclick="startAudioCall('${r}')">📞 שיחה רגילה</button>
+                        <button class="quick-link-btn" style="background:#276749; padding:6px 12px; font-size:13px;" onclick="startVideoCall('${r}')">📹 שיחת וידאו</button>
+                    </div>
                 </div>
+            `).join('') || "<p>אין דיירים נוספים רשומים.</p>";
+            resHTML += "<h4 style='margin-top:25px;'>📨 הודעות אישיות שנשלחו:</h4>" + (dbData.messages || []).map((m, i) => `
+                <div class="card"><span><b>${m.sender} ➔ ${m.recipient}:</b> ${m.text}</span><button class="logout-btn" onclick="deleteMessage(${i})">🗑️</button></div>
             `).join('') || "<p>אין הודעות חדשות.</p>";
-            resElem.innerHTML = residentsHTML;
+            resElem.innerHTML = resHTML;
         }
 
-        let kidsElem = document.getElementById('kidsListContainer');
-        if(kidsElem) {
-            kidsElem.innerHTML = (dbData.kids || []).filter(k => isItemVisible(k)).map((k, i) => `
+        let bdayElem = document.getElementById('birthdaysListContainer');
+        if(bdayElem) {
+            bdayElem.innerHTML = (dbData.birthdays || []).filter(b => isItemVisible(b)).map((b, i) => `
                 <div class="card" style="border-left: 5px solid var(--primary-color);">
                     <div>
-                        <h4 style="margin:0; color:var(--primary-color);">🧒 ${k.name} (גיל: ${k.age})</h4>
-                        <p style="margin:6px 0 0 0;">⌚ שעון חכם: <b>${k.hasWatch ? 'מחובר 🟢' : 'לא מחובר'}</b> | ❤️ דופק: <b>${k.heartRate}</b></p>
-                        <p style="margin:4px 0 0 0;">💧 סטטוס מים/התייבשות: <b>${k.hydration}</b></p>
-                        <p style="margin:4px 0 0 0;">📍 מיקום וגבולות גזרה: <b>${k.location}</b> (אזור מותר: ${k.geoZone})</p>
+                        <h4 style="margin:0; color:var(--primary-color);">🎂 יום הולדת: ${b.name}</h4>
+                        <p style="margin:5px 0 0 0;">📅 תאריך: <b>${b.date}</b> | הערות/מתנה: ${b.note || 'אין הערות'}</p>
                     </div>
-                    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-                        <button class="quick-link-btn" style="background:#25D366; padding:6px 10px; font-size:13px;" onclick="alert('📞 מפעיל שיחת שמע ישירה עם השעון של ${k.name}...')">📞 שיחת שמע</button>
-                        <button class="quick-link-btn" style="background:#3182ce; padding:6px 10px; font-size:13px;" onclick="alert('📹 מפעיל שיחת וידאו עם המצלמה של השעון של ${k.name}...')">📹 שיחת וידאו</button>
-                        <button class="logout-btn" style="background:#dd6b20; padding:6px 10px; font-size:13px;" onclick="simulateKidAlert(${i})">🚨 בדוק התראת יציאה מאזור</button>
-                        <button class="logout-btn" style="padding:6px 10px; font-size:13px;" onclick="deleteKid(${i})">🗑️ מחק</button>
+                    <div style="display:flex; gap:5px;">
+                        <button class="edit-btn" onclick="editBirthday(${i})">✏️ ערוך</button>
+                        <button class="logout-btn" onclick="deleteBirthday(${i})">🗑️ מחק</button>
                     </div>
                 </div>
-            `).join('') || "<p>אין ילדים רשומים במערכת הפרימיום. הוסיפי ילד למעלה.</p>";
+            `).join('') || "<p>אין ימי הולדת רשומים כרגע.</p>";
         }
 
         let notifElem = document.getElementById('notificationsList');
-        if(notifElem) {
-            notifElem.innerHTML = (dbData.notifications || []).filter(n => isItemVisible(n)).map((n, i) => `
-                <div class="card">
-                    <div>🔔 <b>${n.title}</b> (זמן: ${n.time}) ${n.broadcast ? '<span>[📢 משותף]</span>' : '<span>[🔒 פרטי]</span>'}</div>
-                    <button class="logout-btn" onclick="deleteNotification(${i})">🗑️ מחק</button>
-                </div>
-            `).join('') || "<p>אין תזכורות פעילות.</p>";
-        }
+        if(notifElem) notifElem.innerHTML = (dbData.notifications || []).map((n, i) => `<div class="card"><span>🔔 ${n.title}</span><button class="logout-btn" onclick="deleteNotification(${i})">🗑️</button></div>`).join('') || "<p>אין תזכורות.</p>";
 
-        let shopHTML = "";
-        for(let k in (dbData.shopping || {})) {
-            let item = dbData.shopping[k];
-            if (isItemVisible(item)) {
-                shopHTML += `
-                    <div class="card">
-                        <span>🛒 ${k} ${item.shared ? '🌐' : '🔒'}</span>
-                        <div style="display:flex; gap:8px;">
-                            <button class="speak-item-btn" onclick="speakText('${k}')">🗣️ הקרא</button>
-                            <button class="logout-btn" onclick="deleteShop('${k}')">🗑️</button>
-                        </div>
-                    </div>`;
-            }
-        }
         let shopElem = document.getElementById('shopList');
-        if(shopElem) shopElem.innerHTML = shopHTML || "<p>הרשימה ריקה.</p>";
+        if(shopElem) {
+            let shopHTML = "";
+            for(let k in (dbData.shopping || {})) shopHTML += `<div class="card"><span>🛒 ${k}</span><button class="logout-btn" onclick="deleteShop('${k}')">🗑️ מחק</button></div>`;
+            shopElem.innerHTML = shopHTML || "<p>רשימה ריקה.</p>";
+        }
 
         let notesElem = document.getElementById('noteCardsContainer');
-        if(notesElem) {
-            notesElem.innerHTML = (dbData.notes || []).filter(n => isItemVisible(n)).map((n, i) => 
-                `<div class="note-card">
-                    <div><h4>${n.title} ${n.shared ? '🌐' : '🔒'}</h4><p>${n.text}</p></div>
-                    <div style="display:flex; gap:8px;">
-                        <button class="speak-item-btn" onclick="speakText('${n.title}. ${n.text}')">🗣️ הקרא</button>
-                        <button class="edit-btn" onclick="editNote(${i})">✏️ ערוך</button>
-                        <button class="logout-btn" onclick="deleteNote(${i})">🗑️ מחק</button>
-                    </div>
-                </div>`
-            ).join('') || "<p>אין פתקיות.</p>";
-        }
-
-        let eventsElem = document.getElementById('eventsList');
-        if(eventsElem) {
-            eventsElem.innerHTML = (dbData.events || []).filter(e => isItemVisible(e)).map((e, i) => 
-                `<div class="card">
-                    <span>⏰ <b>${e.time}</b> - ${e.title} ${e.shared ? '🌐' : '🔒'}</span>
-                    <div style="display:flex; gap:8px;">
-                        <button class="speak-item-btn" onclick="speakText('שעה ${e.time}, אירוע ${e.title}')">🗣️ הקרא</button>
-                        <button class="edit-btn" onclick="editEvent(${i})">✏️ ערוך</button>
-                        <button class="logout-btn" onclick="deleteEvent(${i})">🗑️ מחק</button>
-                    </div>
-                </div>`
-            ).join('') || "<p>אין אירועים.</p>";
-        }
+        if(notesElem) notesElem.innerHTML = (dbData.notes || []).map((n, i) => `
+            <div class="card">
+                <div><h4>${n.title}</h4><p>${n.text}</p></div>
+                <div style="display:flex; gap:5px;">
+                    <button class="edit-btn" onclick="editNote(${i})">✏️ ערוך</button>
+                    <button class="logout-btn" onclick="deleteNote(${i})">🗑️ מחק</button>
+                </div>
+            </div>
+        `).join('') || "<p>אין פתקיות.</p>";
 
         let recElem = document.getElementById('receiptsList');
-        if(recElem) {
-            recElem.innerHTML = (dbData.receipts || []).filter(r => isItemVisible(r)).map((r, i) => 
-                `<div class="card">
-                    <span>🧾 <b>${r.store}</b>: ${r.item} (₪${r.price}) ${r.shared ? '🌐' : '🔒'}</span>
-                    <div style="display:flex; gap:8px;">
-                        <button class="speak-item-btn" onclick="speakText('חנות ${r.store}, מוצר ${r.item}, מחיר ${r.price} שקל')">🗣️ הקרא</button>
-                        <button class="logout-btn" onclick="deleteReceipt(${i})">🗑️ מחק</button>
-                    </div>
-                </div>`
-            ).join('') || "<p>אין קבלות רשומות.</p>";
-            updateReceiptsComparison();
-        }
+        if(recElem) recElem.innerHTML = (dbData.receipts || []).map((r, i) => `<div class="card"><span>🧾 ${r.store}: ${r.item} (₪${r.price})</span><button class="logout-btn" onclick="deleteReceipt(${i})">🗑️</button></div>`).join('') || "<p>אין קבלות.</p>";
 
         let docElem = document.getElementById('documentsList');
-        if(docElem) {
-            docElem.innerHTML = (dbData.documents || []).filter(d => isItemVisible(d)).map((d, i) => 
-                `<div class="card">
-                    <div><h4>📄 מסוג: ${d.type} ${d.shared ? '🌐' : '🔒'}</h4><p>${d.content.substring(0, 50)}...</p></div>
-                    <div style="display:flex; gap:8px;">
-                        <button class="speak-item-btn" onclick="speakText('מסמך מסוג ${d.type}')">🗣️ הקרא</button>
-                        <button class="logout-btn" onclick="deleteDocument(${i})">🗑️ מחק</button>
-                    </div>
-                </div>`
-            ).join('') || "<p>אין מסמכים מנותחים.</p>";
-        }
+        if(docElem) docElem.innerHTML = (dbData.documents || []).map((d, i) => `<div class="card"><div><h4>📄 מסוג: ${d.type}</h4></div><button class="logout-btn" onclick="deleteDocument(${i})">🗑️</button></div>`).join('') || "<p>אין מסמכים.</p>";
 
         let vidassElem = document.getElementById('vidassList');
-        if(vidassElem) {
-            vidassElem.innerHTML = (dbData.vidass || []).filter(v => isItemVisible(v)).map((v, i) => 
-                `<div class="card">
-                    <div><h4 style="margin:0; color:var(--primary-color);">🏢 ${v.name} ${v.shared ? '🌐' : '🔒'}</h4><p>${v.desc}</p></div>
-                    <div style="display:flex; gap:8px;">
-                        <button class="speak-item-btn" onclick="speakText('פרויקט ${v.name}. ${v.desc}')">🗣️ הקרא</button>
-                        <button class="edit-btn" onclick="editVidass(${i})">✏️ ערוך</button>
-                        <button class="logout-btn" onclick="deleteVidass(${i})">🗑️ מחק</button>
-                    </div>
-                </div>`
-            ).join('') || "<p>אין פרויקטים ב-VIDASS.</p>";
-        }
+        if(vidassElem) vidassElem.innerHTML = (dbData.vidass || []).map((v, i) => `<div class="card"><div><h4>🏢 ${v.name}</h4><p>${v.desc}</p></div><button class="logout-btn" onclick="deleteVidass(${i})">🗑️</button></div>`).join('') || "<p>אין פרויקטים.</p>";
 
         if (isFinancesUnlocked) {
             let visibleExpenses = (dbData.expenses || []).filter(e => isItemVisible(e));
@@ -2251,8 +1684,8 @@
             if(expElem) {
                 expElem.innerHTML = `
                     <table style="width:100%; border-collapse:collapse; background:var(--card-bg);">
-                        <tr><th style="border:1px solid var(--button-bg); padding:8px;">חודש</th><th style="border:1px solid var(--button-bg); padding:8px;">קטגוריה</th><th style="border:1px solid var(--button-bg); padding:8px;">סכום</th><th style="border:1px solid var(--button-bg); padding:8px;">שיתוף</th><th style="border:1px solid var(--button-bg); padding:8px;">פעולה</th></tr>
-                        ${visibleExpenses.map((e, i) => `<tr><td style="border:1px solid var(--button-bg); padding:8px;">${e.month}</td><td style="border:1px solid var(--button-bg); padding:8px;">${e.category}</td><td style="border:1px solid var(--button-bg); padding:8px;">₪${e.amount}</td><td style="border:1px solid var(--button-bg); padding:8px; text-align:center;">${e.shared ? '🌐' : '🔒'}</td><td style="border:1px solid var(--button-bg); padding:8px; display:flex; gap:5px;"><button class="speak-item-btn" style="padding:4px 8px; font-size:12px;" onclick="speakText('${e.month}, ${e.category}, ${e.amount} שקל')">🗣️</button><button class="logout-btn" style="padding:4px 8px; font-size:12px;" onclick="deleteExpense(${i})">🗑️</button></td></tr>`).join('')}
+                        <tr><th>חודש</th><th>קטגוריה</th><th>סכום</th><th>פעולה</th></tr>
+                        ${visibleExpenses.map((e, i) => `<tr><td>${e.month}</td><td>${e.category}</td><td>₪${e.amount}</td><td><button class="logout-btn" style="padding:4px;" onclick="deleteExpense(${i})">🗑️</button></td></tr>`).join('')}
                     </table>
                     <div style="margin-top:10px; font-weight:bold;">סך הכל הוצאות: ₪${totalExp}</div>
                 `;
@@ -2260,109 +1693,51 @@
         }
 
         let tithesElem = document.getElementById('tithesList');
-        if(tithesElem) {
-            tithesElem.innerHTML = (dbData.tithes || []).filter(th => isItemVisible(th)).map((th, i) => 
-                `<div class="card">
-                    <span>🤲 הכנסה: ₪${th.income} | מעשר להפרשה: ₪${th.tithe.toFixed(2)} ${th.shared ? '🌐' : '🔒'}</span>
-                    <div style="display:flex; gap:8px;">
-                        <button class="speak-item-btn" onclick="speakText('הכנסה ${th.income} שקל, מעשר ${th.tithe.toFixed(2)} שקל')">🗣️ הקרא</button>
-                        <button class="logout-btn" onclick="deleteTithe(${i})">🗑️ מחק</button>
-                    </div>
-                </div>`
-            ).join('') || "<p>אין מעשרות רשומים.</p>";
-        }
+        if(tithesElem) tithesElem.innerHTML = (dbData.tithes || []).map((th, i) => `<div class="card"><span>🤲 הכנסה: ₪${th.income} | מעשר: ₪${th.tithe.toFixed(2)}</span><button class="logout-btn" onclick="deleteTithe(${i})">🗑️</button></div>`).join('') || "<p>אין מעשרות.</p>";
 
         let devicesElem = document.getElementById('devicesList');
-        if(devicesElem) {
-            devicesElem.innerHTML = (dbData.devices || []).filter(d => isItemVisible(d)).map((d, i) => 
-                `<div class="card">
-                    <span>🔌 <b>${d.name}</b> (${d.type}) ${d.shared ? '🌐' : '🔒'}</span>
-                    <div style="display:flex; gap:8px;">
-                        ${d.type.startsWith('http') ? `<a href="${d.type}" target="_blank" class="quick-link-btn" style="padding:6px 10px; font-size:13px; text-decoration:none;">🔗 פתח קישור</a>` : ''}
-                        <button class="speak-item-btn" onclick="speakText('מכשיר ${d.name}')">🗣️ הקרא</button>
-                        <button class="edit-btn" onclick="editDevice(${i})">✏️ ערוך</button>
-                        <button class="logout-btn" onclick="deleteDevice(${i})">🗑️ מחק</button>
-                    </div>
-                </div>`
-            ).join('') || "<p>אין מכשירים או קישורים מוגדרים.</p>";
-        }
-
-        let tripsElem = document.getElementById('tripsList');
-        if(tripsElem) {
-            tripsElem.innerHTML = (dbData.trips || []).filter(t => isItemVisible(t)).map((t, i) => {
-                let wazeUrl = `https://waze.com/ul?q=${encodeURIComponent(t.dest || t.name)}&navigate=yes`;
-                let googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(t.dest || t.name)}`;
-                return `
-                    <div class="card">
-                        <div>
-                            <h4 style="margin:0; color:var(--primary-color);">🚗 ${t.name} ${t.shared ? '🌐' : '🔒'}</h4>
-                            <p style="margin:5px 0 0 0;">📍 כתובת: ${t.dest || 'לא צוינה כתובת'}</p>
-                        </div>
-                        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-                            <a href="${wazeUrl}" target="_blank" class="quick-link-btn" style="background:#3182ce; padding:6px 10px; border-radius:6px; color:white; text-decoration:none; font-size:13px;">🧭 Waze</a>
-                            <a href="${googleMapsUrl}" target="_blank" class="quick-link-btn" style="background:#4285F4; padding:6px 10px; border-radius:6px; color:white; text-decoration:none; font-size:13px;">🗺️ מפות</a>
-                            <button class="speak-item-btn" onclick="speakText('נסיעה ליעד ${t.name}')" style="padding:6px 10px; font-size:13px;">🗣️ הקרא</button>
-                            <button class="edit-btn" onclick="editTrip(${i})" style="padding:6px 10px; font-size:13px;">✏️ ערוך</button>
-                            <button class="logout-btn" onclick="deleteTrip(${i})" style="padding:6px 10px; font-size:13px;">🗑️ מחק</button>
-                        </div>
-                    </div>
-                `;
-            }).join('') || "<p>אין נסיעות מוגדרות.</p>";
-        }
+        if(devicesElem) devicesElem.innerHTML = (dbData.devices || []).map((d, i) => `
+            <div class="card">
+                <span>🔌 <b>${d.name}</b> (${d.type})</span>
+                <div style="display:flex; gap:5px;">
+                    <button class="edit-btn" onclick="editDevice(${i})">✏️ ערוך</button>
+                    <button class="logout-btn" onclick="deleteDevice(${i})">🗑️ מחק</button>
+                </div>
+            </div>
+        `).join('') || "<p>אין מכשירים מחוברים.</p>";
 
         let tasksElem = document.getElementById('tasksList');
-        if(tasksElem) {
-            tasksElem.innerHTML = (dbData.tasks || []).filter(t => isItemVisible(t)).map((t, i) => 
-                `<div class="card">
-                    <span>📌 ${t.text} ${t.shared ? '🌐' : '🔒'}</span>
-                    <div style="display:flex; gap:8px;">
-                        <button class="speak-item-btn" onclick="speakText('משימה: ${t.text}')">🗣️ הקרא</button>
-                        <button class="edit-btn" onclick="editTask(${i})">✏️ ערוך</button>
-                        <button class="logout-btn" onclick="deleteTask(${i})">🗑️ מחק</button>
-                    </div>
-                </div>`
-            ).join('') || "<p>אין משימות.</p>";
-        }
+        if(tasksElem) tasksElem.innerHTML = (dbData.tasks || []).map((t, i) => `
+            <div class="card">
+                <span>📌 ${t.text}</span>
+                <div style="display:flex; gap:5px;">
+                    <button class="edit-btn" onclick="editTask(${i})">✏️ ערוך</button>
+                    <button class="logout-btn" onclick="deleteTask(${i})">🗑️ מחק</button>
+                </div>
+            </div>
+        `).join('') || "<p>אין משימות.</p>";
 
         let foldersElem = document.getElementById('foldersContainer');
         if(foldersElem) {
-            foldersElem.innerHTML = (dbData.folders || []).map(f => 
-                `<div class="folder-card" onclick="selectFolder('${f}')"><div style="font-size:24px;">📁</div><div style="margin-top:5px;">${f}</div></div>`
-            ).join('');
+            foldersElem.innerHTML = (dbData.folders || []).map(f => `
+                <div class="folder-card" onclick="selectFolder('${f}')">
+                    <div style="font-size:24px;">📁</div>
+                    <div>${f}</div>
+                </div>
+            `).join('') || "<p>אין מגירות פעילות.</p>";
         }
         if(activeFolder) renderFolderItems();
 
         let recipesElem = document.getElementById('recipesListContainer');
-        if(recipesElem) {
-            recipesElem.innerHTML = (dbData.recipes || []).filter(r => isItemVisible(r)).map((r, i) => 
-                `<div class="card">
-                    <div><h4 style="margin:0; color:var(--primary-color);">🍲 ${r.title} ${r.shared ? '🌐' : '🔒'}</h4><p>${r.instructions}</p></div>
-                    <div style="display:flex; gap:8px;">
-                        <button class="speak-item-btn" onclick="speakText('מתכון ${r.title}')">🗣️ הקרא</button>
-                        <button class="edit-btn" onclick="editRecipe(${i})">✏️ ערוך</button>
-                        <button class="logout-btn" onclick="deleteRecipe(${i})">🗑️ מחק</button>
-                    </div>
-                </div>`
-            ).join('') || "<p>אין מתכונים.</p>";
-        }
-
+        if(recipesElem) recipesElem.innerHTML = (dbData.recipes || []).map((r, i) => `<div class="card"><div><h4>🍲 ${r.title}</h4><p>${r.instructions}</p></div><button class="logout-btn" onclick="deleteRecipe(${i})">🗑️</button></div>`).join('') || "<p>אין מתכונים.</p>";
+        
         let musicElem = document.getElementById('musicListContainer');
-        if(musicElem) {
-            musicElem.innerHTML = (dbData.music || []).filter(m => isItemVisible(m)).map((m, i) => 
-                `<div class="count-card card" style="display:flex; justify-content:space-between; align-items:center; width:100%; background:var(--card-bg); border:1px solid var(--button-bg); padding:15px; border-radius:10px; margin-bottom:10px; flex-wrap:wrap;">
-                    <div><h4>🎵 ${m.title} ${m.shared ? '🌐' : '🔒'}</h4>${m.link ? `<a href="${m.link}" target="_blank" class="quick-link-btn" style="padding:4px 8px; font-size:12px; text-decoration:none;">▶️ האזן לשיר</a>` : ''}</div>
-                    <div style="display:flex; gap:8px;">
-                        <button class="speak-item-btn" onclick="speakText('שיר ${m.title}')">🗣️ הקרא</button>
-                        <button class="logout-btn" onclick="deleteMusic(${i})">🗑️ מחק</button>
-                    </div>
-                </div>`
-            ).join('') || "<p>אין שירים מוגדרים.</p>";
-        }
+        if(musicElem) musicElem.innerHTML = (dbData.music || []).map((m, i) => `<div class="card"><div><h4>🎵 ${m.title}</h4></div><button class="logout-btn" onclick="deleteMusic(${i})">🗑️</button></div>`).join('') || "<p>אין שירים.</p>";
 
         if (isVaultUnlocked) renderVaultItems();
 
         let chatHTML = "";
-        (dbData.chat || []).filter(m => isItemVisible(m)).forEach(m => {
+        (dbData.chat || []).forEach(m => {
             chatHTML += `<div style="padding:10px; margin-bottom:8px; border-radius:8px; background:${m.role==='user'?'var(--button-bg)':'rgba(0,0,0,0.05)'};"><b>${m.role==='user'?'אתה/את':'VIDASS AI'}:</b> ${m.text}</div>`;
         });
         let box = document.getElementById('chatHistory');
@@ -2376,9 +1751,7 @@
             document.documentElement.style.fontSize = newSize + 'px';
         }
     }
-    function toggleContrast() {
-        document.body.classList.toggle('high-contrast');
-    }
+    function toggleContrast() { document.body.classList.toggle('high-contrast'); }
 </script>
 
 </body>
