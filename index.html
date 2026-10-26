@@ -396,12 +396,26 @@
         <div id="hobbiesListContainer" style="margin-top:15px;"></div>
     </div>
 
-    <!-- טאב 8: אירועים -->
+    <!-- טאב 8: אירועים מפורטים -->
     <div id="tab-events" class="tab-content">
-        <h3 data-i18n="tab8">🎉 אירועים</h3>
-        <input type="text" id="eventPlanName" placeholder="שם האירוע...">
-        <input type="text" id="eventPlanDate" placeholder="תאריך ושעה...">
-        <button class="action-btn" onclick="addEventPlan()" data-i18n="btnAddEvent">➕ הוסף אירוע</button>
+        <h3 data-i18n="tab8">🎉 תכנון אירועים מפורט</h3>
+        
+        <div style="background:rgba(0,0,0,0.02); border:2px solid var(--primary-color); padding:15px; border-radius:10px; margin-bottom:15px;">
+            <label><b>שם האירוע:</b></label>
+            <input type="text" id="eventPlanName" placeholder="למשל: יום הולדת, ארוחת ערב משפחתית...">
+            
+            <label><b>תאריך ושעה:</b></label>
+            <input type="datetime-local" id="eventPlanDate" style="font-weight:bold;">
+            
+            <label><b>מיקום האירוע:</b></label>
+            <input type="text" id="eventPlanLocation" placeholder="למשל: בבית - חצר, אולם אירועים...">
+            
+            <label><b>פרטים, תפריט או הערות:</b></label>
+            <textarea id="eventPlanDesc" placeholder="למשל: קניית בלונים, תיאום עם ליצן, תפריט בשרים על האש..." style="width:100%; height:70px;"></textarea>
+            
+            <button class="action-btn" onclick="addEventPlan()" data-i18n="btnAddEvent">➕ הוסף אירוע מפורט</button>
+        </div>
+
         <div id="eventsPlanListContainer" style="margin-top:15px;"></div>
     </div>
 
@@ -899,7 +913,6 @@
         else { alert("❌ הסיסמה האישית שגויה."); }
     }
 
-    // כניסה מהירה בטוחה מעודכנת שמתפקדת תמיד בחלקה ובאמינות
     async function verifyBiometricLogin() {
         if (currentPin) {
             document.getElementById('loginPinInput').value = currentPin;
@@ -1100,17 +1113,35 @@
     }
     function deleteHobby(i) { dbData.hobbies.splice(i, 1); saveData(); }
 
+    // פונקציית תכנון אירועים מעודכנת עם כל השדות
     function addEventPlan() {
         let name = document.getElementById('eventPlanName').value.trim();
-        let date = document.getElementById('eventPlanDate').value.trim();
+        let dateVal = document.getElementById('eventPlanDate').value;
+        let location = document.getElementById('eventPlanLocation').value.trim();
+        let desc = document.getElementById('eventPlanDesc').value.trim();
+        
         if(name) {
             if(!dbData.eventsPlan) dbData.eventsPlan = [];
-            dbData.eventsPlan.push({name, date});
-            document.getElementById('eventPlanName').value = ''; document.getElementById('eventPlanDate').value = '';
-            saveData(); alert("🎉 האירוע נוסף בהצלחה!");
+            let formattedDate = dateVal ? new Date(dateVal).toLocaleString('he-IL') : 'ללא שעה מוגדרת';
+            dbData.eventsPlan.push({name, date: formattedDate, location, desc});
+            
+            document.getElementById('eventPlanName').value = ''; 
+            document.getElementById('eventPlanDate').value = ''; 
+            document.getElementById('eventPlanLocation').value = '';
+            document.getElementById('eventPlanDesc').value = '';
+            
+            saveData(); 
+            alert("🎉 האירוע נוסף בהצלחה!");
+        } else {
+            alert("נא להזין לפחות את שם האירוע.");
         }
     }
-    function deleteEventPlan(i) { dbData.eventsPlan.splice(i, 1); saveData(); }
+    function deleteEventPlan(i) {
+        if(confirm("האם למחוק את האירוע הזה?")) {
+            dbData.eventsPlan.splice(i, 1); 
+            saveData();
+        }
+    }
 
     function addTrip() {
         let name = document.getElementById('tripName').value.trim();
@@ -1269,7 +1300,7 @@
     function selectFolder(f) {
         activeFolder = f;
         document.getElementById('folderDetailsContainer').style.display = 'block';
-        document.getElementById('selectedFolderTitle', `📂 מגירה נבחרה: ${f}`);
+        document.getElementById('selectedFolderTitle').innerText = `📂 מגירה נבחרה: ${f}`;
         renderFolderItems();
     }
     function deleteActiveFolder() {
@@ -1519,8 +1550,20 @@
         let hobElem = document.getElementById('hobbiesListContainer');
         if(hobElem) hobElem.innerHTML = (dbData.hobbies || []).map((h, i) => `<div class="card"><span>⚽ <b>${h.name}</b> (${h.child})</span><button class="logout-btn" onclick="deleteHobby(${i})">🗑️</button></div>`).join('') || "<p>אין חוגים.</p>";
 
+        // הצגת רשימת האירועים המעוצבת והמפורטת
         let eventsElem = document.getElementById('eventsPlanListContainer');
-        if(eventsElem) eventsElem.innerHTML = (dbData.eventsPlan || []).map((e, i) => `<div class="card"><span>🎉 <b>${e.name}</b> (${e.date})</span><button class="logout-btn" onclick="deleteEventPlan(${i})">🗑️</button></div>`).join('') || "<p>אין אירועים.</p>";
+        if(eventsElem) {
+            eventsElem.innerHTML = (dbData.eventsPlan || []).map((e, i) => `
+                <div class="card" style="border-left: 5px solid var(--primary-color); display: block;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--button-bg); padding-bottom: 8px; margin-bottom: 8px;">
+                        <h4 style="margin:0; color:var(--primary-color);">🎉 ${e.name} - ${e.date}</h4>
+                        <button class="logout-btn" onclick="deleteEventPlan(${i})" style="padding: 4px 8px; font-size: 12px;">🗑️ מחק</button>
+                    </div>
+                    ${e.location ? `<p style="margin: 4px 0;">📍 <b>מיקום:</b> ${e.location}</p>` : ''}
+                    ${e.desc ? `<p style="margin: 4px 0; opacity: 0.9;">📝 <b>פרטים:</b> ${e.desc}</p>` : ''}
+                </div>
+            `).join('') || "<p>אין אירועים מתוכננים כרגע.</p>";
+        }
 
         let tripsElem = document.getElementById('tripsList');
         if(tripsElem) tripsElem.innerHTML = (dbData.trips || []).map((t, i) => `<div class="card"><span>🚗 <b>${t.name}</b> (${t.dest})</span><button class="logout-btn" onclick="deleteTrip(${i})">🗑️</button></div>`).join('') || "<p>אין טיולים.</p>";
