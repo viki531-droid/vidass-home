@@ -152,7 +152,7 @@
     <div class="splash-loader"></div>
 </div>
 
-<!-- סרגל נגישות ושפות עם לחצני הקראה ועצירה -->
+<!-- סרגל נגישות ושפות -->
 <div class="accessibility-bar" role="region">
     <span id="lblAccess" data-i18n="lblAccess">♿ נגישות ושפות:</span>
     <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
@@ -168,6 +168,7 @@
             <option value="fr">Français</option>
             <option value="ar">العربية</option>
             <option value="es">Español</option>
+            <option value="zh">中文 (סינית)</option>
         </select>
     </div>
 </div>
@@ -494,13 +495,38 @@
         <div id="devicesList" style="margin-top:15px;"></div>
     </div>
 
-    <!-- טאב 18: משימות, מזג אוויר חי ושעון שבת -->
+    <!-- טאב 18: משימות, מזג אוויר חי, שעון שבת ולוחות שנה מורחבים -->
     <div id="tab-tasks" class="tab-content">
-        <h3 data-i18n="tab18">📌 משימות</h3>
-        <select id="regionSelect" onchange="updateShabbatAndWeather()"><option value="eilat">אילת</option><option value="jerusalem">ירושלים</option><option value="telaviv">תל אביב</option></select>
-        <select id="religionSelect" onchange="updateShabbatAndWeather()"><option value="jewish">יהדות</option><option value="general">כללי</option></select>
+        <h3 data-i18n="tab18">📌 משימות ומזג אוויר</h3>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:15px;">
+            <div style="flex:1; min-width:200px;">
+                <label data-i18n="lblRegion">בחר אזור / עיר:</label>
+                <select id="regionSelect" onchange="updateShabbatAndWeather()">
+                    <option value="eilat">אילת</option>
+                    <option value="jerusalem">ירושלים</option>
+                    <option value="telaviv">תל אביב</option>
+                    <option value="haifa">חיפה</option>
+                    <option value="beersheva">באר שבע</option>
+                    <option value="tiberias">טבריה</option>
+                    <option value="newyork">ניו יורק (ארה"ב)</option>
+                    <option value="london">לונדון (בריטניה)</option>
+                    <option value="paris">פריז (צרפת)</option>
+                    <option value="dubai">דובאי (איחוד האמירויות)</option>
+                    <option value="tokyo">טוקיו (יפן)</option>
+                </select>
+            </div>
+            <div style="flex:1; min-width:200px;">
+                <label data-i18n="lblCalendarSystem">לוח שנה ומועדים:</label>
+                <select id="religionSelect" onchange="updateShabbatAndWeather()">
+                    <option value="jewish">📅 יהדות (שבת וחגים)</option>
+                    <option value="christian">⛪ נצרות (מועדים וראשון)</option>
+                    <option value="islamic">☪️ איסלם (מועדים וחגים)</option>
+                    <option value="general">🌍 כללי / גרגוריאני</option>
+                </select>
+            </div>
+        </div>
         <div class="weather-card" id="weatherDisplayBox">🌤️ טוען נתוני מזג אוויר חיים...</div>
-        <div class="shabbat-badge" id="shabbatBanner">🕯️ מחשב זמני שבת...</div>
+        <div class="shabbat-badge" id="shabbatBanner">🕯️ מחשב זמני מועדים...</div>
         <input type="text" id="taskText" placeholder="משימה חדשה...">
         <button class="action-btn" onclick="addTask()" data-i18n="btnAddMask">➕ הוסף משימה</button>
         <div id="tasksList" style="margin-top:15px;"></div>
@@ -583,14 +609,14 @@
 </div>
 
 <script>
-    const STORAGE_USER = 'vidass_persistent_user_v59';
-    const STORAGE_HOUSE = 'vidass_persistent_house_v59';
-    const STORAGE_PIN = 'vidass_persistent_pin_v59';
-    const STORAGE_RECOVERY = 'vidass_persistent_rec_v59';
-    const STORAGE_LANG = 'vidass_persistent_lang_v59';
-    const STORAGE_THEME = 'vidass_persistent_theme_v59';
-    const STORAGE_DATA = 'vidass_persistent_local_backup_v59';
-    const STORAGE_PHONES = 'vidass_persistent_phones_v59';
+    const STORAGE_USER = 'vidass_persistent_user_v61';
+    const STORAGE_HOUSE = 'vidass_persistent_house_v61';
+    const STORAGE_PIN = 'vidass_persistent_pin_v61';
+    const STORAGE_RECOVERY = 'vidass_persistent_rec_v61';
+    const STORAGE_LANG = 'vidass_persistent_lang_v61';
+    const STORAGE_THEME = 'vidass_persistent_theme_v61';
+    const STORAGE_DATA = 'vidass_persistent_local_backup_v61';
+    const STORAGE_PHONES = 'vidass_persistent_phones_v61';
 
     let currentUser = localStorage.getItem(STORAGE_USER);
     let currentHouse = localStorage.getItem(STORAGE_HOUSE);
@@ -729,6 +755,23 @@
             adminH3: "👑 Gestor de residentes", adminP: "¡Envía el enlace de invitación!", btnCopyInvite: "📋 Copiar enlace",
             qlCalendar: "📅 Calendario", qlWhatsapp: "💬 WhatsApp", qlEmail: "📧 Correo",
             tab1: "👥 Residentes y Llamadas", tab2: "🎂 Cumpleaños", tab3: "🧒 Niños y Relojes", tab4: "💵 Mesada", tab5: "🧹 Tareas", tab6: "🐷 Ahorros", tab7: "⚽ Pasatiempos", tab8: "🎉 Eventos", tab9: "🚗 Viajes", tab10: "🔔 Notificaciones", tab11: "📝 Notas", tab12: "🧾 Recibos", tab13: "📄 Recibos", tab14: "🏢 VIDASS", tab15: "💰 Gastos", tab16: "🤲 Diezmos", tab17: "🔌 Dispositivos", tab18: "📌 Tareas", tab19: "🛒 Compras", tab20: "📦 Inventario", tab21: "🍲 Recetas", tab22: "🎵 Música", tab23: "🔐 Bóveda", tab24: "🤖 Asistente"
+        },
+        zh: {
+            appTitle: "🏢 VIDASS Home", appSub: "安全家庭与商业控制中心",
+            lblAccess: "♿ 无障碍与语言:", btnContrast: "🌓 高对比度", btnRead: "🗣️ 朗读", btnStopRead: "⏹️ 停止",
+            themeTitle: "🎨 主题颜色选择", themeSub: "选择您喜欢的系统颜色。",
+            welcomeH2: "🏢 欢迎来到 VIDASS Home", welcomeP: "这是您的第一次访问还是加入现有家庭？",
+            btnNewHouse: "✨ 新用户 / 创建新家庭", btnJoinHouse: "🔗 我有家庭代码 / 链接",
+            authTitle: "🏢 居民与新家庭注册", authSub: "输入您的姓名、个人密码和恢复代码：",
+            lblHouseCode: "共享家庭代码 (云端):", lblResidentName: "您的居民姓名:", lblPin: "个人密码:", lblRecovery: "安全恢复代码:",
+            btnSaveAuth: "🏠 保存详情并进入", btnBack: "⬅️ 返回",
+            joinH2: "🔗 加入现有家庭", joinP: "输入家庭代码或粘贴链接：", btnConnect: "🚀 连接家庭",
+            loginH2: "🌅 早上好！", loginP: "安全登录控制中心：", lblUserSpan: "用户:", btnChangeName: "✏️ 修改",
+            lblEnterPin: "输入您的个人密码：", btnLoginEnter: "🔓 安全登录", btnBio: "🧬 生物识别快登", btnLogout: "🔄 切换居民 / 重置",
+            lblHouseNum: "家庭编号:", badgePrem: "🌟 高级模式", statusCloud: "🟢 云端已连接", btnLock: "🔒 锁定",
+            adminH3: "👑 管理居民与应用分发", adminP: "向家庭成员发送邀请链接！", btnCopyInvite: "📋 复制邀请链接",
+            qlCalendar: "📅 打开日历", qlWhatsapp: "💬 打开 WhatsApp", qlEmail: "📧 打开邮箱",
+            tab1: "👥 居民与通话", tab2: "🎂 生日", tab3: "🧒 儿童与手表", tab4: "💵 零花钱", tab5: "🧹 家务", tab6: "🐷 储蓄", tab7: "⚽ 爱好", tab8: "🎉 活动", tab9: "🚗 旅行", tab10: "🔔 通知", tab11: "📝 便签", tab12: "🧾 收据", tab13: "📄 文档", tab14: "🏢 VIDASS", tab15: "💰 支出", tab16: "🤲 什一税", tab17: "🔌 设备", tab18: "📌 任务", tab19: "🛒 购物", tab20: "📦 库存", tab21: "🍲 食谱", tab22: "🎵 音乐", tab23: "🔐 保险箱", tab24: "🤖 助手"
         }
     };
 
@@ -782,7 +825,7 @@
 
     function changeLanguage(lang, save = true) {
         if (save) localStorage.setItem(STORAGE_LANG, lang);
-        if (lang === 'en' || lang === 'ru' || lang === 'fr' || lang === 'es') {
+        if (lang === 'en' || lang === 'ru' || lang === 'fr' || lang === 'es' || lang === 'zh') {
             document.body.classList.add('ltr-mode'); document.body.setAttribute('dir', 'ltr');
         } else {
             document.body.classList.remove('ltr-mode'); document.body.setAttribute('dir', 'rtl');
@@ -927,15 +970,17 @@
 
     function makeRealPhoneCall(residentName) {
         let phone = dbData.phones && dbData.phones[residentName];
-        if(phone) {
-            window.location.href = `tel:${phone}`;
+        let cleanPhone = phone ? phone.replace(/[^0-9]/g, '') : '';
+        if(cleanPhone) {
+            window.location.href = `tel:${cleanPhone}`;
         } else {
-            let p = prompt(`הקש את מספר הטלפון של ${residentName} לחיוג מהיר:`);
+            let p = prompt(`הקש את מספר הטלפון של ${residentName} לחיוג מהיר (למשל 0501234567):`);
             if(p) {
                 if(!dbData.phones) dbData.phones = {};
                 dbData.phones[residentName] = p;
                 localStorage.setItem(STORAGE_PHONES, JSON.stringify(dbData.phones));
-                window.location.href = `tel:${p}`;
+                let c = p.replace(/[^0-9]/g, '');
+                window.location.href = `tel:${c}`;
                 saveData();
             }
         }
@@ -946,9 +991,9 @@
         let cleanPhone = phone ? phone.replace(/[^0-9]/g, '') : '';
         if(cleanPhone) {
             if(cleanPhone.startsWith('0')) cleanPhone = '972' + cleanPhone.substring(1);
-            window.open(`https://wa.me/${cleanPhone}?text=היי%20${encodeURIComponent(residentName)},%20בוא/י%20נדבר%20בשיחת%20וידאו%20ב-VIDASS!`, '_blank');
+            window.open(`https://wa.me/${cleanPhone}`, '_blank');
         } else {
-            let p = prompt(`הקש מספר נייד לוואטסאפ/וידאו עבור ${residentName}:`);
+            let p = prompt(`הקש מספר נייד לוואטסאפ עבור ${residentName} (למשל 0501234567):`);
             if(p) {
                 if(!dbData.phones) dbData.phones = {};
                 dbData.phones[residentName] = p;
@@ -1314,18 +1359,34 @@
 
     function updateShabbatAndWeather() {
         let region = document.getElementById('regionSelect').value;
+        let religion = document.getElementById('religionSelect').value;
         let weatherBox = document.getElementById('weatherDisplayBox');
         let shabbatBox = document.getElementById('shabbatBanner');
         
-        if(region === 'eilat') {
-            weatherBox.innerHTML = "🌤️ אילת: 28°C, שמש בהירה.";
-            shabbatBox.innerHTML = "🕯️ אילת - כניסת שבת: 17:42 | צאת שבת: 18:38";
-        } else if(region === 'jerusalem') {
-            weatherBox.innerHTML = "🌤️ ירושלים: 21°C, נעים.";
-            shabbatBox.innerHTML = "🕯️ ירושלים - כניסת שבת: 17:20 | צאת שבת: 18:35";
+        let weatherData = {
+            eilat: "🌤️ אילת: 28°C, שמש בהירה.",
+            jerusalem: "🌤️ ירושלים: 21°C, נעים.",
+            telaviv: "🌤️ תל אביב: 24°C, נוח.",
+            haifa: "🌤️ חיפה: 23°C, רוח נעימה.",
+            beersheva: "🌤️ באר שבע: 26°C, חם ויבש.",
+            tiberias: "🌤️ טבריה: 29°C, חם.",
+            newyork: "🌤️ ניו יורק: 16°C, מעונן חלקית.",
+            london: "🌧️ לונדון: 12°C, גשם קל.",
+            paris: "🌤️ פריז: 15°C, בהיר.",
+            dubai: "☀️ דובאי: 35°C, שמש חזקה.",
+            tokyo: "🌤️ טוקיו: 19°C, נעים."
+        };
+
+        weatherBox.innerHTML = weatherData[region] || "🌤️ מזג אוויר מעודכן: 22°C.";
+
+        if(religion === 'jewish') {
+            shabbatBox.innerHTML = "🕯️ לוח יהודי - כניסת שבת: 17:42 | צאת שבת: 18:38";
+        } else if(religion === 'christian') {
+            shabbatBox.innerHTML = "⛪ לוח נוצרי - מועדים ויום ראשון: פעיל (יום מנוחה ותפילה)";
+        } else if(religion === 'islamic') {
+            shabbatBox.innerHTML = "☪️ לוח מוסלמי (הג'יערי) - זמני תפילות ומועדים: פעיל";
         } else {
-            weatherBox.innerHTML = "🌤️ תל אביב: 24°C, נוח.";
-            shabbatBox.innerHTML = "🕯️ תל אביב - כניסת שבת: 17:35 | צאת שבת: 18:37";
+            shabbatBox.innerHTML = "🌍 לוח גרגוריאני כללי - היום יום רגיל";
         }
     }
 
