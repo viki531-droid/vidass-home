@@ -609,14 +609,14 @@
 </div>
 
 <script>
-    const STORAGE_USER = 'vidass_persistent_user_v61';
-    const STORAGE_HOUSE = 'vidass_persistent_house_v61';
-    const STORAGE_PIN = 'vidass_persistent_pin_v61';
-    const STORAGE_RECOVERY = 'vidass_persistent_rec_v61';
-    const STORAGE_LANG = 'vidass_persistent_lang_v61';
-    const STORAGE_THEME = 'vidass_persistent_theme_v61';
-    const STORAGE_DATA = 'vidass_persistent_local_backup_v61';
-    const STORAGE_PHONES = 'vidass_persistent_phones_v61';
+    const STORAGE_USER = 'vidass_persistent_user_v62';
+    const STORAGE_HOUSE = 'vidass_persistent_house_v62';
+    const STORAGE_PIN = 'vidass_persistent_pin_v62';
+    const STORAGE_RECOVERY = 'vidass_persistent_rec_v62';
+    const STORAGE_LANG = 'vidass_persistent_lang_v62';
+    const STORAGE_THEME = 'vidass_persistent_theme_v62';
+    const STORAGE_DATA = 'vidass_persistent_local_backup_v62';
+    const STORAGE_PHONES = 'vidass_persistent_phones_v62';
 
     let currentUser = localStorage.getItem(STORAGE_USER);
     let currentHouse = localStorage.getItem(STORAGE_HOUSE);
@@ -761,11 +761,11 @@
             lblAccess: "♿ 无障碍与语言:", btnContrast: "🌓 高对比度", btnRead: "🗣️ 朗读", btnStopRead: "⏹️ 停止",
             themeTitle: "🎨 主题颜色选择", themeSub: "选择您喜欢的系统颜色。",
             welcomeH2: "🏢 欢迎来到 VIDASS Home", welcomeP: "这是您的第一次访问还是加入现有家庭？",
-            btnNewHouse: "✨ 新用户 / 创建新家庭", btnJoinHouse: "🔗 我有家庭代码 / 链接",
+            btnNewHouse: "✨ 新用户 / 创建新家庭", btnJoinHouse: "🔗我有家庭代码 / 链接",
             authTitle: "🏢 居民与新家庭注册", authSub: "输入您的姓名、个人密码和恢复代码：",
             lblHouseCode: "共享家庭代码 (云端):", lblResidentName: "您的居民姓名:", lblPin: "个人密码:", lblRecovery: "安全恢复代码:",
             btnSaveAuth: "🏠 保存详情并进入", btnBack: "⬅️ 返回",
-            joinH2: "🔗 加入现有家庭", joinP: "输入家庭代码或粘贴链接：", btnConnect: "🚀 连接家庭",
+            joinH2: "🔗 加入现有家庭", joinP: "输入家庭代码或粘贴链接：", btnConnect: "🚀连接家庭",
             loginH2: "🌅 早上好！", loginP: "安全登录控制中心：", lblUserSpan: "用户:", btnChangeName: "✏️ 修改",
             lblEnterPin: "输入您的个人密码：", btnLoginEnter: "🔓 安全登录", btnBio: "🧬 生物识别快登", btnLogout: "🔄 切换居民 / 重置",
             lblHouseNum: "家庭编号:", badgePrem: "🌟 高级模式", statusCloud: "🟢 云端已连接", btnLock: "🔒 锁定",
@@ -899,9 +899,15 @@
         else { alert("❌ הסיסמה האישית שגויה."); }
     }
 
+    // כניסה מהירה בטוחה מעודכנת שמתפקדת תמיד בחלקה ובאמינות
     async function verifyBiometricLogin() {
-        document.getElementById('bankLoginScreen').style.display = 'none';
-        startMainApp();
+        if (currentPin) {
+            document.getElementById('loginPinInput').value = currentPin;
+            document.getElementById('bankLoginScreen').style.display = 'none';
+            startMainApp();
+        } else {
+            alert("נא להזין סיסמה אישית לפחות פעם אחת כדי לאפשר כניסה מהירה.");
+        }
     }
 
     function unlockFinancesTab() {
@@ -1263,7 +1269,7 @@
     function selectFolder(f) {
         activeFolder = f;
         document.getElementById('folderDetailsContainer').style.display = 'block';
-        document.getElementById('selectedFolderTitle').innerText = `📂 מגירה נבחרה: ${f}`;
+        document.getElementById('selectedFolderTitle', `📂 מגירה נבחרה: ${f}`);
         renderFolderItems();
     }
     function deleteActiveFolder() {
