@@ -101,9 +101,10 @@
             display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
             border-bottom: 2px solid var(--button-bg); padding-bottom: 10px; flex-wrap: wrap; gap: 10px;
         }
-        .logout-btn, .edit-btn { border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; }
+        .logout-btn, .edit-btn, .share-btn { border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; }
         .logout-btn { background-color: #ff4d4d; }
         .edit-btn { background-color: #3182ce; }
+        .share-btn { background-color: #319795; }
         
         .quick-links-bar { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
         .quick-link-btn {
@@ -386,36 +387,37 @@
         <div id="savingsListContainer" style="margin-top:15px;"></div>
     </div>
 
-    <!-- טאב 7: חוגים -->
+    <!-- טאב 7: חוגים מפורטים (עודכן עם יום ושעה) -->
     <div id="tab-hobbies" class="tab-content">
-        <h3 data-i18n="tab7">⚽ חוגים</h3>
-        <input type="text" id="hobbyName" placeholder="שם החוג...">
-        <input type="text" id="hobbyChild" placeholder="משתתף...">
-        <input type="text" id="hobbyLocation" placeholder="מיקום...">
-        <button class="action-btn" onclick="addHobby()" data-i18n="btnAddHobby">➕ הוסף חוג</button>
+        <h3 data-i18n="tab7">⚽ ניהול חוגים מפורט</h3>
+        <div style="background:rgba(0,0,0,0.02); border:2px solid var(--primary-color); padding:15px; border-radius:10px; margin-bottom:15px;">
+            <label><b>שם החוג:</b></label>
+            <input type="text" id="hobbyName" placeholder="למשל: כדורגל, ג'ודו, ציור...">
+            <label><b>שם המשתתף/ת:</b></label>
+            <input type="text" id="hobbyChild" placeholder="למשל: אורן, דוד...">
+            <label><b>יום בשבוע ושעה:</b></label>
+            <input type="text" id="hobbyTime" placeholder="למשל: שני בשעה 16:30, רביעי 17:00...">
+            <label><b>מיקום החוג:</b></label>
+            <input type="text" id="hobbyLocation" placeholder="למשל: מתנ"ס שחמון, אולם ספורט...">
+            <button class="action-btn" onclick="addHobby()" data-i18n="btnAddHobby">➕ הוסף חוג מפורט</button>
+        </div>
         <div id="hobbiesListContainer" style="margin-top:15px;"></div>
     </div>
 
     <!-- טאב 8: אירועים מפורטים -->
     <div id="tab-events" class="tab-content">
         <h3 data-i18n="tab8">🎉 תכנון אירועים מפורט</h3>
-        
         <div style="background:rgba(0,0,0,0.02); border:2px solid var(--primary-color); padding:15px; border-radius:10px; margin-bottom:15px;">
             <label><b>שם האירוע:</b></label>
             <input type="text" id="eventPlanName" placeholder="למשל: יום הולדת, ארוחת ערב משפחתית...">
-            
             <label><b>תאריך ושעה:</b></label>
             <input type="datetime-local" id="eventPlanDate" style="font-weight:bold;">
-            
             <label><b>מיקום האירוע:</b></label>
             <input type="text" id="eventPlanLocation" placeholder="למשל: בבית - חצר, אולם אירועים...">
-            
             <label><b>פרטים, תפריט או הערות:</b></label>
             <textarea id="eventPlanDesc" placeholder="למשל: קניית בלונים, תיאום עם ליצן, תפריט בשרים על האש..." style="width:100%; height:70px;"></textarea>
-            
             <button class="action-btn" onclick="addEventPlan()" data-i18n="btnAddEvent">➕ הוסף אירוע מפורט</button>
         </div>
-
         <div id="eventsPlanListContainer" style="margin-top:15px;"></div>
     </div>
 
@@ -442,7 +444,11 @@
         <h3 data-i18n="tab11">📝 פתקיות</h3>
         <input type="text" id="noteTitle" placeholder="כותרת...">
         <input type="text" id="noteText" placeholder="תוכן...">
+        <label style="display:flex; align-items:center; gap:8px; margin-top:8px; cursor:pointer;">
+            <input type="checkbox" id="notePrivateCheck" style="width:auto; margin:0;"> שמור כפרטי במכשיר שלי בלבד (ללא סינכרון לבית)
+        </label>
         <button class="action-btn" onclick="addNoteCard()" data-i18n="btnAddNote">➕ הוסף פתקייה</button>
+        <div id="privateNotesContainer" style="margin-top:15px;"></div>
         <div id="noteCardsContainer" style="margin-top:15px;"></div>
     </div>
 
@@ -641,7 +647,7 @@
     let activeFolder = '';
 
     let defaultDbData = {
-        shopping: {}, notes: [], events: [], receipts: [], documents: [], vidass: [], tithes: [], tasks: [], expenses: [],
+        shopping: {}, notes: [], privateNotes: [], events: [], receipts: [], documents: [], vidass: [], tithes: [], tasks: [], expenses: [],
         devices: [], trips: [], folders: ["מזווה", "מגירת תרופות"], inventory: [], recipes: [], music: [], vault: [],
         residents: ["ויקי סיבוני", "דוד סיבוני"], kids: [], notifications: [], messages: [], allowance: [], chores: [], savings: [], hobbies: [], eventsPlan: [],
         birthdays: [], phones: {"ויקי סיבוני": "", "דוד סיבוני": ""},
@@ -664,6 +670,15 @@
                 firebase.initializeApp({ databaseURL: "https://vidass-home-default-rtdb.firebaseio.com/" });
             }
             rtdb = firebase.database();
+            // סינכרון בזמן אמת מהענן לכל המכשירים
+            rtdb.ref('houses/').on('value', (snapshot) => {
+                if (currentHouse && snapshot.child(currentHouse).exists()) {
+                    let cloudData = snapshot.child(currentHouse).val();
+                    dbData = Object.assign({}, defaultDbData, cloudData);
+                    localStorage.setItem(STORAGE_DATA, JSON.stringify(dbData));
+                    renderAll();
+                }
+            });
         }
     } catch(e) {}
 
@@ -680,7 +695,7 @@
             joinH2: "🔗 הצטרפות לבית קיים", joinP: "הקשי את קוד הבית שאותו קיבלת או הדביקי את הקישור:", btnConnect: "🚀 התחבר לבית הקיים",
             loginH2: "🌅 בוקר טוב!", loginP: "כניסה מאובטחת למרכז השליטה:", lblUserSpan: "משתמש:", btnChangeName: "✏️ שנה שם",
             lblEnterPin: "הקישי את הסיסמה האישית שלך:", btnLoginEnter: "🔓 היכנס למערכת בבטחה", btnBio: "🧬 כניסה מהירה בטוחה (פנים / אצבע)", btnLogout: "🔄 החלף דייר / אפס מכשיר",
-            lblHouseNum: "מספר בית:", badgePrem: "🌟 מצב פרימיום (חינם בבדיקה)", statusCloud: "🟢 ענן פעיל ומסונכרן", btnLock: "🔒 נעילה",
+            lblHouseNum: "מספר בית:", badgePrem: "🌟 מצב פרימיום", statusCloud: "🟢 ענן פעיל ומסונכרן", btnLock: "🔒 נעילה",
             adminH3: "👑 ניהול דיירי הבית והפצת האפליקציה", adminP: "שלחי את קישור ההזמנה לדיירי הבית (כולל ילדים ושעונים חכמים)!", btnCopyInvite: "📋 העתק קישור הזמנה לבית",
             qlCalendar: "📅 פתח יומן", qlWhatsapp: "💬 פתח וואטסאפ", qlEmail: "📧 פתח אימייל",
             tab1: "👥 דיירים ושיחות", tab2: "🎂 ימי הולדת", tab3: "🧒 ילדים ושעונים", tab4: "💵 דמי כיס", tab5: "🧹 מטלות בית", tab6: "🐷 חיסכון ויעדים", tab7: "⚽ חוגים", tab8: "🎉 אירועים", tab9: "🚗 טיולים ומפות", tab10: "🔔 התראות", tab11: "📝 פתקיות", tab12: "🧾 קבלות", tab13: "📄 תלושים", tab14: "🏢 VIDASS", tab15: "💰 הוצאות", tab16: "🤲 מעשרות", tab17: "🔌 מכשירים", tab18: "📌 משימות", tab19: "🛒 קניות", tab20: "📦 מלאי", tab21: "🍲 מתכונים", tab22: "🎵 מוזיקה", tab23: "🔐 כספת", tab24: "🤖 העוזרת"
@@ -1103,45 +1118,41 @@
     function addHobby() {
         let name = document.getElementById('hobbyName').value.trim();
         let child = document.getElementById('hobbyChild').value.trim();
+        let timeVal = document.getElementById('hobbyTime').value.trim();
         let location = document.getElementById('hobbyLocation').value.trim();
         if(name) {
             if(!dbData.hobbies) dbData.hobbies = [];
-            dbData.hobbies.push({name, child, location});
-            document.getElementById('hobbyName').value = ''; document.getElementById('hobbyChild').value = ''; document.getElementById('hobbyLocation').value = '';
+            dbData.hobbies.push({name, child, time: timeVal, location});
+            document.getElementById('hobbyName').value = ''; 
+            document.getElementById('hobbyChild').value = ''; 
+            document.getElementById('hobbyTime').value = '';
+            document.getElementById('hobbyLocation').value = '';
             saveData(); alert("⚽ החוג נוסף בהצלחה!");
+        } else {
+            alert("נא להזין לפחות את שם החוג.");
         }
     }
     function deleteHobby(i) { dbData.hobbies.splice(i, 1); saveData(); }
 
-    // פונקציית תכנון אירועים מעודכנת עם כל השדות
     function addEventPlan() {
         let name = document.getElementById('eventPlanName').value.trim();
         let dateVal = document.getElementById('eventPlanDate').value;
         let location = document.getElementById('eventPlanLocation').value.trim();
         let desc = document.getElementById('eventPlanDesc').value.trim();
-        
         if(name) {
             if(!dbData.eventsPlan) dbData.eventsPlan = [];
             let formattedDate = dateVal ? new Date(dateVal).toLocaleString('he-IL') : 'ללא שעה מוגדרת';
             dbData.eventsPlan.push({name, date: formattedDate, location, desc});
-            
             document.getElementById('eventPlanName').value = ''; 
             document.getElementById('eventPlanDate').value = ''; 
             document.getElementById('eventPlanLocation').value = '';
             document.getElementById('eventPlanDesc').value = '';
-            
-            saveData(); 
-            alert("🎉 האירוע נוסף בהצלחה!");
+            saveData(); alert("🎉 האירוע נוסף בהצלחה!");
         } else {
             alert("נא להזין לפחות את שם האירוע.");
         }
     }
-    function deleteEventPlan(i) {
-        if(confirm("האם למחוק את האירוע הזה?")) {
-            dbData.eventsPlan.splice(i, 1); 
-            saveData();
-        }
-    }
+    function deleteEventPlan(i) { dbData.eventsPlan.splice(i, 1); saveData(); }
 
     function addTrip() {
         let name = document.getElementById('tripName').value.trim();
@@ -1170,14 +1181,41 @@
     function addNoteCard() {
         let title = document.getElementById('noteTitle').value.trim();
         let text = document.getElementById('noteText').value.trim();
+        let isPrivate = document.getElementById('notePrivateCheck').checked;
         if(title) {
-            if(!dbData.notes) dbData.notes = [];
-            dbData.notes.push({title, text});
-            document.getElementById('noteTitle').value = ''; document.getElementById('noteText').value = '';
-            saveData(); alert("📝 הפתקייה נוספה בהצלחה!");
+            let noteObj = {title, text, owner: currentUser};
+            if(isPrivate) {
+                if(!dbData.privateNotes) dbData.privateNotes = [];
+                dbData.privateNotes.push(noteObj);
+                localStorage.setItem(STORAGE_DATA, JSON.stringify(dbData));
+                renderAll();
+                alert("📝 הפתקייה הפרטית נשמרה במכשירך בלבד!");
+            } else {
+                if(!dbData.notes) dbData.notes = [];
+                dbData.notes.push(noteObj);
+                saveData();
+                alert("📝 הפתקייה נוספה לבית בהצלחה!");
+            }
+            document.getElementById('noteTitle').value = ''; 
+            document.getElementById('noteText').value = '';
+            document.getElementById('notePrivateCheck').checked = false;
         }
     }
-    function deleteNote(i) { dbData.notes.splice(i, 1); saveData(); }
+    function deleteNote(i, isPriv = false) {
+        if(isPriv) { dbData.privateNotes.splice(i, 1); localStorage.setItem(STORAGE_DATA, JSON.stringify(dbData)); renderAll(); }
+        else { dbData.notes.splice(i, 1); saveData(); }
+    }
+    function sharePrivateNote(i) {
+        let note = dbData.privateNotes[i];
+        if(note) {
+            if(!dbData.notes) dbData.notes = [];
+            dbData.notes.push(note);
+            dbData.privateNotes.splice(i, 1);
+            localStorage.setItem(STORAGE_DATA, JSON.stringify(dbData));
+            saveData();
+            alert("🔗 הפתקייה שותפה בהצלחה עם כל הבית!");
+        }
+    }
 
     function addReceiptItem() {
         let store = document.getElementById('recStore').value.trim();
@@ -1269,7 +1307,8 @@
         if(val) {
             if(!dbData.shopping) dbData.shopping = {};
             dbData.shopping[val] = { owner: currentUser };
-            document.getElementById('shopInput').value = ''; saveData();
+            document.getElementById('shopInput').value = ''; 
+            saveData();
         }
     }
     function deleteShop(k) { delete dbData.shopping[k]; saveData(); }
@@ -1547,10 +1586,21 @@
         let savElem = document.getElementById('savingsListContainer');
         if(savElem) savElem.innerHTML = (dbData.savings || []).map((s, i) => `<div class="card"><span>🐷 <b>${s.name}</b> - ${s.target} ₪</span><button class="logout-btn" onclick="deleteSaving(${i})">🗑️</button></div>`).join('') || "<p>אין חיסכון.</p>";
 
+        // הצגת חוגים מפורטים עם יום ושעה
         let hobElem = document.getElementById('hobbiesListContainer');
-        if(hobElem) hobElem.innerHTML = (dbData.hobbies || []).map((h, i) => `<div class="card"><span>⚽ <b>${h.name}</b> (${h.child})</span><button class="logout-btn" onclick="deleteHobby(${i})">🗑️</button></div>`).join('') || "<p>אין חוגים.</p>";
+        if(hobElem) {
+            hobElem.innerHTML = (dbData.hobbies || []).map((h, i) => `
+                <div class="card" style="border-left: 5px solid var(--primary-color); display: block;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--button-bg); padding-bottom: 8px; margin-bottom: 8px;">
+                        <h4 style="margin:0; color:var(--primary-color);">⚽ ${h.name} ${h.child ? `(${h.child})` : ''}</h4>
+                        <button class="logout-btn" onclick="deleteHobby(${i})" style="padding: 4px 8px; font-size: 12px;">🗑️ מחק</button>
+                    </div>
+                    ${h.time ? `<p style="margin: 4px 0;">⏰ <b>מועד:</b> ${h.time}</p>` : ''}
+                    ${h.location ? `<p style="margin: 4px 0;">📍 <b>מיקום:</b> ${h.location}</p>` : ''}
+                </div>
+            `).join('') || "<p>אין חוגים מתוכננים כרגע.</p>";
+        }
 
-        // הצגת רשימת האירועים המעוצבת והמפורטת
         let eventsElem = document.getElementById('eventsPlanListContainer');
         if(eventsElem) {
             eventsElem.innerHTML = (dbData.eventsPlan || []).map((e, i) => `
@@ -1571,8 +1621,22 @@
         let notifElem = document.getElementById('notificationsList');
         if(notifElem) notifElem.innerHTML = (dbData.notifications || []).map((n, i) => `<div class="card"><span>🔔 <b>${n.title}</b> (${n.time})</span><button class="logout-btn" onclick="deleteNotification(${i})">🗑️</button></div>`).join('') || "<p>אין התראות.</p>";
 
+        // הצגת פתקיות פרטיות ופתקיות בית עם כפתורי שיתוף
+        let privNotesElem = document.getElementById('privateNotesContainer');
+        if(privNotesElem) {
+            privNotesElem.innerHTML = (dbData.privateNotes || []).map((n, i) => `
+                <div class="card" style="border-right: 4px solid #3182ce; background:rgba(49,130,206,0.03);">
+                    <div><span style="font-size:11px; color:#3182ce; font-weight:bold;">🔒 פתקייה פרטית (אישית)</span><h4 style="margin:2px 0;">${n.title}</h4><p style="margin:0;">${n.text}</p></div>
+                    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                        <button class="share-btn" onclick="sharePrivateNote(${i})" style="padding:6px 10px; font-size:12px;">🔗 שתף עם הבית</button>
+                        <button class="logout-btn" onclick="deleteNote(${i}, true)" style="padding:6px 10px; font-size:12px;">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
         let notesElem = document.getElementById('noteCardsContainer');
-        if(notesElem) notesElem.innerHTML = (dbData.notes || []).map((n, i) => `<div class="card"><div><b>${n.title}</b><p>${n.text}</p></div><button class="logout-btn" onclick="deleteNote(${i})">🗑️</button></div>`).join('') || "<p>אין פתקיות.</p>";
+        if(notesElem) notesElem.innerHTML = (dbData.notes || []).map((n, i) => `<div class="card"><div style="width:100%;"><span style="font-size:11px; color:var(--primary-color); font-weight:bold;">🏠 פתקייה משותפת לבית</span><h4 style="margin:2px 0;">${n.title}</h4><p style="margin:0;">${n.text}</p></div><button class="logout-btn" onclick="deleteNote(${i}, false)" style="padding:6px 10px; font-size:12px;">🗑️</button></div>`).join('') || "<p>אין פתקיות משותפות.</p>";
 
         let recElem = document.getElementById('receiptsList');
         if(recElem) recElem.innerHTML = (dbData.receipts || []).map((r, i) => `<div class="card"><span>🧾 <b>${r.store}</b> - ${r.item} (${r.price} ₪)</span><button class="logout-btn" onclick="deleteReceipt(${i})">🗑️</button></div>`).join('') || "<p>אין קבלות.</p>";
