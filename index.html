@@ -34,7 +34,7 @@
             flex-direction: column;
         }
 
-        /* מסך פתיחה ראשוני (Splash Screen) */
+        /* מסך פתיחה ראשוני */
         .splash-wrapper {
             position: fixed;
             top: 0;
@@ -74,7 +74,7 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* מסכים מעטפת */
+        /* מסכים מעטפת (כניסה ורישום) */
         .screen-wrapper {
             display: flex;
             justify-content: center;
@@ -151,7 +151,7 @@
             text-decoration: underline;
         }
 
-        /* מבנה ראשי עם תפריט עליון נפתח (Top Navbar) */
+        /* מבנה ראשי עם סرגל עליון נגלף וחלק לחלוטין */
         .app-layout {
             display: flex;
             flex-direction: column;
@@ -161,40 +161,46 @@
         .top-navbar {
             background-color: var(--header-bg);
             border-bottom: 1px solid var(--border-color);
-            padding: 1rem;
+            padding: 0.75rem 1rem;
             display: flex;
             flex-direction: column;
-            gap: 1rem;
+            gap: 0.75rem;
         }
 
-        .nav-header-row {
+        .nav-top-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .nav-dropdown-bar {
-            display: flex;
             gap: 8px;
-            align-items: center;
-            overflow-x: auto;
-            padding-bottom: 5px;
         }
 
-        .nav-dropdown-bar select {
-            background: #0f172a;
+        /* סרגל כפתורי מודולים נגלף הצידה בלי לחתוך כלום */
+        .nav-tabs-container {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+            scrollbar-width: thin;
+        }
+
+        .nav-tab-btn {
+            background: rgba(255,255,255,0.05);
             color: var(--text-color);
             border: 1px solid var(--border-color);
-            padding: 0.6rem 1rem;
+            padding: 0.5rem 0.9rem;
             border-radius: 8px;
-            font-size: 0.95rem;
+            font-size: 0.85rem;
             font-weight: bold;
             cursor: pointer;
-            outline: none;
-            width: 100%;
-            max-width: 350px;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .nav-tab-btn:hover, .nav-tab-btn.active {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
         }
 
         .main-content {
@@ -246,12 +252,12 @@
 
         .theme-picker-row {
             display: flex;
-            gap: 0.4rem;
+            gap: 4px;
         }
 
         .dot {
-            width: 22px;
-            height: 22px;
+            width: 20px;
+            height: 20px;
             border-radius: 50%;
             border: 2px solid white;
             cursor: pointer;
@@ -322,13 +328,13 @@
         </div>
     </div>
 
-    <!-- ממשק ניהול ראשי עם תפריט עליון נפתח -->
+    <!-- ממשק ניהול ראשי עם סרגל כפתורים עליון נגלף -->
     <div class="app-layout hidden" id="mainAppLayout">
         
         <div class="top-navbar">
-            <div class="nav-header-row">
+            <div class="nav-top-row">
                 <h3 style="color:var(--primary-color);">VIDASS Home 🏠</h3>
-                <div style="font-size:0.85rem;" id="currentUserLabel">משתמש: אורח/ת</div>
+                <div style="font-size:0.8rem;" id="currentUserLabel">משתמש: אורח/ת</div>
                 <div class="theme-picker-row">
                     <div class="dot" style="background: #d84373;" onclick="setTheme('#d84373', '#0f172a', '#1e293b')"></div>
                     <div class="dot" style="background: #16a34a;" onclick="setTheme('#16a34a', '#051911', '#0f291e')"></div>
@@ -338,30 +344,28 @@
                 <button class="btn-sm" style="background:#ef4444; color:white;" onclick="lockSystem()">🔒 יציאה</button>
             </div>
 
-            <!-- תפריט בחירת מודולים עליון נפתח ונוח -->
-            <div class="nav-dropdown-bar">
-                <select id="moduleSelectDropdown" onchange="onModuleSelectChange(this.value)">
-                    <option value="dashboard">📊 סקירה כללית</option>
-                    <option value="languages">🌐 בחירת שפה ותרגום (Languages)</option>
-                    <option value="assistant">🤖 העוזרת החכמה וידס (שאלות ותשובות)</option>
-                    <option value="music">🎵 מוזיקה, קישורים לאפליקציות והורדות</option>
-                    <option value="tasks">📌 משימות, יומן עולמי ושעון מעורר</option>
-                    <option value="events">🎉 ארגון אירועים ומתנות מפורט</option>
-                    <option value="shopping">🛒 ניהול קניות משותף</option>
-                    <option value="inventory">📦 מלאי ביתי משותף</option>
-                    <option value="tenants">👑 דיירים ושיחות פנימיות</option>
-                    <option value="savings">🐷 חיסכון ויעדים מפורט</option>
-                    <option value="hobbies">⚽ חוגים ומפות מפורט</option>
-                    <option value="chores">🧹 מטלות בית</option>
-                    <option value="kids">👦 ילדים ושעונים חכמים</option>
-                    <option value="birthdays">🎂 ימי הולדת וגילאים</option>
-                    <option value="pocket_money">💵 דמי כיס ותגמולים</option>
-                    <option value="recipes">🍲 מתכונים, מחשבון כמותי ומחשבון כללי</option>
-                    <option value="trips">🚗 טיולים, מפות ורשימות ציוד</option>
-                    <option value="expenses">💰 מעקב הוצאות והכנסות בית</option>
-                </select>
-                <button class="btn-sm" style="background:var(--btn-blue); color:white; padding: 10px 15px;" onclick="openExternal('https://calendar.google.com')">📅 יומן</button>
-                <button class="btn-sm" style="background:var(--btn-green); color:white; padding: 10px 15px;" onclick="openExternal('https://wa.me/')">💬 וואטסאפ</button>
+            <!-- סרגל מודולים עליון נגלף (גלילה הצידה חלקה ונוחה) -->
+            <div class="nav-tabs-container">
+                <button class="nav-tab-btn active" onclick="switchModule('dashboard', this)">📊 סקירה</button>
+                <button class="nav-tab-btn" onclick="switchModule('languages', this)">🌐 שפות</button>
+                <button class="nav-tab-btn" onclick="switchModule('assistant', this)">🤖 וידס</button>
+                <button class="nav-tab-btn" onclick="switchModule('music', this)">🎵 מוזיקה</button>
+                <button class="nav-tab-btn" onclick="switchModule('tasks', this)">📌 משימות</button>
+                <button class="nav-tab-btn" onclick="switchModule('events', this)">🎉 אירועים</button>
+                <button class="nav-tab-btn" onclick="switchModule('shopping', this)">🛒 קניות</button>
+                <button class="nav-tab-btn" onclick="switchModule('inventory', this)">📦 מלאי</button>
+                <button class="nav-tab-btn" onclick="switchModule('tenants', this)">👑 דיירים</button>
+                <button class="nav-tab-btn" onclick="switchModule('savings', this)">🐷 חיסכון</button>
+                <button class="nav-tab-btn" onclick="switchModule('hobbies', this)">⚽ חוגים</button>
+                <button class="nav-tab-btn" onclick="switchModule('chores', this)">🧹 מטלות</button>
+                <button class="nav-tab-btn" onclick="switchModule('kids', this)">👦 ילדים</button>
+                <button class="nav-tab-btn" onclick="switchModule('birthdays', this)">🎂 ימי הולדת</button>
+                <button class="nav-tab-btn" onclick="switchModule('pocket_money', this)">💵 דמי כיס</button>
+                <button class="nav-tab-btn" onclick="switchModule('recipes', this)">🍲 מתכונים</button>
+                <button class="nav-tab-btn" onclick="switchModule('trips', this)">🚗 טיולים</button>
+                <button class="nav-tab-btn" onclick="switchModule('expenses', this)">💰 הוצאות</button>
+                <button class="nav-tab-btn" style="background:var(--btn-blue);" onclick="openExternal('https://calendar.google.com')">📅 יומן Google</button>
+                <button class="nav-tab-btn" style="background:var(--btn-green);" onclick="openExternal('https://wa.me/')">💬 וואטסאפ</button>
             </div>
         </div>
 
@@ -377,7 +381,6 @@
     <script>
         let currentHouseCode = localStorage.getItem('vidass_current_house') || '';
         let currentUserName = localStorage.getItem('vidass_current_user') || '';
-        let currentLang = localStorage.getItem('vidass_lang') || 'he';
 
         window.onload = function() {
             const savedPrimary = localStorage.getItem('vidass_primary');
@@ -495,11 +498,14 @@
             return `vidass_${currentHouseCode}_${moduleName}`;
         }
 
-        function onModuleSelectChange(val) {
-            if(val === 'dashboard') {
+        function switchModule(moduleName, btnElement) {
+            document.querySelectorAll('.nav-tab-btn').forEach(el => el.classList.remove('active'));
+            if(btnElement) btnElement.classList.add('active');
+
+            if(moduleName === 'dashboard') {
                 loadDashboard();
             } else {
-                renderModuleUI(val);
+                renderModuleUI(moduleName);
             }
         }
 
@@ -513,9 +519,6 @@
                 </div>
             `;
         }
-
-        let tempEventExpenses = [];
-        let tempEventGifts = [];
 
         function renderModuleUI(moduleName) {
             let storageKey = getHouseStorageKey(moduleName);
