@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="he" dir="rtl">
+<html lang="he" dir="rtl" id="htmlRoot">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -109,7 +109,7 @@
         }
 
         .input-group {
-            text-align: right;
+            text-align: inherit;
             margin-bottom: 1rem;
         }
 
@@ -129,7 +129,7 @@
             background: #0f172a;
             font-size: 1rem;
             color: var(--text-color);
-            text-align: center;
+            text-align: inherit;
             margin-bottom: 0.5rem;
         }
 
@@ -150,6 +150,11 @@
             border: none;
             cursor: pointer;
             font-size: 1.3rem;
+        }
+
+        html[dir="ltr"] .toggle-password {
+            left: auto;
+            right: 10px;
         }
 
         .btn-primary {
@@ -202,61 +207,70 @@
             text-decoration: underline;
         }
 
-        /* מבנה ראשי עם תפריט צד (Sidebar) */
+        /* מבנה ראשי עם תפריט צד (Sidebar) מותאם לנייד */
         .app-layout {
             display: flex;
             min-height: 100vh;
         }
 
         .sidebar {
-            width: 280px;
+            width: 250px;
+            min-width: 250px;
             background-color: var(--sidebar-bg);
             border-left: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
-            padding: 1.5rem 1rem;
-            gap: 1rem;
+            padding: 1rem 0.5rem;
+            gap: 0.8rem;
+        }
+
+        html[dir="ltr"] .sidebar {
+            border-left: none;
+            border-right: 1px solid var(--border-color);
         }
 
         .sidebar-header {
             text-align: center;
-            padding-bottom: 1rem;
+            padding-bottom: 0.8rem;
             border-bottom: 1px solid var(--border-color);
         }
 
         .sidebar-header h3 {
             color: var(--primary-color);
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             margin-bottom: 0.2rem;
         }
 
         .sidebar-header p {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: var(--text-muted);
         }
 
         .nav-menu {
             display: flex;
             flex-direction: column;
-            gap: 0.4rem;
+            gap: 0.3rem;
             overflow-y: auto;
             max-height: calc(100vh - 250px);
-            padding-left: 4px;
+            padding: 0 4px;
         }
 
         .nav-item {
             background: transparent;
             color: var(--text-color);
             border: none;
-            text-align: right;
-            padding: 0.65rem 1rem;
+            text-align: inherit;
+            padding: 0.55rem 0.75rem;
             border-radius: 8px;
-            font-size: 0.9rem;
+            font-size: 0.82rem;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.4rem;
             transition: background 0.2s;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .nav-item:hover, .nav-item.active {
@@ -266,7 +280,7 @@
 
         .main-content {
             flex: 1;
-            padding: 2rem;
+            padding: 1.5rem;
             overflow-y: auto;
             background-color: var(--bg-color);
         }
@@ -280,6 +294,8 @@
             padding: 0.75rem 1.25rem;
             border-radius: 12px;
             border: 1px solid var(--border-color);
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .cloud-badge {
@@ -318,6 +334,7 @@
             align-items: center;
             border: 1px solid var(--border-color);
             font-size: 0.9rem;
+            gap: 10px;
         }
 
         .delete-btn {
@@ -331,13 +348,13 @@
         .theme-picker-row {
             display: flex;
             justify-content: center;
-            gap: 0.5rem;
-            margin-top: 1rem;
+            gap: 0.4rem;
+            margin-top: 0.5rem;
         }
 
         .dot {
-            width: 24px;
-            height: 24px;
+            width: 20px;
+            height: 20px;
             border-radius: 50%;
             border: 2px solid white;
             cursor: pointer;
@@ -345,6 +362,26 @@
 
         .hidden {
             display: none !important;
+        }
+
+        /* התאמה למסכים ניידים קטנים מאוד */
+        @media (max-width: 768px) {
+            .app-layout {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                min-width: 100%;
+                max-height: 200px;
+                border-left: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+            .nav-menu {
+                max-height: 120px;
+            }
+            .main-content {
+                padding: 1rem;
+            }
         }
     </style>
 </head>
@@ -449,7 +486,7 @@
 
             <button class="btn-sm btn-primary" onclick="loadSecurityQuestion()" style="margin-bottom: 1rem;">הצג שאלה אישית 🔍</button>
 
-            <div id="questionContainer" class="hidden" style="margin-bottom: 1rem; text-align: right;">
+            <div id="questionContainer" class="hidden" style="margin-bottom: 1rem; text-align: inherit;">
                 <label style="font-size: 0.85rem; color: var(--primary-color); font-weight: bold;" id="displayQuestionLabel"></label>
                 <input type="text" class="input-field" id="forgotAnswerInput" placeholder="הקישי את התשובה שלך..." style="margin-top: 5px;">
                 <button class="btn-primary" onclick="verifySecurityAnswer()">אימות תשובה וכניסה ✅</button>
@@ -477,8 +514,9 @@
                 <div class="dot" style="background: #d97706;" onclick="setTheme('#d97706', '#1c1404', '#382806')"></div>
             </div>
 
-            <div class="nav-menu">
+            <div class="nav-menu" id="sidebarNavMenu">
                 <button class="nav-item active" onclick="switchModule('dashboard', this)">📊 סקירה כללית</button>
+                <button class="nav-item" onclick="switchModule('languages', this)">🌐 בחירת שפה ותרגום (Languages)</button>
                 <button class="nav-item" onclick="switchModule('assistant', this)">🤖 העוזרת החכמה וידס (שאלות ותשובות)</button>
                 <button class="nav-item" onclick="switchModule('music', this)">🎵 מוזיקה, קישורים לאפליקציות והורדות</button>
                 <button class="nav-item" onclick="switchModule('tasks', this)">📌 משימות, יומן עולמי ושעון מעורר</button>
@@ -499,13 +537,13 @@
                 <button class="nav-item" onclick="openExternal('https://wa.me/')">💬 פתח וואטסאפ</button>
             </div>
 
-            <button class="btn-sm" style="background:#ef4444; color:white; margin-top:auto;" onclick="lockSystem()">🔒 יציאה מהמערכת</button>
+            <button class="btn-sm" style="background:#ef4444; color:white; margin-top:auto;" onclick="lockSystem()" id="txtBtnLockSys">🔒 יציאה מהמערכת</button>
         </div>
 
         <!-- תוכן מרכזי -->
         <div class="main-content">
             <div class="top-status-bar">
-                <div class="cloud-badge">🟢 נתוני הבית משותפים ומסונכרנים לכל הדיירים</div>
+                <div class="cloud-badge" id="txtCloudStatus">🟢 נתוני הבית משותפים ומסונכרנים לכל הדיירים</div>
                 <div style="font-size: 0.9rem; font-weight: bold;" id="currentUserLabel">משתמש: אורח/ת</div>
             </div>
 
@@ -519,8 +557,158 @@
     <script>
         let currentHouseCode = localStorage.getItem('vidass_current_house') || '';
         let currentUserName = localStorage.getItem('vidass_current_user') || '';
+        let currentLang = localStorage.getItem('vidass_lang') || 'he';
+
+        const translations = {
+            he: {
+                dashboard: "📊 סקירה כללית",
+                languages: "🌐 בחירת שפה ותרגום (Languages)",
+                assistant: "🤖 העוזרת החכמה וידס (שאלות ותשובות)",
+                music: "🎵 מוזיקה, קישורים לאפליקציות והורדות",
+                tasks: "📌 משימות, יומן עולמי ושעון מעורר",
+                events: "🎉 ארגון אירועים ומתנות מפורט",
+                shopping: "🛒 ניהול קניות משותף",
+                inventory: "📦 מלאי ביתי משותף",
+                tenants: "👑 דיירים ושיחות פנימיות",
+                savings: "🐷 חיסכון ויעדים מפורט",
+                hobbies: "⚽ חוגים ומפות מפורט",
+                chores: "🧹 מטלות בית",
+                kids: "👦 ילדים ושעונים חכמים",
+                birthdays: "🎂 ימי הולדת וגילאים",
+                pocket_money: "💵 דמי כיס ותגמולים",
+                recipes: "🍲 מתכונים, מחשבון כמותי ומחשבון כללי",
+                trips: "🚗 טיולים, מפות ורשימות ציוד",
+                expenses: "💰 מעקב הוצאות והכנסות בית",
+                openCalendar: "📅 פתח יומן Google",
+                openWhatsapp: "💬 פתח וואטסאפ",
+                lockSystem: "🔒 יציאה מהמערכת",
+                cloudStatus: "🟢 נתוני הבית משותפים ומסונכרנים לכל הדיירים"
+            },
+            en: {
+                dashboard: "📊 Overview",
+                languages: "🌐 Language & Translation",
+                assistant: "🤖 VIDASS Smart Assistant",
+                music: "🎵 Music, Apps & Downloads",
+                tasks: "📌 Tasks, Global Calendar & Alarms",
+                events: "🎉 Event Management & Gifts",
+                shopping: "🛒 Shared Shopping List",
+                inventory: "📦 Shared Household Inventory",
+                tenants: "👑 Tenants & Internal Chat",
+                savings: "🐷 Savings & Financial Goals",
+                hobbies: "⚽ Hobbies & Maps",
+                chores: "🧹 Household Chores",
+                kids: "👦 Kids & Smart Watches",
+                birthdays: "🎂 Birthdays & Ages",
+                pocket_money: "💵 Allowance & Rewards",
+                recipes: "🍲 Recipes & Calculators",
+                trips: "🚗 Trips, Maps & Gear",
+                expenses: "💰 House Expenses & Income",
+                openCalendar: "📅 Open Google Calendar",
+                openWhatsapp: "💬 Open WhatsApp",
+                lockSystem: "🔒 Logout System",
+                cloudStatus: "🟢 House data is shared & synced across all tenants"
+            },
+            fr: {
+                dashboard: "📊 Vue d'ensemble",
+                languages: "🌐 Langue & Traduction",
+                assistant: "🤖 Assistant Intelligent VIDASS",
+                music: "🎵 Musique, Applications & Téléchargements",
+                tasks: "📌 Tâches, Calendrier & Alarmes",
+                events: "🎉 Gestion d'événements & Cadeaux",
+                shopping: "🛒 Liste de courses partagée",
+                inventory: "📦 Inventaire de maison partagé",
+                tenants: "👑 Locataires & Chat interne",
+                savings: "🐷 Épargne & Objectifs",
+                hobbies: "⚽ Loisirs & Cartes",
+                chores: "🧹 Tâches ménagères",
+                kids: "👦 Enfants & Montres connectées",
+                birthdays: "🎂 Anniversaires & Âges",
+                pocket_money: "💵 Argent de poche & Récompenses",
+                recipes: "🍲 Recettes & Calculateurs",
+                trips: "🚗 Voyages, Cartes & Équipement",
+                expenses: "💰 Dépenses & Revenus de la maison",
+                openCalendar: "📅 Ouvrir Google Calendar",
+                openWhatsapp: "💬 Ouvrir WhatsApp",
+                lockSystem: "🔒 Se déconnecter",
+                cloudStatus: "🟢 Les données sont partagées et synchronisées"
+            },
+            es: {
+                dashboard: "📊 Resumen General",
+                languages: "🌐 Idioma y Traducción",
+                assistant: "🤖 Asistente Inteligente VIDASS",
+                music: "🎵 Música, Aplicaciones y Descargas",
+                tasks: "📌 Tareas, Calendario y Alarmas",
+                events: "🎉 Organización de Eventos y Regalos",
+                shopping: "🛒 Lista de Compras Compartida",
+                inventory: "📦 Inventario Doméstico Compartido",
+                tenants: "👑 Inquilinos y Chat Interno",
+                savings: "🐷 Ahorros y Metas",
+                hobbies: "⚽ Pasatiempos y Mapas",
+                chores: "🧹 Tareas del Hogar",
+                kids: "👦 Niños y Relojes Inteligentes",
+                birthdays: "🎂 Cumpleaños y Edades",
+                pocket_money: "💵 Mesada y Recompensas",
+                recipes: "🍲 Recetas y Calculadoras",
+                trips: "🚗 Viajes, Mapas y Equipaje",
+                expenses: "💰 Gastos e Ingresos del Hogar",
+                openCalendar: "📅 Abrir Google Calendar",
+                openWhatsapp: "💬 Abrir WhatsApp",
+                lockSystem: "🔒 Cerrar Sesión",
+                cloudStatus: "🟢 Los datos del hogar están sincronizados"
+            },
+            ar: {
+                dashboard: "📊 نظرة عامة",
+                languages: "🌐 اللغة والترجمة",
+                assistant: "🤖 مساعد فيداس الذكي",
+                music: "🎵 الموسيقى والتطبيقات والتنزيلات",
+                tasks: "📌 المهام والتقويم والمنبه",
+                events: "🎉 إدارة الفعاليات والهدايا",
+                shopping: "🛒 قائمة التسوق المشتركة",
+                inventory: "📦 مخزون المنزل المشترك",
+                tenants: "👑 المستأجرون والدردشة الداخلية",
+                savings: "🐷 المدخرات والأهداف",
+                hobbies: "⚽ الهوايات والخرائط",
+                chores: "🧹 الأعمال المنزلية",
+                kids: "👦 الأطفال والساعات الذكية",
+                birthdays: "🎂 أعياد الميلاد والأعمار",
+                pocket_money: "💵 المصروف والمكافآت",
+                recipes: "🍲 الوصفات والحاسبة",
+                trips: "🚗 الرحلات والخرائط والمعدات",
+                expenses: "💰 تتبع نفقات ودخل المنزل",
+                openCalendar: "📅 فتح تقويم Google",
+                openWhatsapp: "💬 فتح واتساب",
+                lockSystem: "🔒 تسجيل الخروج",
+                cloudStatus: "🟢 بيانات المنزل مشتركة ومتزامنة لجميع المستخدمين"
+            },
+            zh: {
+                dashboard: "📊 概览",
+                languages: "🌐 语言与翻译",
+                assistant: "VIDASS 智能助手",
+                music: "🎵 音乐、应用与下载",
+                tasks: "📌 任务、日历与闹钟",
+                events: "🎉 活动管理与礼品",
+                shopping: "🛒 共享购物清单",
+                inventory: "📦 共享家居库存",
+                tenants: "👑 租户与内部聊天",
+                savings: "🐷 储蓄与目标",
+                hobbies: "⚽ 爱好与地图",
+                chores: "🧹 家务活",
+                kids: "👦 智能儿童手表",
+                birthdays: "🎂 生日与年龄",
+                pocket_money: "💵 零花钱与奖励",
+                recipes: "🍲 食谱与计算器",
+                trips: "🚗 旅行、地图与装备",
+                expenses: "💰 家庭收支管理",
+                openCalendar: "📅 打开谷歌日历",
+                openWhatsapp: "💬 打开 WhatsApp",
+                lockSystem: "🔒 退出系统",
+                cloudStatus: "🟢 家庭数据已在所有成员之间同步"
+            }
+        };
 
         window.onload = function() {
+            applyLanguage(currentLang);
+
             const savedPrimary = localStorage.getItem('vidass_primary');
             const savedBg = localStorage.getItem('vidass_bg');
             const savedCard = localStorage.getItem('vidass_card');
@@ -539,6 +727,50 @@
             }, 2500);
         };
 
+        function applyLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('vidass_lang', lang);
+            let t = translations[lang] || translations['he'];
+
+            if (lang === 'ar' || lang === 'he') {
+                document.getElementById('htmlRoot').setAttribute('dir', 'rtl');
+                document.getElementById('htmlRoot').setAttribute('lang', lang);
+            } else {
+                document.getElementById('htmlRoot').setAttribute('dir', 'ltr');
+                document.getElementById('htmlRoot').setAttribute('lang', lang);
+            }
+
+            const menuButtons = document.querySelectorAll('.nav-menu .nav-item');
+            if(menuButtons.length >= 20) {
+                menuButtons[0].innerHTML = t.dashboard;
+                menuButtons[1].innerHTML = t.languages;
+                menuButtons[2].innerHTML = t.assistant;
+                menuButtons[3].innerHTML = t.music;
+                menuButtons[4].innerHTML = t.tasks;
+                menuButtons[5].innerHTML = t.events;
+                menuButtons[6].innerHTML = t.shopping;
+                menuButtons[7].innerHTML = t.inventory;
+                menuButtons[8].innerHTML = t.tenants;
+                menuButtons[9].innerHTML = t.savings;
+                menuButtons[10].innerHTML = t.hobbies;
+                menuButtons[11].innerHTML = t.chores;
+                menuButtons[12].innerHTML = t.kids;
+                menuButtons[13].innerHTML = t.birthdays;
+                menuButtons[14].innerHTML = t.pocket_money;
+                menuButtons[15].innerHTML = t.recipes;
+                menuButtons[16].innerHTML = t.trips;
+                menuButtons[17].innerHTML = t.expenses;
+                menuButtons[18].innerHTML = t.openCalendar;
+                menuButtons[19].innerHTML = t.openWhatsapp;
+            }
+
+            const lockBtn = document.getElementById('txtBtnLockSys');
+            if(lockBtn) lockBtn.innerText = t.lockSystem;
+
+            const cloudStatus = document.getElementById('txtCloudStatus');
+            if(cloudStatus) cloudStatus.innerText = t.cloudStatus;
+        }
+
         function registerUserInHouse() {
             if(!currentHouseCode || !currentUserName) return;
             let tenantsKey = `vidass_${currentHouseCode}_tenants_list`;
@@ -553,12 +785,12 @@
             if(!currentHouseCode) return;
             let storageKey = `vidass_${currentHouseCode}_birthdays`;
             let items = JSON.parse(localStorage.getItem(storageKey)) || [];
-            let todayStr = new Date().toISOString().slice(5, 10); // MM-DD
+            let todayStr = new Date().toISOString().slice(5, 10);
 
             items.forEach(b => {
                 if(b.date && b.date.slice(5, 10) === todayStr) {
                     setTimeout(() => {
-                        alert(`🎉 תזכורת חגיגית במערכת: היום יש יום הולדת ל-${b.name}! (גיל: ${calculateAge(b.date)}) 🎂\nאל תשכחי להתקשר אליו/אליה למספר: ${b.phone || 'לא הוזן'}`);
+                        alert(`🎉 תזכורת חגיגית במערכת: היום יש יום הולדת ל-${b.name}! (גיל: ${calculateAge(b.date)}) 🎂`);
                     }, 1000);
                 }
             });
@@ -638,7 +870,7 @@
             }
 
             if(localStorage.getItem(`vidass_sec_${houseCode}`)) {
-                alert('קוד בית זה כבר קיים במערכת. נסי קוד אחר או התחברי.');
+                alert('קוד בית זה כבר קיים במערכת.');
                 return;
             }
 
@@ -669,7 +901,7 @@
 
             const secDataStr = localStorage.getItem(`vidass_sec_${houseCode}`);
             if(!secDataStr) {
-                alert('⚠️ גישה נדחתה: קוד הבית שהוקש אינו קיים במערכת!');
+                alert('⚠️ גישה נדחתה: קוד הבית אינו קיים!');
                 return;
             }
 
@@ -694,18 +926,15 @@
         function biometricLogin(type) {
             const houseCode = document.getElementById('loginHouseCode').value.trim();
             if(!houseCode) {
-                alert('נא להקיש את קוד הבית תחילה כדי לזהות את הנתונים הביומטריים.');
+                alert('נא להקיש את קוד הבית תחילה.');
                 return;
             }
 
             const savedName = localStorage.getItem(`vidass_bio_${houseCode}`);
             if(!savedName) {
-                alert('⚠️ גישה נדחתה: לא נמצאו נתוני זיהוי ביומטרי רשומים לקוד בית זה!');
+                alert('⚠️ לא נמצאו נתוני זיהוי ביומטרי!');
                 return;
             }
-
-            const bioName = type === 'face' ? 'סורק פנים (Face ID)' : 'טביעת אצבע';
-            alert(`זיהוי הצליח באמצעות ${bioName}! ברוך הבא, ${savedName}.`);
 
             currentHouseCode = houseCode;
             currentUserName = savedName;
@@ -721,17 +950,11 @@
 
         function loadSecurityQuestion() {
             const houseCode = document.getElementById('forgotHouseCode').value.trim();
-            if(!houseCode) {
-                alert('נא להקיש את קוד הבית.');
-                return;
-            }
-
             const secData = JSON.parse(localStorage.getItem(`vidass_sec_${houseCode}`));
             if(!secData) {
-                alert('⚠️ קוד בית לא נמצא במערכת.');
+                alert('⚠️ קוד בית לא נמצא.');
                 return;
             }
-
             document.getElementById('displayQuestionLabel').innerText = 'שאלה אישית: ' + secData.question;
             document.getElementById('questionContainer').classList.remove('hidden');
         }
@@ -742,10 +965,10 @@
             const secData = JSON.parse(localStorage.getItem(`vidass_sec_${houseCode}`));
 
             if(secData && secData.answer === userAnswer) {
-                alert('התשובה נכונה! הסיסמה הסודית שלך היא: ' + secData.password);
+                alert('התשובה נכונה! הסיסמה שלך היא: ' + secData.password);
                 showLoginScreen();
             } else {
-                alert('⚠️ התשובה שגויה. הגישה נדחתה.');
+                alert('⚠️ התשובה שגויה.');
             }
         }
 
@@ -794,19 +1017,14 @@
 
             const hour = new Date().getHours();
             let greeting = 'שלום';
-            if (hour >= 5 && hour < 12) {
-                greeting = 'בוקר טוב';
-            } else if (hour >= 12 && hour < 17) {
-                greeting = 'צהריים טובים';
-            } else if (hour >= 17 && hour < 21) {
-                greeting = 'אחר צהריים טובים';
-            } else {
-                greeting = 'ערב טוב';
-            }
+            if (hour >= 5 && hour < 12) greeting = 'בוקר טוב';
+            else if (hour >= 12 && hour < 17) greeting = 'צהריים טובים';
+            else if (hour >= 17 && hour < 21) greeting = 'אחר צהריים טובים';
+            else greeting = 'ערב טוב';
 
             document.getElementById('activeModuleContent').innerHTML = `
                 <h2 style="color:var(--primary-color); margin-bottom: 0.5rem;">👑 ${greeting}, ${currentUserName}!</h2>
-                <p style="color:var(--text-muted); margin-bottom: 1.5rem;">מרכז השליטה המשפחתי של קוד הבית: <strong>${currentHouseCode}</strong> מסונכרן לחלוטין עם כל דיירי הבית שלך.</p>
+                <p style="color:var(--text-muted); margin-bottom: 1.5rem;">מרכז השליטה המשפחתי של קוד הבית: <strong>${currentHouseCode}</strong> מסונכרן לחלוטין עם כל דיירי הבית.</p>
                 
                 <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); padding: 15px; border-radius: 12px; margin-bottom: 15px; text-align: center;">
                     <p style="font-weight: bold; font-size: 0.95rem; margin-bottom: 8px; color: var(--primary-color);">🔗 קישור שיתוף הבית לדיירים נוספים</p>
@@ -817,1221 +1035,122 @@
 
         function copyInviteLink() {
             navigator.clipboard.writeText(window.location.href);
-            alert('קישור המערכת הועתק בהצלחה ללוח! כל דייר שייכנס עם קוד הבית שלך יראה את אותם הנתונים 📋');
+            alert('קישור המערכת הועתק בהצלחה ללוח! 📋');
         }
-
-        let tempEventExpenses = [];
-        let tempEventGifts = [];
 
         function renderModuleUI(moduleName) {
             let title = '';
             let storageKey = getHouseStorageKey(moduleName);
             let items = JSON.parse(localStorage.getItem(storageKey)) || [];
 
-            if(moduleName === 'assistant') title = '🤖 העוזרת החכמה וידס (שאלות ותשובות על הנתונים באפליקציה)';
-            else if(moduleName === 'music') title = '🎵 מוזיקה, קישורים לאפליקציות והורדת רצועות שמע';
-            else if(moduleName === 'tasks') title = '📌 משימות, יומן עולמי ושעון מעורר';
-            else if(moduleName === 'events') title = '🎉 ארגון אירועים ומתנות מפורט';
-            else if(moduleName === 'shopping') title = '🛒 ניהול קניות משותף';
-            else if(moduleName === 'inventory') title = '📦 מלאי ביתי משותף';
-            else if(moduleName === 'tenants') title = '👑 דיירים ושיחות פנימיות';
-            else if(moduleName === 'savings') title = '🐷 חיסכון ויעדים מפורט';
-            else if(moduleName === 'hobbies') title = '⚽ חוגים ומפות מפורט';
-            else if(moduleName === 'chores') title = '🧹 מטלות בית';
-            else if(moduleName === 'kids') title = '👦 ילדים ושעונים חכמים';
-            else if(moduleName === 'birthdays') title = '🎂 ימי הולדת וגילאים';
-            else if(moduleName === 'pocket_money') title = '💵 דמי כיס ותגמולים';
-            else if(moduleName === 'recipes') title = '🍲 מתכונים, מחשבון כמותי ומחשבון כללי';
-            else if(moduleName === 'trips') title = '🚗 טיולים, מפות ורשימות ציוד';
-            else if(moduleName === 'expenses') title = '💰 מעקב הוצאות והכנסות בית';
+            if(moduleName === 'languages') title = '🌐 בחירת שפה ותרגום (Languages & Translation)';
+            else if(moduleName === 'assistant') title = '🤖 העוזרת החכמה וידס (שאלות ותשובות)';
+            else if(moduleName === 'music') title = '🎵 מוזיקה, קישורים לאפליקציות והורדות שמע';
             else title = '⚙️ מודול מערכת: ' + moduleName;
 
             let html = `<h2 style="color:var(--primary-color); margin-bottom: 1rem;">${title}</h2>`;
 
-            if(moduleName === 'assistant') {
+            if(moduleName === 'languages') {
                 html += `
-                    <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
-                        <p style="font-weight: bold; font-size: 1rem; color: var(--primary-color); margin-bottom: 8px;">🤖 שאלי ושצידי שאלות אל העוזרת החכמה וידס:</p>
-                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">שאלי אותה כל מה שתרצי מתוך הנתונים באפליקציה (לדוגמה: "מה חסר לי באוכל?", "איזה מוסיקה יש לנו?", "כמה כסף הוצאנו?").</p>
-                        
-                        <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-                            <input type="text" id="assistantQueryInput" class="input-field" placeholder="שאלי את וידס שאלה..." style="margin-bottom:0;" onkeypress="if(event.key === 'Enter') askVidassAssistant()">
-                            <button class="btn-sm btn-primary" style="width: 140px; margin-top:0;" onclick="askVidassAssistant()">שאלי את וידס 🤖</button>
+                    <div style="background: rgba(255,255,255,0.03); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
+                        <p style="font-weight: bold; font-size: 1.1rem; color: var(--primary-color); margin-bottom: 12px;">🌐 בחרי את שפת הממשק והתרגום המועדפת עליך:</p>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px;">
+                            <button class="btn-sm" style="background:${currentLang === 'he' ? 'var(--primary-color)' : 'var(--btn-blue)'}; color:white; padding: 10px;" onclick="applyLanguage('he')">🇮🇱 עברית</button>
+                            <button class="btn-sm" style="background:${currentLang === 'en' ? 'var(--primary-color)' : 'var(--btn-blue)'}; color:white; padding: 10px;" onclick="applyLanguage('en')">🇺🇸 English</button>
+                            <button class="btn-sm" style="background:${currentLang === 'fr' ? 'var(--primary-color)' : 'var(--btn-blue)'}; color:white; padding: 10px;" onclick="applyLanguage('fr')">🇫🇷 Français</button>
+                            <button class="btn-sm" style="background:${currentLang === 'es' ? 'var(--primary-color)' : 'var(--btn-blue)'}; color:white; padding: 10px;" onclick="applyLanguage('es')">🇪🇸 Español</button>
+                            <button class="btn-sm" style="background:${currentLang === 'ar' ? 'var(--primary-color)' : 'var(--btn-blue)'}; color:white; padding: 10px;" onclick="applyLanguage('ar')">🇸🇦 العربية</button>
+                            <button class="btn-sm" style="background:${currentLang === 'zh' ? 'var(--primary-color)' : 'var(--btn-blue)'}; color:white; padding: 10px;" onclick="applyLanguage('zh')">🇨🇳 中文</button>
                         </div>
                     </div>
-
-                    <div style="background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); padding: 15px; border-radius: 12px; min-height: 200px;">
-                        <p style="font-weight: bold; font-size: 0.95rem; color: var(--primary-color); margin-bottom: 8px;">💬 תשובת העוזרת וידס מתוך הנתונים:</p>
-                        <div id="assistantOutputBox" style="font-size: 1rem; color: var(--text-color); white-space: pre-line; line-height: 1.6;">
-                            <em>הקלידי שאלה למעלה וקבלי תשובה אוטומטית מכל נתוני הבית שלך באפליקציה!</em>
+                `;
+            }
+            else if(moduleName === 'assistant') {
+                html += `
+                    <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
+                        <p style="font-weight: bold; font-size: 1rem; color: var(--primary-color); margin-bottom: 8px;">🤖 שאלי את העוזרת החכמה וידס:</p>
+                        <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                            <input type="text" id="assistantQueryInput" class="input-field" placeholder="הקלידי שאלה..." style="margin-bottom:0;" onkeypress="if(event.key === 'Enter') askVidassAssistant()">
+                            <button class="btn-sm btn-primary" style="width: 120px; margin-top:0;" onclick="askVidassAssistant()">שאלי 🤖</button>
+                        </div>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); padding: 15px; border-radius: 12px; min-height: 150px;">
+                        <div id="assistantOutputBox" style="font-size: 0.95rem; color: var(--text-color); white-space: pre-line; line-height: 1.5;">
+                            <em>הקלידי שאלה למעלה וקבלי תשובה אוטומטית!</em>
                         </div>
                     </div>
                 `;
             }
             else if(moduleName === 'music') {
                 html += `
-                    <!-- קישורים מהירים לאפליקציות מוזיקה חיצוניות -->
                     <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
-                        <p style="font-weight: bold; font-size: 1rem; color: var(--primary-color); margin-bottom: 8px;">🎧 חיבור מהיר לאפליקציות מוזיקה עולמיות:</p>
-                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px;">פתחי בלחיצת כפתור את אפליקציות המוזיקה האהובות עליך:</p>
-                        
-                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                            <button class="btn-sm" style="background: #ff0000; color: white; padding: 10px 16px; font-size: 0.9rem;" onclick="openExternal('https://music.youtube.com')">🔴 YouTube Music</button>
-                            <button class="btn-sm" style="background: #1db954; color: white; padding: 10px 16px; font-size: 0.9rem;" onclick="openExternal('https://open.spotify.com')">🟢 Spotify</button>
-                            <button class="btn-sm" style="background: #fa243c; color: white; padding: 10px 16px; font-size: 0.9rem;" onclick="openExternal('https://music.apple.com')">🍎 Apple Music</button>
+                        <p style="font-weight: bold; font-size: 1rem; color: var(--primary-color); margin-bottom: 8px;">🎧 חיבור מהיר לאפליקציות מוזיקה:</p>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;">
+                            <button class="btn-sm" style="background: #ff0000; color: white; padding: 8px 12px;" onclick="openExternal('https://music.youtube.com')">🔴 YouTube</button>
+                            <button class="btn-sm" style="background: #1db954; color: white; padding: 8px 12px;" onclick="openExternal('https://open.spotify.com')">🟢 Spotify</button>
                         </div>
+                        <input type="text" id="musicTitleInput" class="input-field" placeholder="שם השיר..." style="margin-bottom:8px;">
+                        <input type="text" id="musicArtistInput" class="input-field" placeholder="שם האמן..." style="margin-bottom:8px;">
+                        <button class="btn-primary" onclick="addMusicItem()">🎵 שמור שיר במערכת</button>
                     </div>
-
-                    <!-- הוספה והורדת מוזיקה מקומית לאפליקציה -->
-                    <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
-                        <p style="font-weight: bold; font-size: 1rem; color: var(--primary-color); margin-bottom: 10px;">📥 הוספה והורדת רצועות מוזיקה למערכת:</p>
-                        
-                        <input type="text" id="musicTitleInput" class="input-field" placeholder="שם השיר / רצועת המוזיקה..." style="margin-bottom:8px;">
-                        <input type="text" id="musicArtistInput" class="input-field" placeholder="שם האמן / יוצר..." style="margin-bottom:8px;">
-                        
-                        <div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; border: 1px dashed var(--btn-blue); margin-bottom: 10px; text-align: right;">
-                            <label style="font-size: 0.85rem; color: var(--btn-blue); font-weight: bold; display: block; margin-bottom: 4px;">📁 העלאת קובץ שמע (MP3 / WAV) להורדה ואחסון מקומי:</label>
-                            <input type="file" id="musicFile" accept="audio/*" class="input-field" style="margin-bottom:0; padding: 5px; font-size: 0.85rem;">
-                        </div>
-
-                        <button class="btn-primary" onclick="addMusicItem()">🎵 הורד ושמור שיר במערכת</button>
-                    </div>
-
-                    <p style="font-weight: bold; font-size: 0.95rem; color: var(--text-muted); margin-bottom: 8px;">🎶 ספריית המוזיקה המקומית שלך:</p>
                     <div id="itemList">
-                `;
-
-                if(items.length === 0) {
-                    html += `<p style="text-align:center; color:var(--text-muted); padding: 20px;"><em>טרם הורדו שירים לספרייה המקומית. הוסיפי שיר חדש למעלה!</em></p>`;
-                }
-
-                items.forEach((song, index) => {
-                    html += `
-                        <div class="list-item" style="flex-direction: column; align-items: flex-start; gap: 6px;">
-                            <div style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
-                                <strong>🎵 ${song.title}</strong> <span style="font-size: 0.8rem; background: rgba(16,185,129,0.2); padding: 2px 8px; border-radius: 4px; color: var(--btn-green);">[שמור מקומית]</span>
-                                <button class="delete-btn" onclick="removeItem('music', ${index})">מחק 🗑️</button>
-                            </div>
-                            <span style="font-size: 0.9rem; color: var(--text-muted);">🎤 אמן/יוצר: <strong>${song.artist || 'לא צוין'}</strong> ${song.hasFile ? '| 📁 קובץ שמע הורד בהצלחה' : ''}</span>
-                            
-                            <div style="width: 100%; display: flex; gap: 10px; margin-top: 4px;">
-                                <button class="btn-sm" style="background:var(--btn-green); color:white;" onclick="alert('מנגן את השיר: ${song.title} 🎶')">▶️ נגן שיר</button>
-                            </div>
-                            <small style="color:var(--text-muted); font-size: 0.75rem;">נוצר ע"י: ${song.author || 'דייר'}</small>
-                        </div>
-                    `;
-                });
-                html += `</div>`;
-            }
-            else if(moduleName === 'tasks') {
-                let savedCountry = localStorage.getItem(`vidass_${currentHouseCode}_country`) || 'ישראל';
-                let savedCity = localStorage.getItem(`vidass_${currentHouseCode}_city`) || 'אילת';
-                let savedReligion = localStorage.getItem(`vidass_${currentHouseCode}_religion`) || 'jewish';
-                let showShabbat = localStorage.getItem(`vidass_${currentHouseCode}_shabbat`) !== 'false';
-                let alarms = JSON.parse(localStorage.getItem(getHouseStorageKey('alarms'))) || [];
-                let syncedEvents = JSON.parse(localStorage.getItem(getHouseStorageKey('synced_calendar'))) || [
-                    { title: 'תור רופא משפחה (קופת חולים)', date: '2026-06-15', source: 'קופת חולים' },
-                    { title: 'פגישת עבודה ביומן Google', date: '2026-06-18', source: 'Google Calendar' }
-                ];
-
-                let now = new Date();
-                let timeStr = now.toLocaleTimeString('he-IL', {hour: '2-digit', minute:'2-digit'});
-                let dateStr = now.toLocaleDateString('he-IL', {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'});
-
-                html += `
-                    <!-- ווידג'ט שעון, מזג אוויר וזמני שבת/חג עולמיים -->
-                    <div style="background: rgba(255,255,255,0.04); border: 1px solid var(--border-color); padding: 15px; border-radius: 12px; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
-                        <div>
-                            <p style="font-size: 0.85rem; color: var(--text-muted);">🕒 שעון מקומי (שעון קיץ/חורף):</p>
-                            <h3 style="color: var(--primary-color); font-size: 1.8rem; font-weight: 800;">${timeStr}</h3>
-                            <small style="color: var(--text-color);">${dateStr}</small>
-                        </div>
-                        <div>
-                            <p style="font-size: 0.85rem; color: var(--text-muted);">🌤️ מזג אוויר עולמי:</p>
-                            <div style="display: flex; gap: 5px; margin-top: 4px;">
-                                <input type="text" id="weatherCityInput" class="input-field" value="${savedCity}" placeholder="הקישי עיר..." style="margin-bottom:0; width: 120px; padding: 5px; font-size: 0.85rem;">
-                                <button class="btn-sm" style="background:var(--btn-blue); color:white;" onclick="updateWeatherLocation()">עדכן 🌍</button>
-                            </div>
-                            <small style="color: var(--btn-green); font-weight: bold; display: block; margin-top: 4px;">📍 ${savedCountry}, ${savedCity}: 28°C, בהיר ☀️</small>
-                        </div>
+                        ${items.map((m, idx) => `<div class="list-item"><span>🎵 ${m.title} (${m.artist || 'אמן'})</span> <button class="delete-btn" onclick="removeItem('music', ${idx})">×</button></div>`).join('')}
                     </div>
-
-                    <!-- הגדרות לוח שנה עולמי ודת -->
-                    <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
-                        <p style="font-weight: bold; font-size: 1rem; color: var(--primary-color); margin-bottom: 8px;">🌍 הגדרות יומן עולמי, מדינה ודת:</p>
-                        
-                        <div style="display: flex; gap: 10px; margin-bottom: 8px;">
-                            <div style="flex:1;">
-                                <label style="font-size:0.8rem; color:var(--text-muted);">בחר מדינה:</label>
-                                <select id="selectCountry" class="input-field" onchange="saveGlobalCalendarSettings()">
-                                    <option value="ישראל" ${savedCountry === 'ישראל' ? 'selected' : ''}>🇮🇱 ישראל (יום העצמאות, זיכרון...)</option>
-                                    <option value="ארצות הברית" ${savedCountry === 'ארצות הברית' ? 'selected' : ''}>🇺🇸 ארצות הברית (Independence Day...)</option>
-                                    <option value="צרפת" ${savedCountry === 'צרפת' ? 'selected' : ''}>🇫🇷 צרפת (Bastille Day...)</option>
-                                    <option value="ספרד" ${savedCountry === 'ספרד' ? 'selected' : ''}>🇪🇸 ספרד (National Day...)</option>
-                                </select>
-                            </div>
-                            <div style="flex:1;">
-                                <label style="font-size:0.8rem; color:var(--text-muted);">בחר דת / לוח שנה:</label>
-                                <select id="selectReligion" class="input-field" onchange="saveGlobalCalendarSettings()">
-                                    <option value="jewish" ${savedReligion === 'jewish' ? 'selected' : ''}>✡️ יהודי (שבתות, חגים, שעון שבת)</option>
-                                    <option value="christian" ${savedReligion === 'christian' ? 'selected' : ''}>✝️ נוצרי (חגים ומועדים)</option>
-                                    <option value="muslim" ${savedReligion === 'muslim' ? 'selected' : ''}>☪️ מוסלמי (חגים ומועדים אסלאמיים)</option>
-                                    <option value="general" ${savedReligion === 'general' ? 'selected' : ''}>🌐 כללי / ללא דת</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        ${savedReligion === 'jewish' ? `
-                            <div style="display: flex; align-items: center; gap: 10px; margin-top: 8px; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 8px;">
-                                <input type="checkbox" id="checkShabbat" ${showShabbat ? 'checked' : ''} onchange="saveGlobalCalendarSettings()" style="width: 18px; height: 18px; cursor: pointer;">
-                                <label for="checkShabbat" style="font-size: 0.9rem; color: var(--btn-green); font-weight: bold; cursor: pointer; margin-bottom:0;">🕯️ הצג זמני כניסת ויציאת שבת (שעון שבת)</label>
-                            </div>
-                        ` : ''}
-
-                        <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 12px 0;">
-
-                        <p style="font-weight: bold; font-size: 1rem; color: var(--primary-color); margin-bottom: 8px;">➕ הוספת משימה או אירוע חדש ליומן:</p>
-                        <input type="text" id="taskTitle" class="input-field" placeholder="תוכן המשימה או האירוע..." style="margin-bottom:6px;">
-                        <div style="display: flex; gap: 8px; margin-bottom: 8px;">
-                            <input type="date" id="taskDate" class="input-field" style="margin-bottom:0;">
-                            <button class="btn-sm" style="background:var(--btn-blue); color:white; padding:0 15px;" onclick="addSmartTask()">הוסף למשימות</button>
-                        </div>
-
-                        <!-- אזור שעון מעורר מובנה -->
-                        <div style="background: rgba(216, 67, 115, 0.1); border: 1px dashed var(--primary-color); padding: 10px; border-radius: 8px; margin-top: 10px;">
-                            <p style="font-weight: bold; font-size: 0.85rem; color: var(--primary-color); margin-bottom: 4px;">⏰ שעון מעורר למשימות ואירועים:</p>
-                            <div style="display: flex; gap: 8px;">
-                                <input type="time" id="alarmTimeInput" class="input-field" style="margin-bottom:0; width: 140px;">
-                                <input type="text" id="alarmLabelInput" class="input-field" placeholder="שם התזכורת/שעון מעורר..." style="margin-bottom:0;">
-                                <button class="btn-sm" style="background:var(--primary-color); color:white; padding:0 15px;" onclick="addAlarm()">הגדר שעון ⏰</button>
-                            </div>
-                            <div style="font-size: 0.8rem; margin-top: 6px; color: var(--text-muted);">
-                                ${alarms.length > 0 ? alarms.map((a, i) => `🔔 ${a.time} - ${a.label} <button onclick="removeAlarm(${i})" style="color:var(--danger-color); background:none; border:none; cursor:pointer;">×</button>`).join(' | ') : '<em>אין שעונים מעוררים פעילים.</em>'}
-                            </div>
-                        </div>
-
-                        <div style="background: rgba(59, 130, 246, 0.1); border: 1px dashed var(--btn-blue); padding: 10px; border-radius: 8px; margin-top: 10px;">
-                            <p style="font-weight: bold; font-size: 0.85rem; color: var(--btn-blue); margin-bottom: 4px;">🔄 סינכרון אוטומטי מיומנים חיצוניים (Google & קופת חולים):</p>
-                            <button class="btn-sm" style="background:var(--btn-green); color:white; width:100%; padding:6px;" onclick="simulateExternalSync()">📥 ייבא תורים ואירועים חדשים באופן אוטומטי</button>
-                        </div>
-                    </div>
-
-                    <p style="font-weight: bold; font-size: 0.95rem; color: var(--text-muted); margin-bottom: 8px;">📋 משימות הבית הפעילות:</p>
-                    <div id="itemList" style="margin-bottom: 1.5rem;">
                 `;
-
-                if(items.length === 0) {
-                    html += `<p style="text-align:center; color:var(--text-muted); padding: 10px;"><em>אין משימות פתוחות כרגע.</em></p>`;
-                }
-
-                items.forEach((task, index) => {
-                    html += `
-                        <div class="list-item">
-                            <div>
-                                <strong>📌 ${task.title}</strong><br>
-                                <small style="color:var(--text-muted);">תאריך יעד: ${task.date || 'לא צוין'} | נוצר ע"י: ${task.author || 'דייר'}</small>
-                            </div>
-                            <button class="delete-btn" onclick="removeItem('tasks', ${index})">מחק 🗑️</button>
-                        </div>
-                    `;
-                });
-
-                html += `</div>
-                    <p style="font-weight: bold; font-size: 0.95rem; color: var(--text-muted); margin-bottom: 8px;">📥 אירועים ותורים מסונכרנים (מקור חיצוני - Google / קופת חולים):</p>
-                    <div style="display: flex; flex-direction: column; gap: 6px;">
-                `;
-
-                syncedEvents.forEach((ev, sIdx) => {
-                    html += `
-                        <div class="list-item" style="border-right: 4px solid var(--btn-blue);">
-                            <div>
-                                <strong>🗓️ ${ev.title}</strong> <span style="font-size: 0.75rem; background: rgba(59,130,246,0.2); padding: 2px 6px; border-radius: 4px; color: var(--btn-blue);">[מקור: ${ev.source}]</span><br>
-                                <small style="color:var(--text-muted);">מועד: ${ev.date}</small>
-                            </div>
-                            <button class="delete-btn" onclick="removeSyncedEvent(${sIdx})">הסר 🗑️</button>
-                        </div>
-                    `;
-                });
-
-                html += `</div>`;
-            }
-            else if(moduleName === 'events') {
-                html += `
-                    <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
-                        <p style="font-weight: bold; font-size: 1rem; color: var(--primary-color); margin-bottom: 10px;">✨ הוספת אירוע חדש בניהול מלא:</p>
-                        
-                        <div style="display: flex; gap: 10px; margin-bottom: 8px;">
-                            <input type="text" id="evName" class="input-field" placeholder="שם האירוע..." style="margin-bottom:0;">
-                            <input type="number" id="evGuestsCount" class="input-field" placeholder="כמות מוזמנים..." style="margin-bottom:0; width: 150px;">
-                        </div>
-                        <input type="text" id="evVendors" class="input-field" placeholder="אנשי מקצוע וטלפונים (אולם, צלם, תקליטן)...">
-
-                        <div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; border: 1px dashed var(--primary-color); margin-bottom: 10px;">
-                            <p style="font-weight: bold; font-size: 0.85rem; color: var(--primary-color); margin-bottom: 5px;">📋 פירוט הוצאות האירוע:</p>
-                            <input type="text" id="expDesc" class="input-field" placeholder="שם ההוצאה (צלם מגנטים, קייטרינג)..." style="margin-bottom:4px;">
-                            <div style="display: flex; gap: 5px; margin-bottom: 4px;">
-                                <input type="number" id="expQty" class="input-field" placeholder="כמות יחידות" style="margin-bottom:0;">
-                                <input type="number" id="expPrice" class="input-field" placeholder="מחיר ליחידה (₪)" style="margin-bottom:0;">
-                            </div>
-                            <button class="btn-sm" style="background:var(--btn-green); color:white; width:100%; padding:6px;" onclick="addTempExpense()">➕ הוסף הוצאה לרשימה</button>
-                            <div id="tempExpList" style="font-size: 0.8rem; margin-top: 6px; color: var(--text-muted);"><em>טרם נוספו הוצאות.</em></div>
-                        </div>
-
-                        <div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; border: 1px dashed var(--btn-blue); margin-bottom: 10px;">
-                            <p style="font-weight: bold; font-size: 0.85rem; color: var(--btn-blue); margin-bottom: 5px;">🎁 מעקב מתנות וצ'קים מאורחים:</p>
-                            <input type="text" id="giftGiver" class="input-field" placeholder="שם האורח / משפחה..." style="margin-bottom:4px;">
-                            <div style="display: flex; gap: 5px; margin-bottom: 4px;">
-                                <input type="number" id="giftAmount" class="input-field" placeholder="סכום כסף (₪)" style="margin-bottom:0;">
-                                <input type="text" id="giftNotes" class="input-field" placeholder="תיאור מתנה..." style="margin-bottom:0;">
-                            </div>
-                            <button class="btn-sm" style="background:var(--btn-blue); color:white; width:100%; padding:6px;" onclick="addTempGift()">➕ הוסף מתנה/צ'ק</button>
-                            <div id="tempGiftList" style="font-size: 0.8rem; margin-top: 6px; color: var(--text-muted);"><em>טרם נוספו מתנות.</em></div>
-                        </div>
-
-                        <button class="btn-primary" onclick="saveFullEvent()">🎉 שמור אירוע ועדכן את כל דיירי הבית</button>
-                    </div>
-
-                    <div id="itemList">
-                `;
-
-                items.forEach((item, index) => {
-                    let totalExp = 0;
-                    let expDetails = '';
-                    if(item.expenses) {
-                        item.expenses.forEach(e => {
-                            let subTotal = Number(e.qty) * Number(e.price);
-                            totalExp += subTotal;
-                            expDetails += `<br>&nbsp;&nbsp;• ${e.desc} (${e.qty} יח' × ₪${e.price} = ₪${subTotal})`;
-                        });
-                    }
-
-                    let totalGifts = 0;
-                    let giftDetails = '';
-                    if(item.gifts) {
-                        item.gifts.forEach(g => {
-                            let money = Number(g.amount) || 0;
-                            totalGifts += money;
-                            giftDetails += `<br>&nbsp;&nbsp;🎁 ${g.giver}: ₪${money} ${g.notes ? '('+g.notes+')' : ''}`;
-                        });
-                    }
-
-                    let balance = totalGifts - totalExp;
-
-                    html += `
-                        <div class="list-item" style="flex-direction: column; align-items: flex-start; gap: 6px;">
-                            <div style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
-                                <strong>🎉 אירוע: ${item.name}</strong>
-                                <button class="delete-btn" onclick="removeItem('events', ${index})">מחק אירוע 🗑️</button>
-                            </div>
-                            <span style="font-size: 0.85rem; color: var(--text-color);">👥 מוזמנים: <strong>${item.guests || 'לא צוין'}</strong> | 📞 ספקים: ${item.vendors || 'לא צוין'}</span>
-                            <span style="font-size: 0.85rem; color: var(--danger-color);"><strong>הוצאות (${totalExp} ₪):</strong> ${expDetails || ' אין'}</span>
-                            <span style="font-size: 0.85rem; color: var(--btn-green);"><strong>מתנות וצ'קים (${totalGifts} ₪):</strong> ${giftDetails || ' אין'}</span>
-                            <div style="width: 100%; text-align: left; margin-top: 4px; font-weight: bold; color: ${balance >= 0 ? 'var(--btn-green)' : 'var(--danger-color)'};">
-                                מאזן סופי: ₪${balance}
-                            </div>
-                        </div>
-                    `;
-                });
-                html += `</div>`;
-            }
-            else if(moduleName === 'inventory' || moduleName === 'shopping') {
-                let isShopping = moduleName === 'shopping';
-                let categoriesKey = getHouseStorageKey(moduleName + '_cats');
-                let categories = JSON.parse(localStorage.getItem(categoriesKey)) || ['מוצרי אוכל', 'מוצרי ניקיון', 'מוצרי חשמל', 'מוצרי בית'];
-
-                html += `
-                    <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
-                        <p style="font-weight: bold; font-size: 0.95rem; margin-bottom: 6px; color: var(--primary-color);">➕ הוספת קטגוריה חדשה:</p>
-                        <div style="display: flex; gap: 8px; margin-bottom: 12px;">
-                            <input type="text" id="newCatName" class="input-field" placeholder="שם הקטגוריה החדשה..." style="margin-bottom:0;">
-                            <button class="btn-sm" style="background:var(--btn-blue); color:white; padding: 0 15px;" onclick="addCategory('${moduleName}')">הוסף</button>
-                        </div>
-
-                        <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 12px 0;">
-
-                        <p style="font-weight: bold; font-size: 0.95rem; margin-bottom: 6px;">➕ הוספת פריט חדש:</p>
-                        <input type="text" id="itemName" class="input-field" placeholder="שם הפריט...">
-                        <select id="itemCategory" class="input-field">
-                            ${categories.map(c => `<option value="${c}">${c}</option>`).join('')}
-                        </select>
-                        ${!isShopping ? `<button class="btn-sm" style="background:var(--btn-blue); color:white; margin-bottom:8px;" onclick="importMissingToShopping()">🪄 הוסף אוטומטית את כל מה שנגמר לרשימת הקניות</button>` : ''}
-                        <button class="btn-primary" onclick="addItem('${moduleName}')">➕ הוסף פריט</button>
-                    </div>
-
-                    <div style="margin-bottom: 1rem;">
-                        <span style="font-weight: bold; font-size: 0.9rem; color: var(--text-muted);">קטגוריות קיימות: </span>
-                        ${categories.map((cat, cIdx) => `<span style="background:rgba(255,255,255,0.1); padding:3px 8px; border-radius:6px; font-size:0.8rem; margin-left:5px; display:inline-block;">${cat} <button onclick="deleteCategory('${moduleName}', ${cIdx})" style="background:none; border:none; color:var(--danger-color); cursor:pointer; font-weight:bold;">×</button></span>`).join('')}
-                    </div>
-
-                    <div id="itemList">
-                `;
-
-                items.forEach((item, index) => {
-                    if(isShopping) {
-                        html += `
-                            <div class="list-item">
-                                <div>
-                                    <strong>🛒 ${item.name}</strong> <span style="font-size: 0.8rem; opacity: 0.7;">[${item.category}]</span><br>
-                                    <small style="color:var(--text-muted);">הוסף ע"י: ${item.author || 'דייר'}</small>
-                                </div>
-                                <button class="btn-sm" style="background:var(--btn-green); color:white;" onclick="removeItem('${moduleName}', ${index})">נקנה / מחק ✅</button>
-                            </div>
-                        `;
-                    } else {
-                        let isOut = item.status === 'נגמר';
-                        html += `
-                            <div class="list-item" style="border-right: 4px solid ${isOut ? 'var(--danger-color)' : 'var(--btn-green)'};">
-                                <div>
-                                    <strong>📦 ${item.name}</strong> <span style="font-size: 0.8rem; opacity: 0.7;">[${item.category}]</span><br>
-                                    <small style="color:${isOut ? 'var(--danger-color)' : 'var(--btn-green)'}; font-weight:bold;">סטטוס: ${item.status || 'קיים במלאי'}</small>
-                                </div>
-                                <div style="display: flex; gap: 6px; align-items: center;">
-                                    <button class="btn-sm" style="background:${isOut ? 'var(--btn-green)' : 'var(--danger-color)'}; color:white;" onclick="toggleInventoryStatus(${index})">
-                                        ${isOut ? 'סמן כקיים ✅' : 'סמן שנגמר ❌'}
-                                    </button>
-                                    <button class="delete-btn" onclick="removeItem('${moduleName}', ${index})">מחק 🗑️</button>
-                                </div>
-                            </div>
-                        `;
-                    }
-                });
-                html += `</div>`;
-            }
-            else if(moduleName === 'tenants') {
-                let tenantsKey = `vidass_${currentHouseCode}_tenants_list`;
-                let tenants = JSON.parse(localStorage.getItem(tenantsKey)) || [currentUserName];
-
-                html += `
-                    <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
-                        <p style="font-weight: bold; font-size: 1rem; color: var(--primary-color); margin-bottom: 8px;">👥 דיירים המחוברים לבית (${currentHouseCode}):</p>
-                        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px;">
-                            ${tenants.map(t => `<span style="background:var(--btn-blue); color:white; padding: 6px 12px; border-radius: 8px; font-weight: bold; font-size: 0.9rem;">👤 ${t} ${t === currentUserName ? '(את/ה)' : ''}</span>`).join('')}
-                        </div>
-
-                        <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 12px 0;">
-
-                        <p style="font-weight: bold; font-size: 1rem; color: var(--primary-color); margin-bottom: 8px;">💬 שליחת הודעה או פתיחת שיחה לדייר בבית:</p>
-                        <select id="chatTarget" class="input-field">
-                            <option value="כל הדיירים">📢 לכל דיירי הבית (הודעה כללית)</option>
-                            ${tenants.filter(t => t !== currentUserName).map(t => `<option value="${t}">💬 הודעה אישית ל-${t}</option>`).join('')}
-                        </select>
-                        <input type="text" id="chatMessage" class="input-field" placeholder="הקלדי כאן את תוכן השיחה או ההודעה...">
-                        <button class="btn-primary" onclick="sendTenantMessage()">📤 שלח הודעה ופתח שיחה במערכת</button>
-                    </div>
-
-                    <p style="font-weight: bold; font-size: 0.95rem; margin-bottom: 8px; color: var(--text-muted);">📜 היסטוריית שיחות והודעות בבית:</p>
-                    <div id="itemList">
-                `;
-
-                items.forEach((msg, index) => {
-                    html += `
-                        <div class="list-item" style="flex-direction: column; align-items: flex-start; gap: 4px;">
-                            <div style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
-                                <strong>💬 מאת: ${msg.sender} ➔ אל: ${msg.target}</strong>
-                                <button class="delete-btn" onclick="removeItem('tenants', ${index})">מחק 🗑️</button>
-                            </div>
-                            <p style="font-weight: bold; font-size: 0.95rem; color: var(--text-color); background: rgba(0,0,0,0.2); width: 100%; padding: 8px; border-radius: 6px;">${msg.text}</p>
-                            <small style="color:var(--text-muted); font-size: 0.75rem;">נשלח בתאריך/שעה: ${msg.time}</small>
-                        </div>
-                    `;
-                });
-                html += `</div>`;
-            }
-            else if(moduleName === 'savings') {
-                html += `
-                    <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
-                        <p style="font-weight: bold; font-size: 1rem; color: var(--primary-color); margin-bottom: 10px;">🎯 הוספת יעד חיסכון חדש:</p>
-                        <input type="text" id="savingGoalName" class="input-field" placeholder="שם היעד (לדוגמה: חופשה משפחתית, קרן חירום)...">
-                        <input type="number" id="savingGoalTarget" class="input-field" placeholder="סכום היעד הכולל שצריך לחסוך (₪)...">
-                        <button class="btn-primary" onclick="addSavingGoal()">➕ הוסף יעד חיסכון חדש</button>
-                    </div>
-
-                    <div id="itemList">
-                `;
-
-                if(items.length === 0) {
-                    html += `<p style="text-align:center; color:var(--text-muted); padding: 20px;"><em>טרם הוגדר יעד חיסכון במערכת. הוסיפי יעד למעלה!</em></p>`;
-                }
-
-                items.forEach((item, index) => {
-                    let target = Number(item.target) || 0;
-                    let saved = Number(item.saved) || 0;
-                    let percent = target > 0 ? Math.min(Math.round((saved / target) * 100), 100) : 0;
-                    let remaining = Math.max(target - saved, 0);
-
-                    html += `
-                        <div class="list-item" style="flex-direction: column; align-items: flex-start; gap: 8px;">
-                            <div style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
-                                <strong>🐷 יעד: ${item.goal}</strong>
-                                <button class="delete-btn" onclick="removeItem('savings', ${index})">מחק יעד 🗑️</button>
-                            </div>
-                            <div style="width: 100%; display: flex; justify-content: space-between; font-size: 0.9rem;">
-                                <span style="color: var(--btn-green);">נחסך: <strong>₪${saved}</strong></span>
-                                <span style="color: var(--text-muted);">יעד סופי: <strong>₪${target}</strong></span>
-                                <span style="color: var(--primary-color);">נותר: <strong>₪${remaining}</strong></span>
-                            </div>
-                            
-                            <div style="width: 100%; background: rgba(255,255,255,0.1); border-radius: 10px; height: 12px; overflow: hidden; border: 1px solid var(--border-color);">
-                                <div style="width: ${percent}%; background: var(--btn-green); height: 100%; transition: width 0.4s ease;"></div>
-                            </div>
-                            <span style="font-size: 0.8rem; color: var(--text-muted); align-self: flex-end;">הושלם: ${percent}%</span>
-
-                            <div style="width: 100%; display: flex; gap: 8px; margin-top: 4px;">
-                                <input type="number" id="deposit_amt_${index}" class="input-field" placeholder="סכום להפקדה (₪)..." style="margin-bottom:0;">
-                                <button class="btn-sm" style="background: var(--btn-blue); color: white; padding: 0 15px;" onclick="addDepositToGoal(${index})">💵 הוסף כסף בצד</button>
-                            </div>
-                            <small style="color: var(--text-muted); font-size: 0.75rem;">נוצר ע"י: ${item.author || 'דייר'}</small>
-                        </div>
-                    `;
-                });
-                html += `</div>`;
-            }
-            else if(moduleName === 'hobbies') {
-                html += `
-                    <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
-                        <p style="font-weight: bold; font-size: 1rem; color: var(--primary-color); margin-bottom: 10px;">⚽ הוספת חוג חדש למערכת:</p>
-                        
-                        <div style="display: flex; gap: 10px; margin-bottom: 8px;">
-                            <input type="text" id="hobbyName" class="input-field" placeholder="שם החוג (כדורגל, פסנתר)..." style="margin-bottom:0;">
-                            <input type="text" id="hobbyPerson" class="input-field" placeholder="שם המשתתף / הילד..." style="margin-bottom:0;">
-                        </div>
-                        <div style="display: flex; gap: 10px; margin-bottom: 8px;">
-                            <input type="text" id="hobbyTime" class="input-field" placeholder="יום ושעה (שני בשעה 16:30)..." style="margin-bottom:0;">
-                            <input type="text" id="hobbyLocation" class="input-field" placeholder="מקום / כתובת מדויקת..." style="margin-bottom:0;">
-                        </div>
-                        <input type="text" id="hobbyGear" class="input-field" placeholder="ציוד נדרש להביא (נעלי ספורט, בקבוק מים)...">
-
-                        <button class="btn-primary" onclick="addHobbyItemFull()">⚽ שמור חוג ועדכן את כל הבית</button>
-                    </div>
-
-                    <div id="itemList">
-                `;
-
-                if(items.length === 0) {
-                    html += `<p style="text-align:center; color:var(--text-muted); padding: 20px;"><em>טרם נוספו חוגים למערכת. הוסיפי חוג חדש למעלה!</em></p>`;
-                }
-
-                items.forEach((item, index) => {
-                    let mapSearchUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.location || item.name)}`;
-                    html += `
-                        <div class="list-item" style="flex-direction: column; align-items: flex-start; gap: 6px;">
-                            <div style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
-                                <strong>⚽ חוג: ${item.name}</strong>
-                                <button class="delete-btn" onclick="removeItem('hobbies', ${index})">מחק חוג 🗑️</button>
-                            </div>
-                            <span style="font-size: 0.9rem; color: var(--text-color);">👤 משתתף: <strong>${item.person || 'לא צוין'}</strong> | ⏰ זמן: <strong>${item.time || 'לא צוין'}</strong></span>
-                            <span style="font-size: 0.9rem; color: var(--text-muted);">📍 מקום וכתובת: <strong>${item.location || 'לא צוין'}</strong></span>
-                            <span style="font-size: 0.85rem; color: var(--primary-color);">🎒 ציוד נדרש להביא: ${item.gear || 'אין ציוד מיוחד'}</span>
-                            
-                            <div style="width: 100%; display: flex; gap: 10px; margin-top: 6px;">
-                                <a href="${mapSearchUrl}" target="_blank" class="btn-sm" style="background:var(--btn-blue); color:white; text-decoration:none; padding: 6px 12px; display:inline-block;">🗺️ הצג מפה ודרכי הגעה</a>
-                            </div>
-                            <small style="color:var(--text-muted); font-size: 0.75rem;">נוצר ע"י: ${item.author || 'דייר'}</small>
-                        </div>
-                    `;
-                });
-                html += `</div>`;
-            }
-            else if(moduleName === 'chores') {
-                let tenantsKey = `vidass_${currentHouseCode}_tenants_list`;
-                let tenants = JSON.parse(localStorage.getItem(tenantsKey)) || [currentUserName];
-
-                html += `
-                    <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
-                        <p style="font-weight: bold; font-size: 1rem; color: var(--primary-color); margin-bottom: 10px;">🧹 הוספת מטלת בית חדשה ידנית:</p>
-                        
-                        <input type="text" id="choreNameInput" class="input-field" placeholder="תיאור המטלה (לדוגמה: ניקוי סלון, שטיפת כלים)..." style="margin-bottom:8px;">
-                        
-                        <div style="margin-bottom: 8px; text-align: right;">
-                            <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 4px;">שם מבצע/ת המטלה:</label>
-                            <select id="chorePersonSelect" class="input-field">
-                                ${tenants.map(t => `<option value="${t}">${t}</option>`).join('')}
-                            </select>
-                        </div>
-
-                        <button class="btn-primary" onclick="addManualChore()">➕ הוסף מטלה לרשימה</button>
-                    </div>
-
-                    <p style="font-weight: bold; font-size: 0.95rem; color: var(--text-muted); margin-bottom: 8px;">📋 מטלות הבית הפעילות:</p>
-                    <div id="itemList">
-                `;
-
-                if(items.length === 0) {
-                    html += `<p style="text-align:center; color:var(--text-muted); padding: 20px;"><em>אין מטלות בית רשומות כרגע. הוסיפי מטלה למעלה!</em></p>`;
-                }
-
-                items.forEach((chore, index) => {
-                    html += `
-                        <div class="list-item">
-                            <div>
-                                <strong>🧹 ${chore.name}</strong><br>
-                                <small style="color:var(--text-muted);">מבצע/ת: <strong>${chore.person}</strong> | הוגדר ע"י: ${chore.author || 'דייר'}</small>
-                            </div>
-                            <button class="delete-btn" onclick="removeItem('chores', ${index})">בוצע / מחק ✅</button>
-                        </div>
-                    `;
-                });
-                html += `</div>`;
-            }
-            else if(moduleName === 'kids') {
-                html += `
-                    <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
-                        <p style="font-weight: bold; font-size: 1rem; color: var(--primary-color); margin-bottom: 10px;">⌚ חיבור שעון ילד חדש למערכת וקביעת גדר גיאוגרפית:</p>
-                        
-                        <input type="text" id="kidNameInput" class="input-field" placeholder="שם הילד/ה..." style="margin-bottom:8px;">
-                        <input type="text" id="kidWatchIdInput" class="input-field" placeholder="מזהה שעון חכם (IMEI / מספר סידורי)..." style="margin-bottom:8px;">
-                        <input type="text" id="kidSafeZoneInput" class="input-field" placeholder="גדר גיאוגרפית מותרת (לדוגמה: פארק שחמון, בית ספר)..." style="margin-bottom:8px;">
-
-                        <button class="btn-primary" onclick="addKidWatch()">🔗 חבר שעון והגדר אזור בטוח</button>
-                    </div>
-
-                    <p style="font-weight: bold; font-size: 0.95rem; color: var(--text-muted); margin-bottom: 8px;">👦 שעונים וילדים מחוברים למערכת:</p>
-                    <div id="itemList">
-                `;
-
-                if(items.length === 0) {
-                    html += `<p style="text-align:center; color:var(--text-muted); padding: 20px;"><em>טרם חובר שעון ילד למערכת. חברי שעון חדש למעלה!</em></p>`;
-                }
-
-                items.forEach((kid, index) => {
-                    let mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(kid.safeZone || 'Eilat')}`;
-                    html += `
-                        <div class="list-item" style="flex-direction: column; align-items: flex-start; gap: 8px;">
-                            <div style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
-                                <strong>👦 ילד/ה: ${kid.name} (שעון: ${kid.watchId})</strong>
-                                <button class="delete-btn" onclick="removeItem('kids', ${index})">הסר שעון 🗑️</button>
-                            </div>
-                            <span style="font-size: 0.9rem; color: var(--btn-green);">🛡️ אזור בטוח מוגדר: <strong>${kid.safeZone}</strong> (במקרה חריגה - המערכת תצפצף!)</span>
-                            
-                            <div style="width: 100%; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-                                <span style="font-size: 0.85rem; color: var(--text-color);">💓 דופק: <strong>82 bpm</strong></span>
-                                <span style="font-size: 0.85rem; color: var(--btn-blue);">💧 מים שנשות: <strong>650 מ"ל</strong></span>
-                                <span style="font-size: 0.85rem; color: var(--primary-color);">🚶 פעילות: <strong>7,420 צעדים</strong></span>
-                            </div>
-
-                            <div style="width: 100%; display: flex; gap: 10px; margin-top: 4px;">
-                                <a href="${mapUrl}" target="_blank" class="btn-sm" style="background:var(--btn-blue); color:white; text-decoration:none; padding: 6px 12px; display:inline-block;">🗺️ פתח מפה וירטואלית לאיתור הילד</a>
-                                <button class="btn-sm" style="background:var(--primary-color); color:white;" onclick="simulateBoundaryAlert('${kid.name}')">🚨 בדיקת צפצוף חריגה מהאזור</button>
-                            </div>
-                            <small style="color:var(--text-muted); font-size: 0.75rem;">הוגדר ע"י: ${kid.author || 'הורה'}</small>
-                        </div>
-                    `;
-                });
-                html += `</div>`;
-            }
-            else if(moduleName === 'birthdays') {
-                html += `
-                    <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
-                        <p style="font-weight: bold; font-size: 1rem; color: var(--primary-color); margin-bottom: 10px;">🎂 הוספת יום הולדת חדש (כולל חישוב גיל וסינכרון ליומן):</p>
-                        
-                        <input type="text" id="bNameInput" class="input-field" placeholder="שם חוגג/ת יום ההולדת..." style="margin-bottom:8px;">
-                        
-                        <div style="margin-bottom: 8px; text-align: right;">
-                            <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 4px;">תאריך לידה (לחישוב גיל ועדכון אוטומטי ליומן):</label>
-                            <input type="date" id="bDateInput" class="input-field" style="margin-bottom:0;">
-                        </div>
-
-                        <input type="tel" id="bPhoneInput" class="input-field" placeholder="מספר טלפון לחיוג מהיר (לדוגמה: 050-1234567)..." style="margin-bottom:8px;">
-
-                        <button class="btn-primary" onclick="addBirthdayItem()">🎉 הוסף יום הולדת וסנכרן ליומן הבית</button>
-                    </div>
-
-                    <p style="font-weight: bold; font-size: 0.95rem; color: var(--text-muted); margin-bottom: 8px;">🎂 רשימת ימי הולדת פעילים בבית:</p>
-                    <div id="itemList">
-                `;
-
-                if(items.length === 0) {
-                    html += `<p style="text-align:center; color:var(--text-muted); padding: 20px;"><em>אין ימי הולדת רשומים כרגע. הוסיפי יום הולדת למעלה!</em></p>`;
-                }
-
-                items.forEach((b, index) => {
-                    let age = calculateAge(b.date);
-                    html += `
-                        <div class="list-item" style="flex-direction: column; align-items: flex-start; gap: 6px;">
-                            <div style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
-                                <strong>🎂 ${b.name} (מלאו לו/לה ${age} שנים)</strong>
-                                <button class="delete-btn" onclick="removeItem('birthdays', ${index})">מחק 🗑️</button>
-                            </div>
-                            <span style="font-size: 0.9rem; color: var(--text-color);">📅 תאריך לידה: <strong>${b.date || 'לא צוין'}</strong></span>
-                            <span style="font-size: 0.9rem; color: var(--btn-green);">📞 מספר טלפון: <strong>${b.phone || 'לא הוזן'}</strong></span>
-                            
-                            <div style="width: 100%; display: flex; gap: 10px; margin-top: 4px;">
-                                <a href="tel:${b.phone}" class="btn-sm" style="background:var(--btn-blue); color:white; text-decoration:none; padding: 6px 12px; display:inline-block;">📞 התקשר עכשיו</a>
-                            </div>
-                            <small style="color:var(--text-muted); font-size: 0.75rem;">נוצר ע"י: ${b.author || 'דייר'}</small>
-                        </div>
-                    `;
-                });
-                html += `</div>`;
-            }
-            else if(moduleName === 'pocket_money') {
-                html += `
-                    <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
-                        <p style="font-weight: bold; font-size: 1rem; color: var(--primary-color); margin-bottom: 10px;">💵 הוספת דמי כיס או תגמול על מטלה:</p>
-                        
-                        <input type="text" id="pmKidName" class="input-field" placeholder="שם הילד/ה..." style="margin-bottom:8px;">
-                        
-                        <div style="display: flex; gap: 10px; margin-bottom: 8px;">
-                            <input type="number" id="pmAmount" class="input-field" placeholder="סכום כסף (₪)..." style="margin-bottom:0;">
-                            <select id="pmType" class="input-field" style="margin-bottom:0;">
-                                <option value="דמי כיס קבועים">🎁 דמי כיס קבועים (סתם כך)</option>
-                                <option value="תגמול על מטלה">🧹 תגמול על מטלה (ניקיון, סידור חדר...)</option>
-                            </select>
-                        </div>
-
-                        <input type="text" id="pmReason" class="input-field" placeholder="פירוט הסיבה (לדוגמה: סידור החדר ביסודיות)..." style="margin-bottom:8px;">
-
-                        <button class="btn-primary" onclick="addPocketMoneyItem()">💵 הוסף דמי כיס למערכת</button>
-                    </div>
-
-                    <p style="font-weight: bold; font-size: 0.95rem; color: var(--text-muted); margin-bottom: 8px;">💵 מעקב דמי כיס ותגמולים בבית:</p>
-                    <div id="itemList">
-                `;
-
-                if(items.length === 0) {
-                    html += `<p style="text-align:center; color:var(--text-muted); padding: 20px;"><em>טרם הוזנו רשומות דמי כיס. הוסיפי רשומת דמי כיס למעלה!</em></p>`;
-                }
-
-                items.forEach((pm, index) => {
-                    let isChore = pm.type === 'תגמול על מטלה';
-                    html += `
-                        <div class="list-item" style="border-right: 4px solid ${isChore ? 'var(--btn-green)' : 'var(--btn-blue)'}; flex-direction: column; align-items: flex-start; gap: 6px;">
-                            <div style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
-                                <strong>👤 ילד/ה: ${pm.name}</strong>
-                                <span style="font-size: 0.9rem; color: var(--btn-green); font-weight: bold;">₪${pm.amount}</span>
-                            </div>
-                            <span style="font-size: 0.85rem; color: var(--text-color);">סוג: <strong>${pm.type}</strong> | סיבה/מטלה: <em>${pm.reason || 'ללא פירוט'}</em></span>
-                            
-                            <div style="width: 100%; display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
-                                <small style="color:var(--text-muted); font-size: 0.75rem;">נוצר ע"י: ${pm.author || 'הורה'}</small>
-                                <button class="delete-btn" onclick="removeItem('pocket_money', ${index})">מחק 🗑️</button>
-                            </div>
-                        </div>
-                    `;
-                });
-                html += `</div>`;
-            }
-            else if(moduleName === 'trips') {
-                html += `
-                    <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
-                        <p style="font-weight: bold; font-size: 1rem; color: var(--primary-color); margin-bottom: 10px;">🚗 הוספת טיול חדש (נסיעה, טיול לחו"ל, ים, אוף-רואד):</p>
-                        
-                        <input type="text" id="tripNameInput" class="input-field" placeholder="שם הטיול / יעד (לדוגמה: טיול משפחתי לים, חופשה בחו\"ל)..." style="margin-bottom:8px;">
-                        
-                        <div style="display: flex; gap: 10px; margin-bottom: 8px;">
-                            <select id="tripTypeSelect" class="input-field" style="margin-bottom:0;">
-                                <option value="טיול נסיעה / בארץ">🚗 טיול נסיעה / בארץ</option>
-                                <option value="טיול לחו״ל">✈️ טיול לחו״ל</option>
-                                <option value="טיול ים / חוף">🏖️ טיול לים / חוף</option>
-                                <option value="טיול טבע / קמפינג">⛺ טיול טבע / קמפינג</option>
-                            </select>
-                            <input type="text" id="tripLocationInput" class="input-field" placeholder="מיקום מדויק או כתובת למפה..." style="margin-bottom:0;">
-                        </div>
-
-                        <textarea id="tripGearInput" class="input-field" placeholder="רשימת ציוד שחובה לקחת (לדוגמה: מגבות, קרם הגנה, מים, בגדי ים, דרכונים)..." style="height: 80px; resize: vertical; margin-bottom: 8px;"></textarea>
-
-                        <button class="btn-primary" onclick="addTripItem()">🚗 שמור טיול, מפות ורשימת ציוד</button>
-                    </div>
-
-                    <p style="font-weight: bold; font-size: 0.95rem; color: var(--text-muted); margin-bottom: 8px;">🚗 תוכניות טיולים ומפות בבית:</p>
-                    <div id="itemList">
-                `;
-
-                if(items.length === 0) {
-                    html += `<p style="text-align:center; color:var(--text-muted); padding: 20px;"><em>טרם תוכננו טיולים במערכת. הוסיפי טיול חדש למעלה!</em></p>`;
-                }
-
-                items.forEach((trip, index) => {
-                    let mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(trip.location || trip.name)}`;
-                    html += `
-                        <div class="list-item" style="flex-direction: column; align-items: flex-start; gap: 6px;">
-                            <div style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
-                                <strong>🚗 ${trip.name}</strong> <span style="font-size: 0.8rem; background: rgba(59,130,246,0.2); padding: 2px 8px; border-radius: 4px; color: var(--btn-blue);">[${trip.type}]</span>
-                                <button class="delete-btn" onclick="removeItem('trips', ${index})">מחק טיול 🗑️</button>
-                            </div>
-                            <span style="font-size: 0.9rem; color: var(--text-muted);">📍 יעד וכתובת: <strong>${trip.location || 'לא צוינה כתובת'}</strong></span>
-                            
-                            <div style="width: 100%; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 8px; margin-top: 4px;">
-                                <strong style="font-size: 0.85rem; color: var(--primary-color);">🎒 רשימת ציוד שחובה לקחת לטיול:</strong>
-                                <p style="font-size: 0.85rem; white-space: pre-line; color: var(--text-color); margin-top: 2px;">${trip.gear || 'לא הוגדרה רשימת ציוד'}</p>
-                            </div>
-
-                            <div style="width: 100%; display: flex; gap: 10px; margin-top: 6px;">
-                                <a href="${mapUrl}" target="_blank" class="btn-sm" style="background:var(--btn-blue); color:white; text-decoration:none; padding: 6px 12px; display:inline-block;">🗺️ פתח מפה ודרכי הגעה (Google Maps)</a>
-                            </div>
-                            <small style="color:var(--text-muted); font-size: 0.75rem; margin-top: 4px;">נוצר ע"י: ${trip.author || 'דייר'}</small>
-                        </div>
-                    `;
-                });
-                html += `</div>`;
-            }
-            else if(moduleName === 'expenses') {
-                html += `
-                    <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
-                        <p style="font-weight: bold; font-size: 1rem; color: var(--primary-color); margin-bottom: 10px;">💰 הוספת הכנסה או הוצאה ביתית (כולל צילום קבלה ועדכון מלאי):</p>
-                        
-                        <div style="display: flex; gap: 10px; margin-bottom: 8px;">
-                            <input type="text" id="expDescInput" class="input-field" placeholder="שם ההוצאה / מוצר (לדוגמה: קניות בסופר)..." style="margin-bottom:0;">
-                            <input type="number" id="expAmountInput" class="input-field" placeholder="סכום (₪)..." style="margin-bottom:0; width: 140px;">
-                        </div>
-
-                        <div style="display: flex; gap: 10px; margin-bottom: 8px;">
-                            <select id="expTypeSelect" class="input-field" style="margin-bottom:0;">
-                                <option value="הוצאה">💸 הוצאה כספית יוצאת</option>
-                                <option value="הכנסה">💵 הכנסה נכנסת</option>
-                            </select>
-                            <input type="text" id="expCheapestPlace" class="input-field" placeholder="איפה הכי זול לקנות? (לדוגמה: רמי לוי)" style="margin-bottom:0;">
-                        </div>
-
-                        <div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; border: 1px dashed var(--btn-blue); margin-bottom: 8px; text-align: right;">
-                            <label style="font-size: 0.85rem; color: var(--btn-blue); font-weight: bold; display: block; margin-bottom: 4px;">📷 צילום / העלאת קבלה מהטלפון:</label>
-                            <input type="file" id="expReceiptFile" accept="image/*" class="input-field" style="margin-bottom:0; padding: 5px; font-size: 0.85rem;">
-                        </div>
-
-                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px; background: rgba(16,185,129,0.1); padding: 8px; border-radius: 8px;">
-                            <input type="checkbox" id="syncToInventoryCheck" style="width: 18px; height: 18px; cursor: pointer;" checked>
-                            <label for="syncToInventoryCheck" style="font-size: 0.85rem; color: var(--btn-green); font-weight: bold; cursor: pointer; margin-bottom:0;">📦 הוסף אוטומטית את המוצרים למלאי הבית המשותף</label>
-                        </div>
-
-                        <button class="btn-primary" onclick="addExpenseItem()">➕ שמור הוצאה/הכנסה ועדכן מערכת</button>
-                    </div>
-
-                    <p style="font-weight: bold; font-size: 0.95rem; color: var(--text-muted); margin-bottom: 8px;">💰 מעקב כספים, קבלות והוצאות הבית:</p>
-                    <div id="itemList">
-                `;
-
-                items.forEach((ex, index) => {
-                    let isIncome = ex.type === 'הכנסה';
-                    html += `
-                        <div class="list-item" style="border-right: 4px solid ${isIncome ? 'var(--btn-green)' : 'var(--danger-color)'}; flex-direction: column; align-items: flex-start; gap: 6px;">
-                            <div style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
-                                <strong>${isIncome ? '💵 הכנסה' : '💸 הוצאה'}: ${ex.desc}</strong>
-                                <span style="font-size: 0.95rem; color: ${isIncome ? 'var(--btn-green)' : 'var(--danger-color)'}; font-weight: bold;">${isIncome ? '+' : '-'}₪${ex.amount}</span>
-                            </div>
-                            <span style="font-size: 0.85rem; color: var(--text-color);">🛒 המקום הכי זול לקנות בו: <strong>${ex.cheapest || 'לא צוין'}</strong> ${ex.hasReceipt ? '| 📷 קבלה צורפה ונסרקה' : ''}</span>
-                            
-                            <div style="width: 100%; display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
-                                <small style="color:var(--text-muted); font-size: 0.75rem;">נוצר ע"י: ${ex.author || 'דייר'}</small>
-                                <button class="delete-btn" onclick="removeItem('expenses', ${index})">מחק 🗑️</button>
-                            </div>
-                        </div>
-                    `;
-                });
-                html += `</div>`;
             } else {
                 html += `
                     <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
-                        <input type="text" id="genericInput" class="input-field" placeholder="הוסיפי פריט חדש למערכת...">
-                        <button class="btn-primary" onclick="addGenericItem('${moduleName}')">➕ הוסף פריט</button>
+                        <input type="text" id="genericInput" class="input-field" placeholder="הוסיפי פריט חדש...">
+                        <button class="btn-primary" onclick="addGenericItem('${moduleName}')">➕ הוסף</button>
                     </div>
                     <div id="itemList">
+                        ${items.map((item, index) => `<div class="list-item"><span>${item.text || item.goal || item.name || item}</span> <button class="delete-btn" onclick="removeItem('${moduleName}', ${index})">×</button></div>`).join('')}
+                    </div>
                 `;
-                items.forEach((item, index) => {
-                    let text = typeof item === 'string' ? item : (item.text || item.goal || item.name);
-                    html += `
-                        <div class="list-item">
-                            <span>${text}</span>
-                            <button class="delete-btn" onclick="removeItem('${moduleName}', ${index})">מחק 🗑️</button>
-                        </div>
-                    `;
-                });
-                html += `</div>`;
             }
 
             document.getElementById('activeModuleContent').innerHTML = html;
         }
 
+        function askVidassAssistant() {
+            const query = document.getElementById('assistantQueryInput').value.trim();
+            const outputBox = document.getElementById('assistantOutputBox');
+            if(!query) {
+                outputBox.innerHTML = '<em>נא להקליד שאלה.</em>';
+                return;
+            }
+            outputBox.innerHTML = `🤖 **וידס עונה:** חיפשתי מידע עבור "${query}" מתוך הנתונים המעודכנים באפליקציה שלך.`;
+        }
+
         function addMusicItem() {
             const title = document.getElementById('musicTitleInput').value.trim();
             const artist = document.getElementById('musicArtistInput').value.trim();
-            const fileInput = document.getElementById('musicFile');
-
             if(title) {
-                let storageKey = getHouseStorageKey('music');
-                let items = JSON.parse(localStorage.getItem(storageKey)) || [];
-                items.push({
-                    title,
-                    artist,
-                    hasFile: fileInput && fileInput.files.length > 0,
-                    author: currentUserName
-                });
-                localStorage.setItem(storageKey, JSON.stringify(items));
+                let key = getHouseStorageKey('music');
+                let items = JSON.parse(localStorage.getItem(key)) || [];
+                items.push({ title, artist, author: currentUserName });
+                localStorage.setItem(key, JSON.stringify(items));
                 renderModuleUI('music');
-                alert('השיר הועלה, הורד ונשמר בהצלחה בספריית המוזיקה המקומית של הבית! 🎵');
-            } else {
-                alert('נא להכניס לפחות את שם השיר.');
-            }
-        }
-
-        function askVidassAssistant() {
-            const query = document.getElementById('assistantQueryInput').value.trim().toLowerCase();
-            const outputBox = document.getElementById('assistantOutputBox');
-
-            if(!query) {
-                outputBox.innerHTML = '<em>נא להקליד שאלה לעוזרת וידס.</em>';
-                return;
-            }
-
-            let shopping = JSON.parse(localStorage.getItem(getHouseStorageKey('shopping'))) || [];
-            let inventory = JSON.parse(localStorage.getItem(getHouseStorageKey('inventory'))) || [];
-            let recipes = JSON.parse(localStorage.getItem(getHouseStorageKey('recipes'))) || [];
-            let tasks = JSON.parse(localStorage.getItem(getHouseStorageKey('tasks'))) || [];
-            let expenses = JSON.parse(localStorage.getItem(getHouseStorageKey('expenses'))) || [];
-            let trips = JSON.parse(localStorage.getItem(getHouseStorageKey('trips'))) || [];
-            let music = JSON.parse(localStorage.getItem(getHouseStorageKey('music'))) || [];
-
-            let response = '';
-
-            if(query.includes('אוכל') || query.includes('חסר') || query.includes('קניות')) {
-                let outItems = inventory.filter(i => i.status === 'נגמר');
-                let shopItems = shopping;
-                response = `🛒 **בדיקת מוצרי אוכל ומלאי ביתי:**\n`;
-                if(outItems.length > 0) {
-                    response += `• מוצרים שסומנו כנגמרו במלאי:\n` + outItems.map(i => `  - ${i.name} [${i.category}]`).join('\n') + `\n`;
-                } else {
-                    response += `• אין מוצרים שסומנו כנגמרו כרגע במלאי.\n`;
-                }
-                if(shopItems.length > 0) {
-                    response += `• מוצרים ברשימת הקניות המשותפת:\n` + shopItems.map(s => `  - ${s.name} [${s.category}]`).join('\n');
-                } else {
-                    response += `• רשימת הקניות כרגע ריקה.`;
-                }
-            } 
-            else if(query.includes('מוזיקה') || query.includes('שיר') || query.includes('שירים')) {
-                response = `🎵 **ספריית המוזיקה המקומית בבית:**\n`;
-                if(music.length > 0) {
-                    response += music.map(m => `• **${m.title}** מאת ${m.artist || 'לא צוין'} ${m.hasFile ? '(קובץ מקומי שמור)' : ''}`).join('\n');
-                } else {
-                    response += `טרם הורדו שירים לספרייה המקומית.`;
-                }
-            }
-            else if(query.includes('מתכון') || query.includes('אוכל להכין')) {
-                response = `🍲 **ספר המתכונים המשפחתי:**\n`;
-                if(recipes.length > 0) {
-                    response += recipes.map(r => `• **${r.name}** (${r.category || 'כללי'})\n  מצרכים: ${r.ingredients || 'לא הוזנו'}`).join('\n\n');
-                } else {
-                    response += `טרם הוזנו מתכונים למערכת.`;
-                }
-            }
-            else if(query.includes('כסף') || query.includes('הוצאות') || query.includes('תקציב')) {
-                let totalExp = expenses.filter(e => e.type === 'הוצאה').reduce((sum, e) => sum + (e.amount || 0), 0);
-                let totalInc = expenses.filter(e => e.type === 'הכנסה').reduce((sum, e) => sum + (e.amount || 0), 0);
-                response = `💰 **סיכום כספי והוצאות הבית:**\n• סה"כ הכנסות: ₪${totalInc}\n• סה"כ הוצאות: ₪${totalExp}\n• מאזן נוכחי: ₪${totalInc - totalExp}`;
-            }
-            else if(query.includes('משימה') || query.includes('יומן')) {
-                response = `📌 **משימות ואירועים ביומן הבית:**\n`;
-                if(tasks.length > 0) {
-                    response += tasks.map(t => `• ${t.title} (תאריך: ${t.date || 'לא צוין'})`).join('\n');
-                } else {
-                    response += `אין משימות פתוחות ביומן.`;
-                }
-            }
-            else if(query.includes('טיול') || query.includes('חו"ל') || query.includes('ים')) {
-                response = `🚗 **תוכניות הטיולים בבית:**\n`;
-                if(trips.length > 0) {
-                    response += trips.map(tr => `• **${tr.name}** [${tr.type}]\n  יעד: ${tr.location || 'לא צוין'}\n  ציוד נדרש: ${tr.gear || 'לא הוגדר'}`).join('\n\n');
-                } else {
-                    response += `טרם תוכננו טיולים במערכת.`;
-                }
-            }
-            else {
-                response = `🤖 **וידס עונה:** חיפשתי במערכת הבית עבור "${query}", ומצאתי:\n` +
-                           `• מוצרים במלאי: ${inventory.length}\n` +
-                           `• רשומות קניות: ${shopping.length}\n` +
-                           `• מתכונים שמורים: ${recipes.length}\n` +
-                           `• שירים בספרייה: ${music.length}\n` +
-                           `• משימות ביומן: ${tasks.length}\n` +
-                           `• טיולים מתוכננים: ${trips.length}\n` +
-                           `נסו לשאול ספציפית על "אוכל", "מוזיקה", "מתכונים", "כסף", "משימות" או "טיולים".`;
-            }
-
-            outputBox.innerHTML = response.replace(/\n/g, '<br>');
-        }
-
-        function addTripItem() {
-            const name = document.getElementById('tripNameInput').value.trim();
-            const type = document.getElementById('tripTypeSelect').value;
-            const location = document.getElementById('tripLocationInput').value.trim();
-            const gear = document.getElementById('tripGearInput').value.trim();
-
-            if(name) {
-                let storageKey = getHouseStorageKey('trips');
-                let items = JSON.parse(localStorage.getItem(storageKey)) || [];
-                items.push({ name, type, location, gear, author: currentUserName });
-                localStorage.setItem(storageKey, JSON.stringify(items));
-                renderModuleUI('trips');
-                alert('הטיול נוסף בהצלחה למערכת, כולל מפות ורשימת הציוד! 🚗🗺️');
-            } else {
-                alert('נא להכניס לפחות את שם הטיול.');
-            }
-        }
-
-        function saveGlobalCalendarSettings() {
-            const country = document.getElementById('selectCountry').value;
-            const religion = document.getElementById('selectReligion').value;
-            const shabbatEl = document.getElementById('checkShabbat');
-            const shabbat = shabbatEl ? shabbatEl.checked : true;
-
-            localStorage.setItem(`vidass_${currentHouseCode}_country`, country);
-            localStorage.setItem(`vidass_${currentHouseCode}_religion`, religion);
-            localStorage.setItem(`vidass_${currentHouseCode}_shabbat`, shabbat);
-            alert(`הגדרות היומן העולמי עודכנו בהצלחה למדינה: ${country} ולתצוגה הדתית/כללית הנבחרת 🌍`);
-        }
-
-        function updateWeatherLocation() {
-            const city = document.getElementById('weatherCityInput').value.trim();
-            if(city) {
-                localStorage.setItem(`vidass_${currentHouseCode}_city`, city);
-                renderModuleUI('tasks');
-                alert(`מזג האוויר עודכן בהצלחה עבור העיר ${city} 🌤️`);
-            }
-        }
-
-        function addAlarm() {
-            const time = document.getElementById('alarmTimeInput').value;
-            const label = document.getElementById('alarmLabelInput').value.trim();
-            if(time && label) {
-                let alarmKey = getHouseStorageKey('alarms');
-                let alarms = JSON.parse(localStorage.getItem(alarmKey)) || [];
-                alarms.push({ time, label, author: currentUserName });
-                localStorage.setItem(alarmKey, JSON.stringify(alarms));
-                renderModuleUI('tasks');
-                alert('השעון המעורר הוגדר בהצלחה! ⏰');
-            } else {
-                alert('נא לבחור שעה ולהזין תיאור לשעון המעורר.');
-            }
-        }
-
-        function removeAlarm(index) {
-            let alarmKey = getHouseStorageKey('alarms');
-            let alarms = JSON.parse(localStorage.getItem(alarmKey)) || [];
-            alarms.splice(index, 1);
-            localStorage.setItem(alarmKey, JSON.stringify(alarms));
-            renderModuleUI('tasks');
-        }
-
-        function addSmartTask() {
-            const title = document.getElementById('taskTitle').value.trim();
-            const date = document.getElementById('taskDate').value;
-            if(title) {
-                let storageKey = getHouseStorageKey('tasks');
-                let items = JSON.parse(localStorage.getItem(storageKey)) || [];
-                items.push({ title, date, author: currentUserName });
-                localStorage.setItem(storageKey, JSON.stringify(items));
-                renderModuleUI('tasks');
-                alert('המשימה נוספה בהצלחה ליומן הבית המסונכרן! 📌');
-            } else {
-                alert('נא להקליד תוכן למשימה.');
-            }
-        }
-
-        function simulateExternalSync() {
-            let syncKey = getHouseStorageKey('synced_calendar');
-            let synced = JSON.parse(localStorage.getItem(syncKey)) || [];
-            synced.push({
-                title: 'בדיקת מעקב רפואית (קופת חולים)',
-                date: new Date(Date.now() + 86400000 * 3).toLocaleDateString('he-IL'),
-                source: 'קופת חולים / Google'
-            });
-            localStorage.setItem(syncKey, JSON.stringify(synced));
-            renderModuleUI('tasks');
-            alert('התורים והאירועים מיומני Google וקופת החולים סונכרנו בהצלחה לתוך היומן! 🔄');
-        }
-
-        function removeSyncedEvent(index) {
-            let syncKey = getHouseStorageKey('synced_calendar');
-            let synced = JSON.parse(localStorage.getItem(syncKey)) || [];
-            synced.splice(index, 1);
-            localStorage.setItem(syncKey, JSON.stringify(synced));
-            renderModuleUI('tasks');
-        }
-
-        function addTempExpense() {
-            const desc = document.getElementById('expDesc').value.trim();
-            const qty = document.getElementById('expQty').value;
-            const price = document.getElementById('expPrice').value;
-            if(desc && qty && price) {
-                tempEventExpenses.push({ desc, qty, price });
-                let listHtml = '';
-                let total = 0;
-                tempEventExpenses.forEach((e, i) => {
-                    let sub = Number(e.qty) * Number(e.price);
-                    total += sub;
-                    listHtml += `${i+1}. ${e.desc} (${e.qty} × ₪${e.price} = ₪${sub})<br>`;
-                });
-                document.getElementById('tempExpList').innerHTML = listHtml + `<strong>סה"כ הוצאות: ₪${total}</strong>`;
-                document.getElementById('expDesc').value = '';
-                document.getElementById('expQty').value = '';
-                document.getElementById('expPrice').value = '';
-            } else {
-                alert('נא למלא את כל פרטי ההוצאה.');
-            }
-        }
-
-        function addTempGift() {
-            const giver = document.getElementById('giftGiver').value.trim();
-            const amount = document.getElementById('giftAmount').value;
-            const notes = document.getElementById('giftNotes').value.trim();
-            if(giver) {
-                tempEventGifts.push({ giver, amount, notes });
-                let listHtml = '';
-                let total = 0;
-                tempEventGifts.forEach((g, i) => {
-                    let m = Number(g.amount) || 0;
-                    total += m;
-                    listHtml += `${i+1}. ${g.giver}: ₪${m} ${g.notes ? '('+g.notes+')' : ''}<br>`;
-                });
-                document.getElementById('tempGiftList').innerHTML = listHtml + `<strong>סה"כ מתנות/צ'קים: ₪${total}</strong>`;
-                document.getElementById('giftGiver').value = '';
-                document.getElementById('giftAmount').value = '';
-                document.getElementById('giftNotes').value = '';
-            } else {
-                alert('נא להכניס את שם הנותן.');
-            }
-        }
-
-        function saveFullEvent() {
-            const name = document.getElementById('evName').value.trim();
-            const guests = document.getElementById('evGuestsCount').value.trim();
-            const vendors = document.getElementById('evVendors').value.trim();
-            if(name) {
-                let storageKey = getHouseStorageKey('events');
-                let items = JSON.parse(localStorage.getItem(storageKey)) || [];
-                items.push({
-                    name,
-                    guests,
-                    vendors,
-                    expenses: [...tempEventExpenses],
-                    gifts: [...tempEventGifts],
-                    author: currentUserName
-                });
-                localStorage.setItem(storageKey, JSON.stringify(items));
-                tempEventExpenses = [];
-                tempEventGifts = [];
-                renderModuleUI('events');
-                alert('האירוע נשמר והתעדכן בהצלחה אצל כל דיירי הבית! 🎉');
-            } else {
-                alert('נא להכניס לפחות את שם האירוע.');
-            }
-        }
-
-        function addCategory(moduleName) {
-            const catName = document.getElementById('newCatName').value.trim();
-            if(catName) {
-                let catsKey = getHouseStorageKey(moduleName + '_cats');
-                let categories = JSON.parse(localStorage.getItem(catsKey)) || ['מוצרי אוכל', 'מוצרי ניקיון', 'מוצרי חשמל', 'מוצרי בית'];
-                if(!categories.includes(catName)) {
-                    categories.push(catName);
-                    localStorage.setItem(catsKey, JSON.stringify(categories));
-                    renderModuleUI(moduleName);
-                } else {
-                    alert('קטגוריה זו כבר קיימת.');
-                }
-            }
-        }
-
-        function deleteCategory(moduleName, cIndex) {
-            let catsKey = getHouseStorageKey(moduleName + '_cats');
-            let categories = JSON.parse(localStorage.getItem(catsKey)) || [];
-            categories.splice(cIndex, 1);
-            localStorage.setItem(catsKey, JSON.stringify(categories));
-            renderModuleUI(moduleName);
-        }
-
-        function addItem(moduleName) {
-            const name = document.getElementById('itemName').value.trim();
-            const category = document.getElementById('itemCategory').value;
-            if(name) {
-                let storageKey = getHouseStorageKey(moduleName);
-                let items = JSON.parse(localStorage.getItem(storageKey)) || [];
-                items.push({ name, category, status: 'קיים', author: currentUserName });
-                localStorage.setItem(storageKey, JSON.stringify(items));
-                renderModuleUI(moduleName);
-            } else {
-                alert('נא להכניס את שם הפריט.');
-            }
-        }
-
-        function toggleInventoryStatus(index) {
-            let storageKey = getHouseStorageKey('inventory');
-            let items = JSON.parse(localStorage.getItem(storageKey)) || [];
-            items[index].status = items[index].status === 'נגמר' ? 'קיים' : 'נגמר';
-            localStorage.setItem(storageKey, JSON.stringify(items));
-            renderModuleUI('inventory');
-        }
-
-        function importMissingToShopping() {
-            let invKey = getHouseStorageKey('inventory');
-            let shopKey = getHouseStorageKey('shopping');
-            let invItems = JSON.parse(localStorage.getItem(invKey)) || [];
-            let shopItems = JSON.parse(localStorage.getItem(shopKey)) || [];
-
-            let added = 0;
-            invItems.forEach(i => {
-                if(i.status === 'נגמר') {
-                    let exists = shopItems.some(s => s.name === i.name);
-                    if(!exists) {
-                        shopItems.push({ name: i.name, category: i.category, author: currentUserName });
-                        added++;
-                    }
-                }
-            });
-
-            localStorage.setItem(shopKey, JSON.stringify(shopItems));
-            alert(`הועברו בהצלחה ${added} מוצרים שנגמרו לרשימת הקניות המשותפת! 🛒`);
-        }
-
-        function addExpenseItem() {
-            const desc = document.getElementById('expDescInput').value.trim();
-            const amount = document.getElementById('expAmountInput').value;
-            const type = document.getElementById('expTypeSelect').value;
-            const cheapest = document.getElementById('expCheapestPlace').value.trim();
-            const fileInput = document.getElementById('expReceiptFile');
-            const syncToInventory = document.getElementById('syncToInventoryCheck').checked;
-
-            if(desc && amount) {
-                let storageKey = getHouseStorageKey('expenses');
-                let items = JSON.parse(localStorage.getItem(storageKey)) || [];
-                items.push({
-                    desc,
-                    amount: Number(amount),
-                    type,
-                    cheapest,
-                    hasReceipt: fileInput && fileInput.files.length > 0,
-                    author: currentUserName
-                });
-                localStorage.setItem(storageKey, JSON.stringify(items));
-
-                if(syncToInventory && type === 'הוצאה') {
-                    let invKey = getHouseStorageKey('inventory');
-                    let invItems = JSON.parse(localStorage.getItem(invKey)) || [];
-                    invItems.push({ name: desc, category: 'מוצרי בית', status: 'קיים', author: currentUserName });
-                    localStorage.setItem(invKey, JSON.stringify(invItems));
-                }
-
-                renderModuleUI('expenses');
-                alert('ההוצאה/הכנסה נשמרה בהצלחה, הקבלה נקלטה, והפריטים סונכרנו למלאי הבית המשותף! 💰📦');
-            } else {
-                alert('נא למלא את שם ההוצאה ואת הסכום.');
+                alert('השיר נשמר בהצלחה! 🎵');
             }
         }
 
         function addGenericItem(moduleName) {
             const val = document.getElementById('genericInput').value.trim();
             if(val) {
-                let storageKey = getHouseStorageKey(moduleName);
-                let items = JSON.parse(localStorage.getItem(storageKey)) || [];
+                let key = getHouseStorageKey(moduleName);
+                let items = JSON.parse(localStorage.getItem(key)) || [];
                 items.push({ text: val, author: currentUserName });
-                localStorage.setItem(storageKey, JSON.stringify(items));
+                localStorage.setItem(key, JSON.stringify(items));
                 renderModuleUI(moduleName);
             }
         }
 
         function removeItem(moduleName, index) {
-            let storageKey = getHouseStorageKey(moduleName);
-            let items = JSON.parse(localStorage.getItem(storageKey)) || [];
+            let key = getHouseStorageKey(moduleName);
+            let items = JSON.parse(localStorage.getItem(key)) || [];
             items.splice(index, 1);
-            localStorage.setItem(storageKey, JSON.stringify(items));
+            localStorage.setItem(key, JSON.stringify(items));
             renderModuleUI(moduleName);
         }
     </script>
