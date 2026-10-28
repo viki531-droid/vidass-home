@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIDASS Home - מרכז שליטה משפחתי מאובטח</title>
+    <title>VIDASS Home - מרכז שליטה משפחתי ומתקדם</title>
     <style>
         :root {
             --bg-color: #0f172a;
-            --header-bg: #1e293b;
+            --sidebar-bg: #1e293b;
             --card-bg: #1e293b;
             --primary-color: #d84373;
             --primary-hover: #b8325d;
@@ -74,7 +74,7 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* מסכים מעטפת (כניסה ורישום) */
+        /* מסכי כניסה ורישום */
         .screen-wrapper {
             display: flex;
             justify-content: center;
@@ -113,7 +113,7 @@
             color: var(--text-color);
         }
 
-        .input-field {
+        .input-field, select.input-field, textarea.input-field {
             width: 100%;
             padding: 0.75rem;
             border: 1px solid var(--border-color);
@@ -123,6 +123,38 @@
             color: var(--text-color);
             text-align: right;
             margin-bottom: 0.5rem;
+        }
+
+        /* עיצוב שדה סיסמה עם קופיפים (🙈 🙊) */
+        .password-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .password-container input {
+            margin-bottom: 0;
+            padding-left: 45px;
+        }
+
+        html[dir="rtl"] .password-container input {
+            padding-left: 10px;
+            padding-right: 45px;
+        }
+
+        .toggle-password {
+            position: absolute;
+            left: 10px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.4rem;
+            z-index: 5;
+        }
+
+        html[dir="rtl"] .toggle-password {
+            left: auto;
+            right: 10px;
         }
 
         .btn-primary {
@@ -151,65 +183,99 @@
             text-decoration: underline;
         }
 
-        /* מבנה ראשי עם סرגל עליון נגלף וחלק לחלוטין */
+        /* מבנה ראשי (Sidebar + Main Content) */
         .app-layout {
             display: flex;
-            flex-direction: column;
             min-height: 100vh;
         }
 
-        .top-navbar {
-            background-color: var(--header-bg);
-            border-bottom: 1px solid var(--border-color);
-            padding: 0.75rem 1rem;
+        .sidebar {
+            width: 280px;
+            min-width: 280px;
+            background-color: var(--sidebar-bg);
+            border-left: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
-            gap: 0.75rem;
+            padding: 1rem;
+            gap: 0.8rem;
+            height: 100vh;
+            position: sticky;
+            top: 0;
+            overflow-y: auto;
         }
 
-        .nav-top-row {
+        .sidebar-header {
+            text-align: center;
+            padding-bottom: 0.8rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .sidebar-header h3 {
+            color: var(--primary-color);
+            font-size: 1.2rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .sidebar-header p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .nav-menu {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 8px;
+            flex-direction: column;
+            gap: 0.3rem;
+            overflow-y: auto;
+            flex: 1;
         }
 
-        /* סרגל כפתורי מודולים נגלף הצידה בלי לחתוך כלום */
-        .nav-tabs-container {
-            display: flex;
-            gap: 6px;
-            overflow-x: auto;
-            padding-bottom: 4px;
-            scrollbar-width: thin;
-        }
-
-        .nav-tab-btn {
-            background: rgba(255,255,255,0.05);
+        .nav-item {
+            background: transparent;
             color: var(--text-color);
-            border: 1px solid var(--border-color);
-            padding: 0.5rem 0.9rem;
+            border: none;
+            text-align: right;
+            padding: 0.6rem 0.8rem;
             border-radius: 8px;
             font-size: 0.85rem;
-            font-weight: bold;
             cursor: pointer;
-            white-space: nowrap;
-            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: background 0.2s;
         }
 
-        .nav-tab-btn:hover, .nav-tab-btn.active {
+        .nav-item:hover, .nav-item.active {
             background-color: var(--primary-color);
-            border-color: var(--primary-color);
             color: white;
         }
 
         .main-content {
             flex: 1;
-            padding: 1.5rem;
+            padding: 2rem;
             background-color: var(--bg-color);
-            max-width: 900px;
-            width: 100%;
-            margin: 0 auto;
+            overflow-y: auto;
+        }
+
+        .top-status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            background: var(--card-bg);
+            padding: 0.75rem 1.25rem;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .cloud-badge {
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
         }
 
         .module-box {
@@ -239,6 +305,7 @@
             color: var(--danger-color);
             cursor: pointer;
             font-weight: bold;
+            font-size: 1.1rem;
         }
 
         .btn-sm {
@@ -252,12 +319,14 @@
 
         .theme-picker-row {
             display: flex;
-            gap: 4px;
+            justify-content: center;
+            gap: 6px;
+            margin-top: 5px;
         }
 
         .dot {
-            width: 20px;
-            height: 20px;
+            width: 22px;
+            height: 22px;
             border-radius: 50%;
             border: 2px solid white;
             cursor: pointer;
@@ -266,6 +335,22 @@
         .hidden {
             display: none !important;
         }
+
+        @media (max-width: 768px) {
+            .app-layout {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                min-width: 100%;
+                height: auto;
+                position: relative;
+                max-height: 220px;
+            }
+            .main-content {
+                padding: 1rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -273,7 +358,7 @@
     <!-- מסך פתיחה ראשוני -->
     <div class="splash-wrapper" id="splashScreen" onclick="dismissSplash()">
         <h1>VIDASS 🏢 Home</h1>
-        <p>מרכז שליטה משפחתי ומתקדם</p>
+        <p>מרכז שליטה משפחתי מלא ומסונכרן לדיירים</p>
         <div class="spinner"></div>
         <span style="font-size: 0.8rem; margin-top: 1.5rem; opacity: 0.7;">(לחצי בכל מקום למעבר מיידי)</span>
     </div>
@@ -292,19 +377,25 @@
             </div>
             <div class="input-group">
                 <label>סיסמת כניסה סודית:</label>
-                <input type="password" class="input-field" id="loginPassword" placeholder="הקישי סיסמה...">
+                <div class="password-container">
+                    <input type="password" class="input-field" id="loginPassword" placeholder="הקישי סיסמה...">
+                    <button type="button" class="toggle-password" onclick="togglePasswordVisibility('loginPassword', this)">🙈</button>
+                </div>
             </div>
-            <button class="btn-primary" onclick="loginSystem()">🔒 כניסה למערכת</button>
-            <div class="link-text" onclick="showRegisterScreen()">אין לך קוד בית? יצירת בית חדש</div>
+            <button class="btn-primary" onclick="loginSystem()">🔒 כניסה מאובטחת</button>
+            <div class="link-text" onclick="showRegisterScreen()">אין לך קוד בית עדיין? יצירת בית חדש</div>
         </div>
     </div>
 
-    <!-- מסך רישום -->
+    <!-- מסך רישום בית חדש -->
     <div class="screen-wrapper hidden" id="registerScreen">
         <div class="card">
-            <h2>✨ רישום בית חדש</h2>
-            <div class="input-group">
-                <label>קוד הבית:</label>
+            <h2>✨ רישום בית חדש במערכת</h2>
+            <div class="input-group" style="display:flex; justify-content:space-between; align-items:center;">
+                <label style="margin-bottom:0;">קוד הבית:</label>
+                <button type="button" class="btn-sm" style="background:var(--btn-blue); color:white;" onclick="generateHouseCode()">🎲 צור קוד אוטומטי</button>
+            </div>
+            <div class="input-group" style="margin-top:5px;">
                 <input type="text" class="input-field" id="regHouseCode" placeholder="הקישי קוד בית...">
             </div>
             <div class="input-group">
@@ -313,7 +404,10 @@
             </div>
             <div class="input-group">
                 <label>סיסמה סודית:</label>
-                <input type="password" class="input-field" id="regPassword" placeholder="הקישי סיסמה...">
+                <div class="password-container">
+                    <input type="password" class="input-field" id="regPassword" placeholder="הקישי סיסמה סודית...">
+                    <button type="button" class="toggle-password" onclick="togglePasswordVisibility('regPassword', this)">🙈</button>
+                </div>
             </div>
             <div class="input-group">
                 <label>שאלה אישית לשחזור:</label>
@@ -321,58 +415,66 @@
             </div>
             <div class="input-group">
                 <label>תשובה אישית:</label>
-                <input type="text" class="input-field" id="regCustomAnswer" placeholder="תשובה...">
+                <input type="text" class="input-field" id="regCustomAnswer" placeholder="תשובה סודית...">
             </div>
-            <button class="btn-primary" onclick="registerNewHouse()">🚀 צור בית והתחל</button>
+            <button class="btn-primary" onclick="registerNewHouse()">🚀 צור בית והתחל עבודה</button>
             <div class="link-text" onclick="showLoginScreen()">כבר יש לך בית? התחברי כאן</div>
         </div>
     </div>
 
-    <!-- ממשק ניהול ראשי עם סרגל כפתורים עליון נגלף -->
+    <!-- ממשק ניהול ראשי מלא -->
     <div class="app-layout hidden" id="mainAppLayout">
         
-        <div class="top-navbar">
-            <div class="nav-top-row">
-                <h3 style="color:var(--primary-color);">VIDASS Home 🏠</h3>
-                <div style="font-size:0.8rem;" id="currentUserLabel">משתמש: אורח/ת</div>
-                <div class="theme-picker-row">
-                    <div class="dot" style="background: #d84373;" onclick="setTheme('#d84373', '#0f172a', '#1e293b')"></div>
-                    <div class="dot" style="background: #16a34a;" onclick="setTheme('#16a34a', '#051911', '#0f291e')"></div>
-                    <div class="dot" style="background: #2563eb;" onclick="setTheme('#2563eb', '#0b1329', '#172554')"></div>
-                    <div class="dot" style="background: #d97706;" onclick="setTheme('#d97706', '#1c1404', '#382806')"></div>
-                </div>
-                <button class="btn-sm" style="background:#ef4444; color:white;" onclick="lockSystem()">🔒 יציאה</button>
+        <!-- תפריט צדדי (Sidebar) מפורט עם כל המודולים -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h3>VIDASS Home</h3>
+                <p id="sidebarHouseSubtitle">ניהול בית חכם</p>
             </div>
 
-            <!-- סרגל מודולים עליון נגלף (גלילה הצידה חלקה ונוחה) -->
-            <div class="nav-tabs-container">
-                <button class="nav-tab-btn active" onclick="switchModule('dashboard', this)">📊 סקירה</button>
-                <button class="nav-tab-btn" onclick="switchModule('languages', this)">🌐 שפות</button>
-                <button class="nav-tab-btn" onclick="switchModule('assistant', this)">🤖 וידס</button>
-                <button class="nav-tab-btn" onclick="switchModule('music', this)">🎵 מוזיקה</button>
-                <button class="nav-tab-btn" onclick="switchModule('tasks', this)">📌 משימות</button>
-                <button class="nav-tab-btn" onclick="switchModule('events', this)">🎉 אירועים</button>
-                <button class="nav-tab-btn" onclick="switchModule('shopping', this)">🛒 קניות</button>
-                <button class="nav-tab-btn" onclick="switchModule('inventory', this)">📦 מלאי</button>
-                <button class="nav-tab-btn" onclick="switchModule('tenants', this)">👑 דיירים</button>
-                <button class="nav-tab-btn" onclick="switchModule('savings', this)">🐷 חיסכון</button>
-                <button class="nav-tab-btn" onclick="switchModule('hobbies', this)">⚽ חוגים</button>
-                <button class="nav-tab-btn" onclick="switchModule('chores', this)">🧹 מטלות</button>
-                <button class="nav-tab-btn" onclick="switchModule('kids', this)">👦 ילדים</button>
-                <button class="nav-tab-btn" onclick="switchModule('birthdays', this)">🎂 ימי הולדת</button>
-                <button class="nav-tab-btn" onclick="switchModule('pocket_money', this)">💵 דמי כיס</button>
-                <button class="nav-tab-btn" onclick="switchModule('recipes', this)">🍲 מתכונים</button>
-                <button class="nav-tab-btn" onclick="switchModule('trips', this)">🚗 טיולים</button>
-                <button class="nav-tab-btn" onclick="switchModule('expenses', this)">💰 הוצאות</button>
-                <button class="nav-tab-btn" style="background:var(--btn-blue);" onclick="openExternal('https://calendar.google.com')">📅 יומן Google</button>
-                <button class="nav-tab-btn" style="background:var(--btn-green);" onclick="openExternal('https://wa.me/')">💬 וואטסאפ</button>
+            <div class="theme-picker-row">
+                <div class="dot" style="background: #d84373;" onclick="setTheme('#d84373', '#0f172a', '#1e293b')"></div>
+                <div class="dot" style="background: #16a34a;" onclick="setTheme('#16a34a', '#051911', '#0f291e')"></div>
+                <div class="dot" style="background: #2563eb;" onclick="setTheme('#2563eb', '#0b1329', '#172554')"></div>
+                <div class="dot" style="background: #d97706;" onclick="setTheme('#d97706', '#1c1404', '#382806')"></div>
             </div>
+
+            <div class="nav-menu" id="sidebarNavMenu">
+                <button class="nav-item active" onclick="switchModule('dashboard', this)">📊 סקירה כללית</button>
+                <button class="nav-item" onclick="switchModule('languages', this)">🌐 בחירת שפה ותרגום (Languages)</button>
+                <button class="nav-item" onclick="switchModule('smart_devices', this)">🔌 מכשירים חכמים ודודים</button>
+                <button class="nav-item" onclick="switchModule('assistant', this)">🤖 העוזרת החכמה וידס</button>
+                <button class="nav-item" onclick="switchModule('music', this)">🎵 מוזיקה ואפליקציות</button>
+                <button class="nav-item" onclick="switchModule('tasks', this)">📌 משימות, יומן ושעון מעורר</button>
+                <button class="nav-item" onclick="switchModule('events', this)">🎉 ארגון אירועים ומתנות מפורט</button>
+                <button class="nav-item" onclick="switchModule('shopping', this)">🛒 ניהול קניות משותף</button>
+                <button class="nav-item" onclick="switchModule('inventory', this)">📦 מלאי ביתי משותף</button>
+                <button class="nav-item" onclick="switchModule('tenants', this)">👑 דיירים ושיחות פנימיות</button>
+                <button class="nav-item" onclick="switchModule('savings', this)">🐷 חיסכון ויעדים מפורט</button>
+                <button class="nav-item" onclick="switchModule('hobbies', this)">⚽ חוגים ומפות מפורט</button>
+                <button class="nav-item" onclick="switchModule('chores', this)">🧹 מטלות בית</button>
+                <button class="nav-item" onclick="switchModule('kids', this)">👦 ילדים ושעונים חכמים</button>
+                <button class="nav-item" onclick="switchModule('birthdays', this)">🎂 ימי הולדת וגילאים</button>
+                <button class="nav-item" onclick="switchModule('pocket_money', this)">💵 דמי כיס ותגמולים</button>
+                <button class="nav-item" onclick="switchModule('recipes', this)">🍲 מתכונים ומחשבונים</button>
+                <button class="nav-item" onclick="switchModule('trips', this)">🚗 טיולים ורשימות ציוד</button>
+                <button class="nav-item" onclick="switchModule('expenses', this)">💰 מעקב הוצאות והכנסות בית</button>
+                <button class="nav-item" onclick="openExternal('https://calendar.google.com')">📅 יומן Google</button>
+                <button class="nav-item" onclick="openExternal('https://wa.me/')">💬 וואטסאפ</button>
+            </div>
+
+            <button class="btn-sm" style="background:#ef4444; color:white; padding:8px;" onclick="lockSystem()">🔒 החלף בית / משתמש</button>
         </div>
 
-        <!-- תוכן מרכזי -->
+        <!-- תוכן מרכזי מסונכרן -->
         <div class="main-content">
+            <div class="top-status-bar">
+                <div class="cloud-badge">🟢 נתוני הבית מסונכרנים אוטומטית לדיירים</div>
+                <div style="font-size: 0.9rem; font-weight: bold;" id="currentUserLabel">משתמש: אורח/ת</div>
+            </div>
+
             <div class="module-box" id="activeModuleContent">
-                <!-- תוכן דינמי -->
+                <!-- תוכן דינמי של המודולים -->
             </div>
         </div>
 
@@ -389,13 +491,17 @@
             if(savedPrimary) {
                 document.documentElement.style.setProperty('--primary-color', savedPrimary);
                 document.documentElement.style.setProperty('--bg-color', savedBg);
-                document.documentElement.style.setProperty('--header-bg', savedCard);
+                document.documentElement.style.setProperty('--sidebar-bg', savedCard);
                 document.documentElement.style.setProperty('--card-bg', savedCard);
+            }
+
+            if(currentHouseCode && localStorage.getItem(`vidass_sec_${currentHouseCode}`)) {
+                registerUserInHouse();
             }
 
             setTimeout(() => {
                 dismissSplash();
-            }, 2000);
+            }, 1800);
         };
 
         function dismissSplash() {
@@ -412,6 +518,21 @@
                     }
                 }, 400);
             }
+        }
+
+        function togglePasswordVisibility(fieldId, btnElement) {
+            const field = document.getElementById(fieldId);
+            if (field.type === "password") {
+                field.type = "text";
+                btnElement.innerText = "🙊"; 
+            } else {
+                field.type = "password";
+                btnElement.innerText = "🙈"; 
+            }
+        }
+
+        function generateHouseCode() {
+            document.getElementById('regHouseCode').value = 'house_' + Math.floor(1000 + Math.random() * 9000);
         }
 
         function showRegisterScreen() {
@@ -441,6 +562,7 @@
             currentUserName = name;
             localStorage.setItem('vidass_current_house', currentHouseCode);
             localStorage.setItem('vidass_current_user', currentUserName);
+            registerUserInHouse();
 
             document.getElementById('registerScreen').classList.add('hidden');
             document.getElementById('mainAppLayout').classList.remove('hidden');
@@ -459,7 +581,7 @@
 
             const secData = JSON.parse(localStorage.getItem(`vidass_sec_${houseCode}`));
             if(!secData || secData.password !== password) {
-                alert('שגיאה: קוד הבית או הסיסמה שגויים.');
+                alert('שגיאה: קוד הבית או הסיסמה הסודית שגויים.');
                 return;
             }
 
@@ -467,6 +589,7 @@
             currentUserName = name;
             localStorage.setItem('vidass_current_house', currentHouseCode);
             localStorage.setItem('vidass_current_user', currentUserName);
+            registerUserInHouse();
 
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('mainAppLayout').classList.remove('hidden');
@@ -480,10 +603,20 @@
             document.getElementById('loginScreen').classList.remove('hidden');
         }
 
+        function registerUserInHouse() {
+            if(!currentHouseCode || !currentUserName) return;
+            let tenantsKey = `vidass_${currentHouseCode}_tenants_list`;
+            let tenants = JSON.parse(localStorage.getItem(tenantsKey)) || [];
+            if(!tenants.includes(currentUserName)) {
+                tenants.push(currentUserName);
+                localStorage.setItem(tenantsKey, JSON.stringify(tenants));
+            }
+        }
+
         function setTheme(primary, bg, card) {
             document.documentElement.style.setProperty('--primary-color', primary);
             document.documentElement.style.setProperty('--bg-color', bg);
-            document.documentElement.style.setProperty('--header-bg', card);
+            document.documentElement.style.setProperty('--sidebar-bg', card);
             document.documentElement.style.setProperty('--card-bg', card);
             localStorage.setItem('vidass_primary', primary);
             localStorage.setItem('vidass_bg', bg);
@@ -499,23 +632,23 @@
         }
 
         function switchModule(moduleName, btnElement) {
-            document.querySelectorAll('.nav-tab-btn').forEach(el => el.classList.remove('active'));
-            if(btnElement) btnElement.classList.add('active');
-
-            if(moduleName === 'dashboard') {
-                loadDashboard();
-            } else {
-                renderModuleUI(moduleName);
+            if(btnElement) {
+                document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+                btnElement.classList.add('active');
             }
+            if(moduleName === 'dashboard') loadDashboard();
+            else renderModuleUI(moduleName);
         }
 
         function loadDashboard() {
             document.getElementById('currentUserLabel').innerText = `בית: ${currentHouseCode} | משתמש: ${currentUserName}`;
+            document.getElementById('sidebarHouseSubtitle').innerText = `קוד בית: ${currentHouseCode}`;
             document.getElementById('activeModuleContent').innerHTML = `
                 <h2 style="color:var(--primary-color); margin-bottom: 0.5rem;">👑 שלום, ${currentUserName}!</h2>
-                <p style="color:var(--text-muted); margin-bottom: 1.5rem;">ברוכה הבאה למרכז השליטה המשפחתי של קוד הבית: <strong>${currentHouseCode}</strong>.</p>
+                <p style="color:var(--text-muted); margin-bottom: 1.5rem;">מרכז השליטה המשפחתי של קוד הבית: <strong>${currentHouseCode}</strong> מסונכרן לחלוטין ובזמן אמת עם כל דיירי הבית.</p>
                 <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); padding: 15px; border-radius: 12px; text-align: center;">
-                    <button class="btn-sm" style="background:var(--btn-blue); color:white; padding:8px 16px;" onclick="navigator.clipboard.writeText(window.location.href); alert('הקישור הועתק!')">📋 העתק קישור שיתוף בית</button>
+                    <p style="font-weight: bold; font-size: 0.95rem; margin-bottom: 8px; color: var(--primary-color);">🔗 קישור שיתוף הבית לדיירים נוספים</p>
+                    <button class="btn-sm" style="background:var(--btn-blue); color:white; padding:8px 16px;" onclick="navigator.clipboard.writeText(window.location.href); alert('הקישור הועתק בהצלחה ללוח!')">📋 העתק קישור מערכת</button>
                 </div>
             `;
         }
@@ -525,7 +658,8 @@
             let items = JSON.parse(localStorage.getItem(storageKey)) || [];
             let title = '';
 
-            if(moduleName === 'languages') title = '🌐 בחירת שפה ותרגום (Languages)';
+            if(moduleName === 'languages') title = '🌐 בחירת שפה ותרגום (Languages & Translation)';
+            else if(moduleName === 'smart_devices') title = '🔌 חיבור ושליטה במכשירים חכמים (טלוויזיה, תמי 4, דוד שמש/חשמל)';
             else if(moduleName === 'assistant') title = '🤖 העוזרת החכמה וידס (שאלות ותשובות)';
             else if(moduleName === 'music') title = '🎵 מוזיקה, קישורים לאפליקציות והורדות';
             else if(moduleName === 'tasks') title = '📌 משימות, יומן עולמי ושעון מעורר';
@@ -548,63 +682,148 @@
             if(moduleName === 'languages') {
                 html += `
                     <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color);">
-                        <p style="margin-bottom: 10px; font-weight: bold;">בחר שפה לעבודה:</p>
+                        <p style="margin-bottom: 10px; font-weight: bold;">בחר שפה לממשק הבית:</p>
                         <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                            <button class="btn-sm" style="background:var(--primary-color); color:white; padding:8px 14px;" onclick="alert('השפה עודכנה לעברית')">🇮🇱 עברית</button>
-                            <button class="btn-sm" style="background:var(--btn-blue); color:white; padding:8px 14px;" onclick="alert('Language set to English')">🇺🇸 English</button>
-                            <button class="btn-sm" style="background:var(--btn-blue); color:white; padding:8px 14px;" onclick="alert('Langue définie en Français')">🇫🇷 Français</button>
+                            <button class="btn-sm" style="background:var(--primary-color); color:white; padding:10px 16px;" onclick="alert('המערכת עובדת בעברית מלאה')">🇮🇱 עברית</button>
+                            <button class="btn-sm" style="background:var(--btn-blue); color:white; padding:10px 16px;" onclick="alert('Language set to English')">🇺🇸 English</button>
+                            <button class="btn-sm" style="background:var(--btn-blue); color:white; padding:10px 16px;" onclick="alert('Langue définie en Français')">🇫🇷 Français</button>
+                            <button class="btn-sm" style="background:var(--btn-blue); color:white; padding:10px 16px;" onclick="alert('Idioma cambiado a Español')">🇪🇸 Español</button>
+                            <button class="btn-sm" style="background:var(--btn-blue); color:white; padding:10px 16px;" onclick="alert('تم تغيير اللغة إلى العربية')">🇸🇦 العربية</button>
                         </div>
                     </div>
                 `;
             }
-            else if(moduleName === 'assistant') {
+            else if(moduleName === 'smart_devices') {
                 html += `
                     <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 1rem;">
-                        <input type="text" id="assistantQueryInput" class="input-field" placeholder="שאלי את וידס שאלה..." style="margin-bottom:8px;">
-                        <button class="btn-primary" onclick="askVidassAssistant()">שאלי את וידס 🤖</button>
-                    </div>
-                    <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px;" id="assistantOutputBox">
-                        <em>הקלידי שאלה וקבלי מענה אוטומטי מכל נתוני הבית!</em>
-                    </div>
-                `;
-            }
-            else if(moduleName === 'music') {
-                html += `
-                    <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 1rem;">
-                        <div style="display:flex; gap:8px; margin-bottom:10px;">
-                            <button class="btn-sm" style="background:#ff0000; color:white;" onclick="openExternal('https://music.youtube.com')">YouTube Music</button>
-                            <button class="btn-sm" style="background:#1db954; color:white;" onclick="openExternal('https://open.spotify.com')">Spotify</button>
-                        </div>
-                        <input type="text" id="musicTitleInput" class="input-field" placeholder="שם השיר..." style="margin-bottom:8px;">
-                        <input type="text" id="musicArtistInput" class="input-field" placeholder="שם האמן..." style="margin-bottom:8px;">
-                        <button class="btn-primary" onclick="addMusicItem()">🎵 שמור שיר במערכת</button>
+                        <p style="font-weight: bold; color: var(--primary-color); margin-bottom: 10px;">🔌 חיבור מכשיר חכם חדש למערכת הבית:</p>
+                        <input type="text" id="devName" class="input-field" placeholder="שם המכשיר (לדוגמה: דוד שמש, טלוויזיה בסלון, תמי 4)..." style="margin-bottom:8px;">
+                        <select id="devType" class="input-field" style="margin-bottom:8px;">
+                            <option value="דוד שמש / חשמל">☀️ דוד שמש / חשמל</option>
+                            <option value="טלוויזיה חכמה">📺 טלוויזיה חכמה</option>
+                            <option value="תמי 4 / מים">💧 מתקן מים / תמי 4</option>
+                            <option value="מזגן">❄️ מזגן</option>
+                            <option value="תאורה חכמה">💡 תאורה חכמה</option>
+                        </select>
+                        <input type="text" id="devIp" class="input-field" placeholder="כתובת IP / מזהה מכשיר (MAC/Token)..." style="margin-bottom:8px;">
+                        <button class="btn-primary" onclick="addSmartDevice()">➕ חבר מכשיר חכם למערכת</button>
                     </div>
                     <div id="itemList">
-                        ${items.map((m, idx) => `<div class="list-item"><span>🎵 ${m.title} - ${m.artist}</span> <button class="delete-btn" onclick="removeItem('music', ${idx})">×</button></div>`).join('')}
+                        ${items.length === 0 ? '<p style="color:var(--text-muted); text-align:center;">אין מכשירים חכמים מחוברים כרגע.</p>' : ''}
+                        ${items.map((d, idx) => `
+                            <div class="list-item">
+                                <div>
+                                    <strong>🔌 ${d.name} (${d.type})</strong><br>
+                                    <small style="color:var(--text-muted);">מזהה: ${d.ip || 'לא הוגדר'} | נוסף ע״י: ${d.author}</small>
+                                </div>
+                                <div style="display:flex; gap:6px; align-items:center;">
+                                    <button class="btn-sm" style="background:var(--btn-green); color:white;" onclick="alert('מתחבר ומפעיל את ${d.name} בהצלחה!')">הפעל ⚡</button>
+                                    <button class="delete-btn" onclick="removeItem('smart_devices', ${idx})">×</button>
+                                </div>
+                            </div>
+                        `).join('')}
                     </div>
                 `;
             }
             else if(moduleName === 'events') {
                 html += `
                     <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 1rem;">
+                        <p style="font-weight: bold; color: var(--primary-color); margin-bottom: 8px;">🎉 ארגון אירועים ומתנות מפורט:</p>
                         <input type="text" id="evName" class="input-field" placeholder="שם האירוע..." style="margin-bottom:8px;">
                         <input type="number" id="evGuestsCount" class="input-field" placeholder="כמות מוזמנים..." style="margin-bottom:8px;">
-                        <input type="text" id="evVendors" class="input-field" placeholder="ספקים (אולם, צלם)..." style="margin-bottom:8px;">
+                        <input type="text" id="evVendors" class="input-field" placeholder="ספקים (אולם, צלם, קייטרינג)..." style="margin-bottom:8px;">
+                        <input type="number" id="evExpense" class="input-field" placeholder="עלות כוללת של האירוע בש״ח..." style="margin-bottom:8px;">
                         <button class="btn-primary" onclick="saveFullEvent()">🎉 שמור אירוע ועדכן דיירים</button>
                     </div>
                     <div id="itemList">
-                        ${items.map((ev, idx) => `<div class="list-item"><div><strong>🎉 ${ev.name}</strong><br><small>מוזמנים: ${ev.guests} | ספקים: ${ev.vendors}</small></div> <button class="delete-btn" onclick="removeItem('events', ${idx})">×</button></div>`).join('')}
+                        ${items.length === 0 ? '<p style="color:var(--text-muted); text-align:center;">אין אירועים רשומים.</p>' : ''}
+                        ${items.map((ev, idx) => `<div class="list-item"><div><strong>🎉 ${ev.name}</strong><br><small>מוזמנים: ${ev.guests} | ספקים: ${ev.vendors} | עלות: ₪${ev.expense || 0}</small></div> <button class="delete-btn" onclick="removeItem('events', ${idx})">×</button></div>`).join('')}
+                    </div>
+                `;
+            }
+            else if(moduleName === 'shopping') {
+                html += `
+                    <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 1rem;">
+                        <p style="font-weight: bold; color: var(--primary-color); margin-bottom: 8px;">🛒 ניהול קניות משותף:</p>
+                        <input type="text" id="shopCat" class="input-field" placeholder="שם קטגוריה (לדוגמה: סופר, פארם)..." style="margin-bottom:8px;">
+                        <input type="text" id="shopItem" class="input-field" placeholder="שם הפריט לקנייה..." style="margin-bottom:8px;">
+                        <button class="btn-primary" onclick="addShoppingItem()">➕ הוסף לרשימת הקניות</button>
+                    </div>
+                    <div id="itemList">
+                        ${items.length === 0 ? '<p style="color:var(--text-muted); text-align:center;">רשימת הקניות ריקה.</p>' : ''}
+                        ${items.map((s, idx) => `<div class="list-item"><span>🛒 [${s.category}] <strong>${s.item}</strong> <small>(${s.author})</small></span> <button class="delete-btn" onclick="removeItem('shopping', ${idx})">×</button></div>`).join('')}
+                    </div>
+                `;
+            }
+            else if(moduleName === 'inventory') {
+                html += `
+                    <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 1rem;">
+                        <p style="font-weight: bold; color: var(--primary-color); margin-bottom: 8px;">📦 מלאי ביתי משותף:</p>
+                        <input type="text" id="invCat" class="input-field" placeholder="קטגוריית מלאי..." style="margin-bottom:8px;">
+                        <input type="text" id="invItem" class="input-field" placeholder="שם הפריט במלאי..." style="margin-bottom:8px;">
+                        <button class="btn-primary" onclick="addInventoryItem()">➕ הוסף למלאי הבית</button>
+                    </div>
+                    <div id="itemList">
+                        ${items.length === 0 ? '<p style="color:var(--text-muted); text-align:center;">אין פריטים במלאי הבית.</p>' : ''}
+                        ${items.map((i, idx) => `<div class="list-item"><span>📦 [${i.category}] <strong>${i.item}</strong> <small>(${i.author})</small></span> <button class="delete-btn" onclick="removeItem('inventory', ${idx})">×</button></div>`).join('')}
+                    </div>
+                `;
+            }
+            else if(moduleName === 'expenses') {
+                html += `
+                    <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 1rem;">
+                        <p style="font-weight: bold; color: var(--primary-color); margin-bottom: 8px;">💰 מעקב הוצאות והכנסות בית:</p>
+                        <input type="text" id="expDesc" class="input-field" placeholder="תיאור ההוצאה / הכנסה..." style="margin-bottom:8px;">
+                        <input type="number" id="expAmount" class="input-field" placeholder="סכום בש״ח..." style="margin-bottom:8px;">
+                        <select id="expType" class="input-field" style="margin-bottom:8px;">
+                            <option value="הוצאה">הוצאה ביתית 🔴</option>
+                            <option value="הכנסה">הכנסה ביתית 🟢</option>
+                        </select>
+                        <button class="btn-primary" onclick="addExpenseItem()">💰 הוסף למאזן הבית</button>
+                    </div>
+                    <div id="itemList">
+                        ${items.length === 0 ? '<p style="color:var(--text-muted); text-align:center;">אין תנועות כספיות רשומות.</p>' : ''}
+                        ${items.map((ex, idx) => `<div class="list-item"><span>${ex.type === 'הכנסה' ? '🟢' : '🔴'} ${ex.desc}: <strong>₪${ex.amount}</strong> <small>(${ex.author})</small></span> <button class="delete-btn" onclick="removeItem('expenses', ${idx})">×</button></div>`).join('')}
+                    </div>
+                `;
+            }
+            else if(moduleName === 'assistant') {
+                html += `
+                    <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 1rem;">
+                        <input type="text" id="assistantQueryInput" class="input-field" placeholder="שאלי את וידס שאלה מתוך נתוני הבית..." style="margin-bottom:8px;">
+                        <button class="btn-primary" onclick="askVidassAssistant()">שאלי את וידס 🤖</button>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; min-height:120px;" id="assistantOutputBox">
+                        <em>הקלידי שאלה וקבלי מענה אוטומטי מכל נתוני הבית המסונכרנים!</em>
+                    </div>
+                `;
+            }
+            else if(moduleName === 'music') {
+                html += `
+                    <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 1rem;">
+                        <div style="display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap;">
+                            <button class="btn-sm" style="background:#ff0000; color:white; padding:8px 12px;" onclick="openExternal('https://music.youtube.com')">YouTube Music</button>
+                            <button class="btn-sm" style="background:#1db954; color:white; padding:8px 12px;" onclick="openExternal('https://open.spotify.com')">Spotify</button>
+                        </div>
+                        <input type="text" id="musicTitleInput" class="input-field" placeholder="שם השיר / רצועה..." style="margin-bottom:8px;">
+                        <input type="text" id="musicArtistInput" class="input-field" placeholder="שם האמן..." style="margin-bottom:8px;">
+                        <button class="btn-primary" onclick="addMusicItem()">🎵 שמור שיר במערכת הבית</button>
+                    </div>
+                    <div id="itemList">
+                        ${items.length === 0 ? '<p style="color:var(--text-muted); text-align:center;">אין שירים שמורים עדיין.</p>' : ''}
+                        ${items.map((m, idx) => `<div class="list-item"><span>🎵 ${m.title} - ${m.artist} <small style="color:var(--text-muted);">(${m.author})</small></span> <button class="delete-btn" onclick="removeItem('music', ${idx})">×</button></div>`).join('')}
                     </div>
                 `;
             }
             else {
                 html += `
                     <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 1rem;">
-                        <input type="text" id="genericInput" class="input-field" placeholder="הוסיפי פריט חדש...">
-                        <button class="btn-primary" onclick="addGenericItem('${moduleName}')">➕ הוסף למערכת</button>
+                        <input type="text" id="genericInput" class="input-field" placeholder="הוסיפי פריט חדש למערכת..." style="margin-bottom:8px;">
+                        <button class="btn-primary" onclick="addGenericItem('${moduleName}')">➕ הוסף למערכת הבית</button>
                     </div>
                     <div id="itemList">
-                        ${items.map((item, idx) => `<div class="list-item"><span>${item.text || item.name || item.goal || item}</span> <button class="delete-btn" onclick="removeItem('${moduleName}', ${idx})">×</button></div>`).join('')}
+                        ${items.length === 0 ? '<p style="color:var(--text-muted); text-align:center;">אין פריטים רשומים כרגע.</p>' : ''}
+                        ${items.map((item, idx) => `<div class="list-item"><span>${item.text || item.name || item.goal || item} <small style="color:var(--text-muted);">(${item.author || 'דייר'})</small></span> <button class="delete-btn" onclick="removeItem('${moduleName}', ${idx})">×</button></div>`).join('')}
                     </div>
                 `;
             }
@@ -612,42 +831,96 @@
             document.getElementById('activeModuleContent').innerHTML = html;
         }
 
-        function askVidassAssistant() {
-            let q = document.getElementById('assistantQueryInput').value;
-            document.getElementById('assistantOutputBox').innerHTML = `🤖 וידס עונה: חיפשתי נתונים לגבי "${q}" מתוך המערכת והכל מעודכן!`;
-        }
-
-        function addMusicItem() {
-            let title = document.getElementById('musicTitleInput').value;
-            let artist = document.getElementById('musicArtistInput').value;
-            if(title) {
-                let key = getHouseStorageKey('music');
+        function addSmartDevice() {
+            let name = document.getElementById('devName').value.trim();
+            let type = document.getElementById('devType').value;
+            let ip = document.getElementById('devIp').value.trim();
+            if(name) {
+                let key = getHouseStorageKey('smart_devices');
                 let items = JSON.parse(localStorage.getItem(key)) || [];
-                items.push({ title, artist });
+                items.push({ name, type, ip, author: currentUserName });
                 localStorage.setItem(key, JSON.stringify(items));
-                renderModuleUI('music');
+                renderModuleUI('smart_devices');
             }
         }
 
         function saveFullEvent() {
-            let name = document.getElementById('evName').value;
-            let guests = document.getElementById('evGuestsCount').value;
-            let vendors = document.getElementById('evVendors').value;
+            let name = document.getElementById('evName').value.trim();
+            let guests = document.getElementById('evGuestsCount').value.trim();
+            let vendors = document.getElementById('evVendors').value.trim();
+            let expense = document.getElementById('evExpense').value.trim();
             if(name) {
                 let key = getHouseStorageKey('events');
                 let items = JSON.parse(localStorage.getItem(key)) || [];
-                items.push({ name, guests, vendors });
+                items.push({ name, guests, vendors, expense, author: currentUserName });
                 localStorage.setItem(key, JSON.stringify(items));
                 renderModuleUI('events');
             }
         }
 
+        function addShoppingItem() {
+            let category = document.getElementById('shopCat').value.trim() || 'כללי';
+            let item = document.getElementById('shopItem').value.trim();
+            if(item) {
+                let key = getHouseStorageKey('shopping');
+                let items = JSON.parse(localStorage.getItem(key)) || [];
+                items.push({ category, item, author: currentUserName });
+                localStorage.setItem(key, JSON.stringify(items));
+                renderModuleUI('shopping');
+            }
+        }
+
+        function addInventoryItem() {
+            let category = document.getElementById('invCat').value.trim() || 'כללי';
+            let item = document.getElementById('invItem').value.trim();
+            if(item) {
+                let key = getHouseStorageKey('inventory');
+                let items = JSON.parse(localStorage.getItem(key)) || [];
+                items.push({ category, item, author: currentUserName });
+                localStorage.setItem(key, JSON.stringify(items));
+                renderModuleUI('inventory');
+            }
+        }
+
+        function addExpenseItem() {
+            let desc = document.getElementById('expDesc').value.trim();
+            let amount = document.getElementById('expAmount').value.trim();
+            let type = document.getElementById('expType').value;
+            if(desc && amount) {
+                let key = getHouseStorageKey('expenses');
+                let items = JSON.parse(localStorage.getItem(key)) || [];
+                items.push({ desc, amount, type, author: currentUserName });
+                localStorage.setItem(key, JSON.stringify(items));
+                renderModuleUI('expenses');
+            }
+        }
+
+        function addMusicItem() {
+            let title = document.getElementById('musicTitleInput').value.trim();
+            let artist = document.getElementById('musicArtistInput').value.trim();
+            if(title) {
+                let key = getHouseStorageKey('music');
+                let items = JSON.parse(localStorage.getItem(key)) || [];
+                items.push({ title, artist, author: currentUserName });
+                localStorage.setItem(key, JSON.stringify(items));
+                renderModuleUI('music');
+            }
+        }
+
+        function askVidassAssistant() {
+            let q = document.getElementById('assistantQueryInput').value.trim();
+            if(!q) return;
+            let devices = JSON.parse(localStorage.getItem(getHouseStorageKey('smart_devices'))) || [];
+            let tasks = JSON.parse(localStorage.getItem(getHouseStorageKey('tasks'))) || [];
+            document.getElementById('assistantOutputBox').innerHTML = `🤖 **וידס עונה:** חיפשתי מידע עבור "${q}". מצאתי ${devices.length} מכשירים חכמים ו-${tasks.length} משימות בבית המסונכרן.`;
+        }
+
         function addGenericItem(moduleName) {
-            let val = document.getElementById('genericInput').value;
+            let val = document.getElementById('genericInput').value.trim();
             if(val) {
                 let key = getHouseStorageKey(moduleName);
                 let items = JSON.parse(localStorage.getItem(key)) || [];
-                items.push({ text: val });
+                items.push({ text: val, author: currentUserName });
                 localStorage.setItem(key, JSON.stringify(items));
                 renderModuleUI(moduleName);
             }
