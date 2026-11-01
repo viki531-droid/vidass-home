@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIDASS Secure System - כניסה והרשמה</title>
+    <style>
+        :root {
+            --primary: #d84370;
+            --primary-dark: #ad1457;
+            --accent: #ff80ab;
+            --bg-gradient: linear-gradient(135deg, #0d0d0f 0%, #1a1622 100%);
+            --card-bg: rgba(26, 23, 33, 0.95);
+            --card-border: rgba(216, 67, 112, 0.4);
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --success: #10b981;
+            --danger: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .auth-container {
+            width: 100%;
+            max-width: 440px;
+            background: var(--card-bg);
+            backdrop-filter: blur(14px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.8);
+            padding: 30px;
+            text-align: center;
+        }
+
+        .logo { font-size: 42px; margin-bottom: 10px; }
+        h1 { font-size: 22px; color: var(--accent); margin-bottom: 5px; }
+        p { font-size: 12px; color: var(--text-muted); margin-bottom: 20px; }
+
+        /* לשוניות מעבר בין כניסה, הרשמה לבית חדש, או שחזור */
+        .tabs {
+            display: flex;
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 4px;
+            margin-bottom: 20px;
+        }
+        .tab {
+            flex: 1;
+            padding: 8px;
+            font-size: 12px;
+            font-weight: bold;
+            color: var(--text-muted);
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .tab.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .form-section { display: none; text-align: right; }
+        .form-section.active { display: block; }
+
+        .input-group { margin-bottom: 14px; }
+        .input-group label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 5px; }
+        
+        .password-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 11px 14px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 10px;
+            color: white;
+            font-size: 14px;
+            outline: none;
+            text-align: right;
+        }
+        .input-group input:focus { border-color: var(--primary); box-shadow: 0 0 10px rgba(216, 67, 112, 0.3); }
+        
+        .toggle-password {
+            position: absolute;
+            left: 12px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: 0.2s;
+        }
+        .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+        /* כפתורי ביומטריה מתקדמים */
+        .biometric-box {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .bio-btn {
+            flex: 1;
+            padding: 10px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 10px;
+            color: var(--text-main);
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: 0.2s;
+        }
+        .bio-btn:hover { background: rgba(216, 67, 112, 0.2); border-color: var(--primary); }
+
+        .error-msg {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #fca5a5;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 12px;
+            margin-bottom: 14px;
+            display: none;
+            text-align: center;
+        }
+
+        .forgot-link {
+            display: block;
+            text-align: center;
+            font-size: 11px;
+            color: var(--accent);
+            margin-top: 12px;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<div class="auth-container">
+    <div class="logo">🌐</div>
+    <h1>VIDASS Core System</h1>
+    <p>מערכת ניהול ואבטחה משפחתית חכמה</p>
+
+    <div class="tabs">
+        <button class="tab active" onclick="switchTab('login')">כניסה לבית</button>
+        <button class="tab" onclick="switchTab('register')">🏠 יצירת בית חדש</button>
+        <button class="tab" onclick="switchTab('join')">👥 הצטרפות לדיירים</button>
+    </div>
+
+    <div class="error-msg" id="errorMsg">שגיאה בנתונים. נסה שוב.</div>
+
+    <!-- טופס 1: כניסה רגילה -->
+    <div id="section-login" class="form-section active">
+        <div class="input-group">
+            <label>קוד הבית (House Code)</label>
+            <input type="text" id="loginHouseCode" placeholder="הכנס את קוד הבית...">
+        </div>
+        <div class="input-group">
+            <label>קוד סודי (PIN)</label>
+            <div class="password-wrapper">
+                <input type="password" id="loginPin" placeholder="הכנס קוד סודי...">
+                <button type="button" class="toggle-password" onclick="togglePass('loginPin', this)">👁️</button>
+            </div>
+        </div>
+        <button class="btn" onclick="handleLogin()">כניסה למערכת 🚀</button>
+
+        <div class="biometric-box">
+            <button class="bio-btn" onclick="simulateBiometric('פנים')">👤 סורק פנים</button>
+            <button class="bio-btn" onclick="simulateBiometric('אצבע')">👆 טביעת אצבע</button>
+        </div>
+
+        <span class="forgot-link" onclick="switchTab('recovery')">שכחת את הקוד הסודי? לחץ כאן לשחזור</span>
+    </div>
+
+    <!-- טופס 2: יצירת בית חדש (הרשמה ראשונית) -->
+    <div id="section-register" class="form-section">
+        <div class="input-group">
+            <label>שם מלא (מנהל הבית)</label>
+            <input type="text" id="regName" placeholder="לדוגמה: ויקטוריה סיבוני...">
+        </div>
+        <div class="input-group">
+            <label>בחר קוד בית ייחודי (לשיתוף עם שאר הדיירים)</label>
+            <input type="text" id="regHouseCode" placeholder="לדוגמה: EILAT-33...">
+        </div>
+        <div class="input-group">
+            <label>בחר קוד סודי אישי (PIN)</label>
+            <div class="password-wrapper">
+                <input type="password" id="regPin" placeholder="בחר קוד סודי...">
+                <button type="button" class="toggle-password" onclick="togglePass('regPin', this)">👁️</button>
+            </div>
+        </div>
+        <div class="input-group">
+            <label>שאלת אבטחה לשחזור קוד (לדוגמה: שם הכלב שלי?)</label>
+            <input type="text" id="regQuestion" placeholder="הקלד שאלה אישית...">
+        </div>
+        <div class="input-group">
+            <label>תשובה לשאלת האבטחה</label>
+            <div class="password-wrapper">
+                <input type="password" id="regAnswer" placeholder="הקלד תשובה סודית...">
+                <button type="button" class="toggle-password" onclick="togglePass('regAnswer', this)">👁️</button>
+            </div>
+        </div>
+        <button class="btn" onclick="handleRegisterHouse()">צור בית חדש והירשם 🏠</button>
+    </div>
+
+    <!-- טופס 3: הצטרפות דיירים נוספים לבית קיים -->
+    <div id="section-join" class="form-section">
+        <div class="input-group">
+            <label>הכנס את קוד הבית הקיים</label>
+            <input type="text" id="joinHouseCode" placeholder="קוד הבית שקיבלת...">
+        </div>
+        <div class="input-group">
+            <label>שם הדייר המצטרף</label>
+            <input type="text" id="joinName" placeholder="הכנס את שמך...">
+        </div>
+        <div class="input-group">
+            <label>בחר קוד סודי אישי (PIN)</label>
+            <div class="password-wrapper">
+                <input type="password" id="joinPin" placeholder="קוד סודי אישי שלך...">
+                <button type="button" class="toggle-password" onclick="togglePass('joinPin', this)">👁️</button>
+            </div>
+        </div>
+        <button class="btn" onclick="handleJoinHouse()">התחבר לבית הקיים 👥</button>
+    </div>
+
+    <!-- טופס 4: שחזור קוד באמצעות שאלת אבטחה -->
+    <div id="section-recovery" class="form-section">
+        <p style="margin-bottom: 12px; color: var(--accent);">שחזור קוד סודי באמצעות שאלת אבטחה</p>
+        <div class="input-group">
+            <label>קוד הבית שלך</label>
+            <input type="text" id="recHouseCode" placeholder="הכנס קוד בית...">
+        </div>
+        <div id="recoveryStep2" style="display:none;">
+            <div class="input-group">
+                <label id="displayQuestion" style="color:var(--accent); font-weight:bold;"></label>
+                <input type="text" id="recAnswer" placeholder="הכנס את התשובה הסודית שלך...">
+            </div>
+            <button class="btn" onclick="verifyRecovery()">אמת שחזור והצג קוד 🔓</button>
+        </div>
+        <div id="recoveryStep1">
+            <button class="btn" onclick="loadSecurityQuestion()">המשך לשאלה אישית ➡️</button>
+        </div>
+        <span class="forgot-link" onclick="switchTab('login')">חזרה למסך הכניסה</span>
+    </div>
+</div>
+
+<script>
+    function switchTab(tabName) {
+        document.querySelectorAll('.form-section').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+        document.getElementById('errorMsg').style.display = 'none';
+
+        if(tabName === 'login') {
+            document.getElementById('section-login').classList.add('active');
+            document.querySelectorAll('.tab')[0].classList.add('active');
+        } else if(tabName === 'register') {
+            document.getElementById('section-register').classList.add('active');
+            document.querySelectorAll('.tab')[1].classList.add('active');
+        } else if(tabName === 'join') {
+            document.getElementById('section-join').classList.add('active');
+            document.querySelectorAll('.tab')[2].classList.add('active');
+        } else if(tabName === 'recovery') {
+            document.getElementById('section-recovery').classList.add('active');
+        }
+    }
+
+    function togglePass(inputId, btn) {
+        const input = document.getElementById(inputId);
+        if(input.type === 'password') {
+            input.type = 'text';
+            btn.innerText = '🙈';
+        } else {
+            input.type = 'password';
+            btn.innerText = '👁️';
+        }
+    }
+
+    function showError(msg) {
+        const err = document.getElementById('errorMsg');
+        err.innerText = msg;
+        err.style.display = 'block';
+    }
+
+    // יצירת בית חדש
+    function handleRegisterHouse() {
+        const name = document.getElementById('regName').value.trim();
+        const houseCode = document.getElementById('regHouseCode').value.trim();
+        const pin = document.getElementById('regPin').value.trim();
+        const question = document.getElementById('regQuestion').value.trim();
+        const answer = document.getElementById('regAnswer').value.trim();
+
+        if(!name || !houseCode || !pin || !question || !answer) {
+            showError("נא למלא את כל שדות ההרשמה במלואם!");
+            return;
+        }
+
+        let houses = JSON.parse(localStorage.getItem('vidass_all_houses')) || {};
+        if(houses[houseCode]) {
+            showError("קוד הבית כבר קיים במערכת! בחר קוד אחר או עבור להצטרפות לדיירים.");
+            return;
+        }
+
+        // שמירת נתוני הבית החדש בענן / LocalStorage המשותף לכל דיירי הבית
+        houses[houseCode] = {
+            admin: name,
+            pin: pin,
+            question: question,
+            answer: answer,
+            members: [name],
+            data: { inventory: [], shopping: [], tasks: [], recipes: [], expenses: [], calendar: [], birthdays: [], travel: [], weather: [], coach: [], alerts: [] }
+        };
+
+        localStorage.setItem('vidass_all_houses', JSON.stringify(houses));
+        localStorage.setItem('vidass_current_house', houseCode);
+        localStorage.setItem('vidass_current_user', name);
+
+        window.location.href = 'main_hub.html';
+    }
+
+    // הצטרפות דייר לבית קיים
+    function handleJoinHouse() {
+        const houseCode = document.getElementById('joinHouseCode').value.trim();
+        const name = document.getElementById('joinName').value.trim();
+        const pin = document.getElementById('joinPin').value.trim();
+
+        if(!houseCode || !name || !pin) {
+            showError("נא למלא את כל השדות להצטרפות!");
+            return;
+        }
+
+        let houses = JSON.parse(localStorage.getItem('vidass_all_houses')) || {};
+        if(!houses[houseCode]) {
+            showError("קוד הבית לא נמצא במערכת. בדוק את הקוד ונסה שוב.");
+            return;
+        }
+
+        if(houses[houseCode].pin !== pin) {
+            showError("קוד הבית או קוד ה-PIN שגויים!");
+            return;
+        }
+
+        // הוספת הדייר החדש לרשימת הדיירים של הבית
+        if(!houses[houseCode].members.includes(name)) {
+            houses[houseCode].members.push(name);
+            localStorage.setItem('vidass_all_houses', JSON.stringify(houses));
+        }
+
+        localStorage.setItem('vidass_current_house', houseCode);
+        localStorage.setItem('vidass_current_user', name);
+
+        window.location.href = 'main_hub.html';
+    }
+
+    // כניסה רגילה לבית
+    function handleLogin() {
+        const houseCode = document.getElementById('loginHouseCode').value.trim();
+        const pin = document.getElementById('loginPin').value.trim();
+
+        if(!houseCode || !pin) {
+            showError("נא להזין קוד בית וקוד סודי.");
+            return;
+        }
+
+        let houses = JSON.parse(localStorage.getItem('vidass_all_houses')) || {};
+        if(!houses[houseCode] || houses[houseCode].pin !== pin) {
+            showError("קוד הבית או הקוד הסודי אינם נכונים!");
+            return;
+        }
+
+        localStorage.setItem('vidass_current_house', houseCode);
+        localStorage.setItem('vidass_current_user', houses[houseCode].admin);
+
+        window.location.href = 'main_hub.html';
+    }
+
+    // הדמיית סורק ביומטרי (פנים / אצבע)
+    function simulateBiometric(type) {
+        const houses = JSON.parse(localStorage.getItem('vidass_all_houses')) || {};
+        const keys = Object.keys(houses);
+        if(keys.length === 0) {
+            showError("אין בתים רשומים במכשיר. צור בית חדש תחילה.");
+            return;
+        }
+        // כניסה מהירה לבית הראשון הרשום במכשיר באמצעות ביומטריה
+        localStorage.setItem('vidass_current_house', keys[0]);
+        localStorage.setItem('vidass_current_user', houses[keys[0]].admin);
+        window.location.href = 'main_hub.html';
+    }
+
+    // שחזור קוד באמצעות שאלת אבטחה
+    function loadSecurityQuestion() {
+        const houseCode = document.getElementById('recHouseCode').value.trim();
+        let houses = JSON.parse(localStorage.getItem('vidass_all_houses')) || {};
+        if(!houses[houseCode]) {
+            showError("קוד הבית לא נמצא במערכת.");
+            return;
+        }
+        document.getElementById('displayQuestion').innerText = "שאלה: " + houses[houseCode].question;
+        document.getElementById('recoveryStep1').style.display = 'none';
+        document.getElementById('recoveryStep2').style.display = 'block';
+        document.getElementById('errorMsg').style.display = 'none';
+    }
+
+    function verifyRecovery() {
+        const houseCode = document.getElementById('recHouseCode').value.trim();
+        const answer = document.getElementById('recAnswer').value.trim();
+        let houses = JSON.parse(localStorage.getItem('vidass_all_houses')) || {};
+        
+        if(houses[houseCode].answer === answer) {
+            alert("התשובה נכונה! הקוד הסודי שלך לבית זה הוא: " + houses[houseCode].pin);
+            switchTab('login');
+        } else {
+            showError("התשובה לשאלת האבטחה שגויה.");
+        }
+    }
+</script>
+
+</body>
+</html>
