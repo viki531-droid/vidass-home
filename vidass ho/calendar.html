@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIDASS Micro-App - ימן ולוח זמנים</title>
+    <title>VIDASS Micro-App - יומן ולוח זמנים</title>
+    <!-- קישור לקובץ הסנכרון המשותף בין דיירי הבית -->
+    <script src="storage-sync.js"></script>
     <style>
         :root {
             --primary: #d84370;
@@ -38,9 +40,9 @@
     <div class="header">
         <div>
             <h1>📅 דפדפן היומן ולוח הזמנים</h1>
-            <p style="font-size: 11px; color: var(--text-muted);">מיקרו-אפליקציה פנימית לניהול פגישות</p>
+            <p style="font-size: 11px; color: var(--text-muted);">ניהול פגישות משותף לכל הבית</p>
         </div>
-        <div class="badge">🟢 פעיל ומאובטח</div>
+        <div class="badge">🟢 מחובר לבית המשותף</div>
     </div>
 
     <div class="input-group">
@@ -60,7 +62,8 @@
 
 <script>
     function loadCalendarEvents() {
-        const data = JSON.parse(localStorage.getItem('vidass_sub_browser_calendar')) || [];
+        // שימוש בפונקציית הסנכרון המשותפת לכל דיירי הבית
+        const data = getSharedData('calendar');
         const container = document.getElementById('calendarList');
         
         container.innerHTML = data.length === 0 ? '<p style="text-align:center; font-size:12px; color:var(--text-muted);">אין פגישות או אירועים ביומן כרגע.</p>' : '';
@@ -70,7 +73,7 @@
                 <div class="item-row">
                     <div>
                         <strong style="color:var(--accent);">📅 ${item.title}</strong>
-                        <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">🕒 ${item.time}</div>
+                        <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">🕒 ${item.time} (הוסף ע"י: ${item.addedBy || 'דייר'})</div>
                     </div>
                     <button onclick="removeCalendarEvent(${actualIndex})" style="background:rgba(239,68,68,0.1); color:var(--danger); border:1px solid rgba(239,68,68,0.3); padding:5px 10px; border-radius:6px; cursor:pointer; font-size:11px;">מחק</button>
                 </div>`;
@@ -85,20 +88,25 @@
 
         if(!title || !time) { showToast("נא למלא את כל השדות", true); return; }
 
-        let data = JSON.parse(localStorage.getItem('vidass_sub_browser_calendar')) || [];
-        data.push({ title, time });
-        localStorage.setItem('vidass_sub_browser_calendar', JSON.stringify(data));
+        let data = getSharedData('calendar');
+        data.push({ 
+            title, 
+            time,
+            addedBy: getCurrentUser(),
+            date: new Date().toLocaleDateString('he-IL')
+        });
+        saveSharedData('calendar', data);
 
         titleInput.value = '';
         timeInput.value = '';
         loadCalendarEvents();
-        showToast("האירוע נוסף ליומן בהצלחה!");
+        showToast("האירוע נוסף ליומן ושותף לכל דיירי הבית!");
     }
 
     function removeCalendarEvent(index) {
-        let data = JSON.parse(localStorage.getItem('vidass_sub_browser_calendar')) || [];
+        let data = getSharedData('calendar');
         data.splice(index, 1);
-        localStorage.setItem('vidass_sub_browser_calendar', JSON.stringify(data));
+        saveSharedData('calendar', data);
         loadCalendarEvents();
         showToast("האירוע הוסר מהיומן.");
     }

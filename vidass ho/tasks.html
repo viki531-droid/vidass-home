@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VIDASS Micro-App - משימות ומטלות בית</title>
+    <!-- קישור לקובץ הסנכרון המשותף בין דיירי הבית -->
+    <script src="storage-sync.js"></script>
     <style>
         :root {
             --primary: #d84370;
@@ -38,25 +40,26 @@
     <div class="header">
         <div>
             <h1>📌 דפדפן משימות ומטלות בית</h1>
-            <p style="font-size: 11px; color: var(--text-muted);">מיקרו-אפליקציה פנימית לניהול משימות</p>
+            <p style="font-size: 11px; color: var(--text-muted);">ניהול ומעקב משימות משותף לכל דיירי הבית</p>
         </div>
-        <div class="badge">🟢 פעיל ומאובטח</div>
+        <div class="badge">🟢 מחובר לבית המשותף</div>
     </div>
 
     <div class="input-group">
-        <label>הכנס משימה או מטלה חדשה</label>
-        <input type="text" id="taskInput" placeholder="לדוגמה: לטייל עם ג'ולי בפארק, לסדר חדרים..." onkeypress="if(event.key==='Enter') addTask()">
+        <label>הוסף מטלה או משימה חדשה</label>
+        <input type="text" id="taskInput" placeholder="לדוגמה: לטייל עם ג'ולי, לקפל כביסה..." onkeypress="if(event.key==='Enter') addTask()">
     </div>
-    <button class="btn" onclick="addTask()">הוסף משימה לרשימה 📌</button>
+    <button class="btn" onclick="addTask()">הוסף משימה למערכת 📌</button>
 
-    <div style="margin-top: 20px; max-height: 260px; overflow-y: auto;" id="tasksList"></div>
+    <div style="margin-top: 20px; max-height: 240px; overflow-y: auto;" id="tasksList"></div>
 </div>
 
 <div class="toast" id="toastMsg">הפעולה בוצעה בהצלחה!</div>
 
 <script>
     function loadTasks() {
-        const data = JSON.parse(localStorage.getItem('vidass_sub_browser_tasks')) || [];
+        // שימוש בפונקציית הסנכרון המשותפת לכל דיירי הבית
+        const data = getSharedData('tasks');
         const container = document.getElementById('tasksList');
         
         container.innerHTML = data.length === 0 ? '<p style="text-align:center; font-size:12px; color:var(--text-muted);">אין משימות פתוחות כרגע.</p>' : '';
@@ -64,7 +67,10 @@
             const actualIndex = data.length - 1 - index;
             container.innerHTML += `
                 <div class="item-row">
-                    <span>📌 ${item.text} <span style="font-size:10px; color:var(--text-muted);">(${item.date})</span></span>
+                    <div>
+                        <strong style="color:var(--accent);">📌 ${item.text}</strong>
+                        <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">הוסף ע"י: ${item.addedBy || 'דייר'} | ${item.date}</div>
+                    </div>
                     <button onclick="removeTask(${actualIndex})" style="background:rgba(239,68,68,0.1); color:var(--danger); border:1px solid rgba(239,68,68,0.3); padding:5px 10px; border-radius:6px; cursor:pointer; font-size:11px;">בוצע / מחיקה</button>
                 </div>`;
         });
@@ -75,21 +81,25 @@
         const text = input.value.trim();
         if(!text) { showToast("נא להזין תוכן משימה", true); return; }
 
-        let data = JSON.parse(localStorage.getItem('vidass_sub_browser_tasks')) || [];
-        data.push({ text, date: new Date().toLocaleDateString('he-IL') });
-        localStorage.setItem('vidass_sub_browser_tasks', JSON.stringify(data));
+        let data = getSharedData('tasks');
+        data.push({ 
+            text, 
+            addedBy: getCurrentUser(),
+            date: new Date().toLocaleDateString('he-IL') 
+        });
+        saveSharedData('tasks', data);
 
         input.value = '';
         loadTasks();
-        showToast("המשימה נוספה בהצלחה!");
+        showToast("המשימה נוספה ושותפה לכל דיירי הבית!");
     }
 
     function removeTask(index) {
-        let data = JSON.parse(localStorage.getItem('vidass_sub_browser_tasks')) || [];
+        let data = getSharedData('tasks');
         data.splice(index, 1);
-        localStorage.setItem('vidass_sub_browser_tasks', JSON.stringify(data));
+        saveSharedData('tasks', data);
         loadTasks();
-        showToast("המשימה הושלמה והוסרה מהרשימה.");
+        showToast("כל הכבוד! המשימה הושלמה והוסרה.");
     }
 
     function showToast(msg, isError = false) {

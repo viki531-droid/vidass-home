@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VIDASS Micro-App - ניהול אירועים</title>
+    <!-- קישור לקובץ הסנכרון המשותף בין דיירי הבית -->
+    <script src="storage-sync.js"></script>
     <style>
         :root {
             --primary: #d84370;
@@ -38,9 +40,9 @@
     <div class="header">
         <div>
             <h1>🎉 דפדפן ניהול אירועים</h1>
-            <p style="font-size: 11px; color: var(--text-muted);">מיקרו-אפליקציה לתכנון אירועים וחגים</p>
+            <p style="font-size: 11px; color: var(--text-muted);">תכנון אירועים וחגים משותף לכל הבית</p>
         </div>
-        <div class="badge">🟢 פעיל ומאובטח</div>
+        <div class="badge">🟢 מחובר לבית המשותף</div>
     </div>
 
     <div class="input-group">
@@ -60,7 +62,8 @@
 
 <script>
     function loadEvents() {
-        const data = JSON.parse(localStorage.getItem('vidass_sub_browser_events')) || [];
+        // שימוש בפונקציית הסנכרון המשותפת לכל דיירי הבית
+        const data = getSharedData('events');
         const container = document.getElementById('eventsList');
         
         container.innerHTML = data.length === 0 ? '<p style="text-align:center; font-size:12px; color:var(--text-muted);">אין אירועים מתוכננים כרגע.</p>' : '';
@@ -71,6 +74,7 @@
                     <div>
                         <strong style="color:var(--accent);">🎉 ${item.title}</strong>
                         <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">${item.details}</div>
+                        <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">הוסף ע"י: ${item.addedBy || 'דייר'}</div>
                     </div>
                     <button onclick="removeEventRecord(${actualIndex})" style="background:rgba(239,68,68,0.1); color:var(--danger); border:1px solid rgba(239,68,68,0.3); padding:5px 10px; border-radius:6px; cursor:pointer; font-size:11px;">מחק</button>
                 </div>`;
@@ -85,20 +89,25 @@
 
         if(!title || !details) { showToast("נא למלא את כל השדות", true); return; }
 
-        let data = JSON.parse(localStorage.getItem('vidass_sub_browser_events')) || [];
-        data.push({ title, details });
-        localStorage.setItem('vidass_sub_browser_events', JSON.stringify(data));
+        let data = getSharedData('events');
+        data.push({ 
+            title, 
+            details,
+            addedBy: getCurrentUser(),
+            date: new Date().toLocaleDateString('he-IL')
+        });
+        saveSharedData('events', data);
 
         titleInput.value = '';
         detailsInput.value = '';
         loadEvents();
-        showToast("האירוע נשמר בהצלחה!");
+        showToast("האירוע נשמר ושותף לכל דיירי הבית!");
     }
 
     function removeEventRecord(index) {
-        let data = JSON.parse(localStorage.getItem('vidass_sub_browser_events')) || [];
+        let data = getSharedData('events');
         data.splice(index, 1);
-        localStorage.setItem('vidass_sub_browser_events', JSON.stringify(data));
+        saveSharedData('events', data);
         loadEvents();
         showToast("האירוע הוסר מהמערכת.");
     }

@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VIDASS Micro-App - התראות מערכת</title>
+    <!-- קישור לקובץ הסנכרון המשותף בין דיירי הבית -->
+    <script src="storage-sync.js"></script>
     <style>
         :root {
             --primary: #d84370;
@@ -40,9 +42,9 @@
     <div class="header">
         <div>
             <h1>🔔 דפדפן התראות מערכת</h1>
-            <p style="font-size: 11px; color: var(--text-muted);">מרכז התראות אוטומטי לאפליקציה ולטלפון</p>
+            <p style="font-size: 11px; color: var(--text-muted);">מרכז התראות משותף לכל דיירי הבית</p>
         </div>
-        <div class="badge">🟢 פעיל ומאובטח</div>
+        <div class="badge">🟢 מחובר לבית המשותף</div>
     </div>
 
     <div class="status-box">
@@ -50,10 +52,10 @@
     </div>
 
     <div class="input-group">
-        <label>צור התראה חדשה ידנית (או מקבל אוטומטית מהדפדפנים)</label>
+        <label>צור התראה חדשה ידנית</label>
         <input type="text" id="alertInput" placeholder="הכנס תוכן התראה (לדוגמה: תזכורת תשלום חשבון חשמל)..." onkeypress="if(event.key==='Enter') addAlert()">
     </div>
-    <button class="btn" onclick="addAlert()">שגר התראה אוטומטית לאפליקציה ולטלפון 🚨</button>
+    <button class="btn" onclick="addAlert()">שגר התראה למערכת הבית 🚨</button>
 
     <div style="margin-top: 20px; max-height: 240px; overflow-y: auto;" id="alertsList"></div>
 </div>
@@ -62,7 +64,8 @@
 
 <script>
     function loadAlerts() {
-        const data = JSON.parse(localStorage.getItem('vidass_system_alerts')) || [];
+        // שימוש בפונקציית הסנכרון המשותפת לכל דיירי הבית
+        const data = getSharedData('alerts');
         const container = document.getElementById('alertsList');
         
         container.innerHTML = data.length === 0 ? '<p style="text-align:center; font-size:12px; color:var(--text-muted);">אין התראות פעילות כרגע.</p>' : '';
@@ -72,7 +75,7 @@
                 <div class="alert-row">
                     <div>
                         <span>🔔 <strong>${item.text}</strong></span>
-                        <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">זמן: ${item.time} (${item.date})</div>
+                        <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">נוסף ע"י: ${item.addedBy || 'דייר'} | זמן: ${item.time} (${item.date})</div>
                     </div>
                     <button onclick="removeAlert(${actualIndex})" style="background:rgba(239,68,68,0.1); color:var(--danger); border:1px solid rgba(239,68,68,0.3); padding:5px 10px; border-radius:6px; cursor:pointer; font-size:11px;">אישור ומחיקה</button>
                 </div>`;
@@ -84,19 +87,24 @@
         const text = input.value.trim();
         if(!text) { showToast("נא להזין תוכן התראה", true); return; }
 
-        let data = JSON.parse(localStorage.getItem('vidass_system_alerts')) || [];
-        data.push({ text, time: new Date().toLocaleTimeString('he-IL'), date: new Date().toLocaleDateString('he-IL') });
-        localStorage.setItem('vidass_system_alerts', JSON.stringify(data));
+        let data = getSharedData('alerts');
+        data.push({ 
+            text, 
+            addedBy: getCurrentUser(),
+            time: new Date().toLocaleTimeString('he-IL'), 
+            date: new Date().toLocaleDateString('he-IL') 
+        });
+        saveSharedData('alerts', data);
 
         input.value = '';
         loadAlerts();
-        showToast("🚨 ההתראה שוגרה בהצלחה לאפליקציה ולטלפון!");
+        showToast("🚨 ההתראה שוגרה בהצלחה לכל דיירי הבית!");
     }
 
     function removeAlert(index) {
-        let data = JSON.parse(localStorage.getItem('vidass_system_alerts')) || [];
+        let data = getSharedData('alerts');
         data.splice(index, 1);
-        localStorage.setItem('vidass_system_alerts', JSON.stringify(data));
+        saveSharedData('alerts', data);
         loadAlerts();
         showToast("ההתראה אושרה והוסרה.");
     }

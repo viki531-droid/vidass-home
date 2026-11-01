@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VIDASS Micro-App - שליטה במכשירי IoT חכמים</title>
+    <!-- קישור לקובץ הסנכרון המשותף בין דיירי הבית -->
+    <script src="storage-sync.js"></script>
     <style>
         :root {
             --primary: #d84370;
@@ -45,12 +47,12 @@
             <h1 id="deviceTitle">🔌 בקרת מכשיר חכם</h1>
             <p style="font-size: 11px; color: var(--text-muted);">ניהול ישיר ממערכת VIDASS</p>
         </div>
-        <div class="badge">🟢 מקושר ומאובטח</div>
+        <div class="badge">🟢 מחובר לבית המשותף</div>
     </div>
 
     <div class="device-status-box">
         <div class="device-icon-large" id="deviceIcon">⚡</div>
-        <h2 id="deviceNameName" style="font-size: 18px; color: var(--accent); margin-bottom: 5px;">טוען מכשיר...</h2>
+        <h2 id="deviceNameName" style="font-size: 18px; color: var(--accent); margin-bottom: 5px;">מערכות בית חכם מרכזיות</h2>
         <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 15px;">סטטוס חישור: <span id="connectionState" style="color: var(--success);">פעיל ומגיב</span></p>
         
         <div class="btn-group">
@@ -63,9 +65,7 @@
 <div class="toast" id="toastMsg">הפקודה בוצעה בהצלחה!</div>
 
 <script>
-    // זיהוי המכשיר שנבחר מתוך כתובת ה-URL או אחסון מקומי
     window.onload = function() {
-        // לדוגמה, אם הגיעו לכאן דרך הלוח הראשי, נציג נתונים דינמיים
         document.getElementById('deviceTitle').innerText = "🔌 בקרת מכשירים חכמים (IoT)";
         document.getElementById('deviceNameName').innerText = "מערכות בית חכם מרכזיות";
     };
@@ -73,14 +73,15 @@
     function sendDeviceCommand(action) {
         showToast(`הפקודה "${action}" נשלחה בהצלחה למכשיר!`);
         
-        // רישום אוטומטי למרכז ההתראות של המערכת
-        let alerts = JSON.parse(localStorage.getItem('vidass_system_alerts')) || [];
+        // שימוש בפונקציית הסנכרון המשותפת לעדכון מרכז ההתראות של כל דיירי הבית
+        let alerts = getSharedData('alerts');
         alerts.push({ 
             text: `בקרת IoT: בוצעה פעולה (${action})`, 
+            addedBy: getCurrentUser(),
             time: new Date().toLocaleTimeString('he-IL'), 
             date: new Date().toLocaleDateString('he-IL') 
         });
-        localStorage.setItem('vidass_system_alerts', JSON.stringify(alerts));
+        saveSharedData('alerts', alerts);
     }
 
     function showToast(msg, isError = false) {

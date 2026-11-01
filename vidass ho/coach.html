@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VIDASS Micro-App - הקואוצ'ר של הבית</title>
+    <!-- קישור לקובץ הסנכרון המשותף בין דיירי הבית -->
+    <script src="storage-sync.js"></script>
     <style>
         :root {
             --primary: #d84370;
@@ -44,9 +46,9 @@
     <div class="header">
         <div>
             <h1>🧘‍♀️ הקואוצ'ר של הבית</h1>
-            <p style="font-size: 11px; color: var(--text-muted);">מיקרו-אפליקציה להדרכה, מוטיבציה ורווחה</p>
+            <p style="font-size: 11px; color: var(--text-muted);">הדרכה, מוטיבציה ורווחה משותפת לכל הבית</p>
         </div>
-        <div class="badge">🟢 פעיל ומאובטח</div>
+        <div class="badge">🟢 מחובר לבית המשותף</div>
     </div>
 
     <div class="motivation-box">
@@ -81,7 +83,8 @@
     };
 
     function loadGoals() {
-        const data = JSON.parse(localStorage.getItem('vidass_sub_browser_coach')) || [];
+        // שימוש בפונקציית הסנכרון המשותפת לכל דיירי הבית
+        const data = getSharedData('coach');
         const container = document.getElementById('goalsList');
         
         container.innerHTML = data.length === 0 ? '<p style="text-align:center; font-size:12px; color:var(--text-muted);">אין מטרות אישיות רשומות כרגע.</p>' : '';
@@ -91,7 +94,7 @@
                 <div class="item-row">
                     <div>
                         <strong style="color:var(--accent);">🎯 ${item.text}</strong>
-                        <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">נוסף: ${item.date}</div>
+                        <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">הוסף ע"י: ${item.addedBy || 'דייר'} | נוסף: ${item.date}</div>
                     </div>
                     <button onclick="removeGoal(${actualIndex})" style="background:rgba(239,68,68,0.1); color:var(--danger); border:1px solid rgba(239,68,68,0.3); padding:5px 10px; border-radius:6px; cursor:pointer; font-size:11px;">הושג / מחיקה</button>
                 </div>`;
@@ -103,19 +106,23 @@
         const text = input.value.trim();
         if(!text) { showToast("נא להזין תוכן מטרה", true); return; }
 
-        let data = JSON.parse(localStorage.getItem('vidass_sub_browser_coach')) || [];
-        data.push({ text, date: new Date().toLocaleDateString('he-IL') });
-        localStorage.setItem('vidass_sub_browser_coach', JSON.stringify(data));
+        let data = getSharedData('coach');
+        data.push({ 
+            text, 
+            addedBy: getCurrentUser(),
+            date: new Date().toLocaleDateString('he-IL') 
+        });
+        saveSharedData('coach', data);
 
         input.value = '';
         loadGoals();
-        showToast("המטרה האישית נוספה בהצלחה!");
+        showToast("המטרה האישית נוספה ושותפה לכל דיירי הבית!");
     }
 
     function removeGoal(index) {
-        let data = JSON.parse(localStorage.getItem('vidass_sub_browser_coach')) || [];
+        let data = getSharedData('coach');
         data.splice(index, 1);
-        localStorage.setItem('vidass_sub_browser_coach', JSON.stringify(data));
+        saveSharedData('coach', data);
         loadGoals();
         showToast("כל הכבוד! המטרה הושלמה בהצלחה.");
     }

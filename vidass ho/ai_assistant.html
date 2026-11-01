@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VIDASS Micro-App - העוזר האישי החכם</title>
+    <!-- קישור לקובץ הסנכרון המשותף בין דיירי הבית -->
+    <script src="storage-sync.js"></script>
     <style>
         :root {
             --primary: #d84370;
@@ -39,13 +41,13 @@
     <div class="header">
         <div>
             <h1>🤖 העוזר האישי החכם של VIDASS</h1>
-            <p style="font-size: 11px; color: var(--text-muted);">סורק ומאחד את כל המידע מכל דפדפי הבית</p>
+            <p style="font-size: 11px; color: var(--text-muted);">סורק ומאחד את כל המידע המשותף מכל דפדפי הבית</p>
         </div>
-        <div class="badge">🟢 מחובר לכל המערכות</div>
+        <div class="badge">🟢 מחובר לבית המשותף</div>
     </div>
 
     <div class="chat-box" id="chatBox">
-        <div class="msg msg-ai">שלום ויקטוריה! אני העוזר האישי שלך המובנה בלוח האם. את יכולה לשאול אותי בכל רגע **"מה יש בבית בכלל?"** או על כל מוצר, מלאי, משימה או אירוע במערכת. איך לעזור לך היום?</div>
+        <div class="msg msg-ai">שלום! אני העוזר האישי שלך המובנה בלוח האם. את יכולה לשאול אותי בכל רגע **"מה יש בבית בכלל?"** או על כל מוצר, מלאי, משימה או אירוע במערכת. איך לעזור לך היום?</div>
     </div>
 
     <div class="input-area">
@@ -77,16 +79,15 @@
             let response = "";
 
             if (lowerQuery.includes('מה יש בבית') || lowerQuery.includes('הכל') || lowerQuery.includes('סקירה')) {
-                // איסוף נתונים מכל האחסון המקומי של המערכת
-                const inventory = JSON.parse(localStorage.getItem('vidass_sub_browser_inventory')) || [];
-                const shopping = JSON.parse(localStorage.getItem('vidass_sub_browser_shopping')) || [];
-                const tasks = JSON.parse(localStorage.getItem('vidass_sub_browser_tasks')) || [];
-                const recipes = JSON.parse(localStorage.getItem('vidass_sub_browser_recipes')) || [];
-                const expenses = JSON.parse(localStorage.getItem('vidass_sub_browser_expenses')) || [];
-                const calendar = JSON.parse(localStorage.getItem('vidass_sub_browser_calendar')) || [];
-                const alerts = JSON.parse(localStorage.getItem('vidass_system_alerts')) || [];
+                // שימוש בפונקציות הסנכרון המשותפות לכל דיירי הבית
+                const inventory = getSharedData('inventory');
+                const shopping = getSharedData('shopping');
+                const tasks = getSharedData('tasks');
+                const recipes = getSharedData('recipes');
+                const calendar = getSharedData('calendar');
+                const alerts = getSharedData('alerts');
 
-                response = `<strong>📊 סקירת מצב כללית של הבית מכל המערכות:</strong><br><br>` +
+                response = `<strong>📊 סקירת מצב כללית של הבית (קוד בית פעיל: ${getCurrentHouseCode()}):</strong><br><br>` +
                            `📦 <strong>מלאי הבית:</strong> ${inventory.length > 0 ? inventory.map(i => i.name).join(', ') : 'אין מוצרים במלאי'}<br>` +
                            `🛒 <strong>רשימת קניות:</strong> ${shopping.length > 0 ? shopping.map(i => i.name).join(', ') : 'רשימת הקניות ריקה'}<br>` +
                            `📌 <strong>משימות פתוחות:</strong> ${tasks.length > 0 ? tasks.length + ' משימות פעילות' : 'אין משימות פתוחות'}<br>` +
@@ -94,16 +95,16 @@
                            `📅 <strong>פגישות ביומן:</strong> ${calendar.length > 0 ? calendar.length + ' אירועים קרובים' : 'היומן פנוי'}<br>` +
                            `🔔 <strong>התראות פעילות:</strong> ${alerts.length > 0 ? alerts.length + ' התראות מערכת' : 'הכל שקט ותקין'}`;
             } else if (lowerQuery.includes('קניות')) {
-                const shopping = JSON.parse(localStorage.getItem('vidass_sub_browser_shopping')) || [];
+                const shopping = getSharedData('shopping');
                 response = shopping.length > 0 ? `🛒 ברשימת הקניות יש כרגע: ${shopping.map(i => i.name).join(', ')}` : "🛒 רשימת הקניות ריקה לחלוטין.";
             } else if (lowerQuery.includes('מלאי')) {
-                const inventory = JSON.parse(localStorage.getItem('vidass_sub_browser_inventory')) || [];
+                const inventory = getSharedData('inventory');
                 response = inventory.length > 0 ? `📦 במלאי הבית רשומים: ${inventory.map(i => i.name).join(', ')}` : "📦 מלאי הבית ריק כרגע.";
             } else if (lowerQuery.includes('משימות')) {
-                const tasks = JSON.parse(localStorage.getItem('vidass_sub_browser_tasks')) || [];
-                response = tasks.length > 0 ? `📌 משימות פתוחות: ${tasks.map(t => t.text).join(' | ')}` : "📌 אין משימות פתוחות כרגע.";
+                const tasks = getSharedData('tasks');
+                response = tasks.length > 0 ? `📌 משימות פתוחות: ${tasks.map(t => t.text || t.name).join(' | ')}` : "📌 אין משימות פתוחות כרגע.";
             } else {
-                response = `קיבלתי את השאלה שלך: "${query}". אני סורק את כל מסדי הנתונים של הבית ויכול לספר לך על מלאי, קניות, משימות, מתכונים ועוד. נסי לשאול אותי "מה יש בבית בכלל?".`;
+                response = `קיבלתי את השאלה שלך: "${query}". אני סורק את כל מסדי הנתונים המשותפים של הבית ויכול לספר לך על מלאי, קניות, משימות, מתכונים ועוד. נסי לשאול אותי "מה יש בבית בכלל?".`;
             }
 
             appendMessage(response, 'ai');

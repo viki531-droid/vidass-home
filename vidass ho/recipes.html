@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIDASS Micro-App - מתכונים ומטבח ביתי</title>
+    <title>VIDASS Micro-App - דמי כיס</title>
+    <!-- קישור לקובץ הסנכרון המשותף בין דיירי הבית -->
+    <script src="storage-sync.js"></script>
     <style>
         :root {
             --primary: #d84370;
@@ -25,9 +27,9 @@
         .badge { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--success); padding: 4px 10px; border-radius: 8px; font-size: 11px; }
         .input-group { margin-bottom: 12px; text-align: right; }
         .input-group label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
-        .input-group input, .input-group textarea { width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; color: white; font-size: 13px; outline: none; text-align: right; }
+        .input-group input { width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; color: white; font-size: 13px; outline: none; text-align: right; }
         .btn { width: 100%; padding: 11px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 5px; }
-        .recipe-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px; margin-bottom: 10px; }
+        .item-row { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
         .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: white; padding: 10px 20px; border-radius: 10px; font-size: 13px; transition: transform 0.3s; z-index: 1000; }
         .toast.show { transform: translateX(-50%) translateY(0); }
     </style>
@@ -37,71 +39,76 @@
 <div class="app-container">
     <div class="header">
         <div>
-            <h1>🍲 דפדפן מתכונים ומטבח ביתי</h1>
-            <p style="font-size: 11px; color: var(--text-muted);">מיקרו-אפליקציה פנימית לניהול מתכונים</p>
+            <h1>💵 דפדפן דמי כיס</h1>
+            <p style="font-size: 11px; color: var(--text-muted);">ניהול הקצבות משותף לכל דיירי הבית</p>
         </div>
-        <div class="badge">🟢 פעיל ומאובטח</div>
+        <div class="badge">🟢 מחובר לבית המשותף</div>
     </div>
 
     <div class="input-group">
-        <label>שם המתכון (לדוגמה: מרק קובה סלק משפחתי)</label>
-        <input type="text" id="recipeTitle" placeholder="הכנס שם מנה...">
+        <label>שם הילד / מקבל ההקצבה</label>
+        <input type="text" id="childName" placeholder="לדוגמה: אגם...">
     </div>
     <div class="input-group">
-        <label>מצרכים ואופן הכנה</label>
-        <textarea id="recipeDesc" rows="3" placeholder="פרט מצרכים, תבלינים ושלבי בישול..."></textarea>
+        <label>סכום (₪) ומטרה</label>
+        <input type="text" id="pocketDetails" placeholder="לדוגמה: 50 ₪ - דמי כיס חודשיים" onkeypress="if(event.key==='Enter') addPocketRecord()">
     </div>
-    <button class="btn" onclick="saveRecipe()">שמור מתכון במערכת 🍲</button>
+    <button class="btn" onclick="addPocketRecord()">שמור רישום דמי כיס 💵</button>
 
-    <div style="margin-top: 20px; max-height: 240px; overflow-y: auto;" id="recipesList"></div>
+    <div style="margin-top: 20px; max-height: 260px; overflow-y: auto;" id="pocketList"></div>
 </div>
 
 <div class="toast" id="toastMsg">הפעולה בוצעה בהצלחה!</div>
 
 <script>
-    function loadRecipes() {
-        const data = JSON.parse(localStorage.getItem('vidass_sub_browser_recipes')) || [];
-        const container = document.getElementById('recipesList');
+    function loadPocketRecords() {
+        // שימוש בפונקציית הסנכרון המשותפת לכל דיירי הבית
+        const data = getSharedData('pocket');
+        const container = document.getElementById('pocketList');
         
-        container.innerHTML = data.length === 0 ? '<p style="text-align:center; font-size:12px; color:var(--text-muted);">אין מתכונים שמורים במערכת עדיין.</p>' : '';
+        container.innerHTML = data.length === 0 ? '<p style="text-align:center; font-size:12px; color:var(--text-muted);">אין רשומות דמי כיס פעילות.</p>' : '';
         data.slice().reverse().forEach((item, index) => {
             const actualIndex = data.length - 1 - index;
             container.innerHTML += `
-                <div class="recipe-card">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                        <strong style="color:var(--accent);">🍲 ${item.title}</strong>
-                        <button onclick="removeRecipe(${actualIndex})" style="background:rgba(239,68,68,0.1); color:var(--danger); border:1px solid rgba(239,68,68,0.3); padding:3px 8px; border-radius:6px; cursor:pointer; font-size:10px;">מחק</button>
+                <div class="item-row">
+                    <div>
+                        <strong style="color:var(--accent);">👤 ${item.name}</strong>
+                        <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">${item.details} (הוסף ע"י: ${item.addedBy || 'דייר'} | ${item.date})</div>
                     </div>
-                    <div style="font-size:12px; color:var(--text-muted); white-space:pre-line;">${item.desc}</div>
-                    <div style="font-size:10px; color:var(--success); margin-top:6px; text-align:left;">נוסף: ${item.date}</div>
+                    <button onclick="removePocketRecord(${actualIndex})" style="background:rgba(239,68,68,0.1); color:var(--danger); border:1px solid rgba(239,68,68,0.3); padding:5px 10px; border-radius:6px; cursor:pointer; font-size:11px;">מחק</button>
                 </div>`;
         });
     }
 
-    function saveRecipe() {
-        const titleInput = document.getElementById('recipeTitle');
-        const descInput = document.getElementById('recipeDesc');
-        const title = titleInput.value.trim();
-        const desc = descInput.value.trim();
+    function addPocketRecord() {
+        const nameInput = document.getElementById('childName');
+        const detailsInput = document.getElementById('pocketDetails');
+        const name = nameInput.value.trim();
+        const details = detailsInput.value.trim();
 
-        if(!title || !desc) { showToast("נא למלא את כל השדות", true); return; }
+        if(!name || !details) { showToast("נא למלא את כל השדות", true); return; }
 
-        let data = JSON.parse(localStorage.getItem('vidass_sub_browser_recipes')) || [];
-        data.push({ title, desc, date: new Date().toLocaleDateString('he-IL') });
-        localStorage.setItem('vidass_sub_browser_recipes', JSON.stringify(data));
+        let data = getSharedData('pocket');
+        data.push({ 
+            name, 
+            details, 
+            addedBy: getCurrentUser(),
+            date: new Date().toLocaleDateString('he-IL') 
+        });
+        saveSharedData('pocket', data);
 
-        titleInput.value = '';
-        descInput.value = '';
-        loadRecipes();
-        showToast("המתכון נשמר בהצלחה!");
+        nameInput.value = '';
+        detailsInput.value = '';
+        loadPocketRecords();
+        showToast("רישום דמי הכיס נשמר ושותף לכל דיירי הבית!");
     }
 
-    function removeRecipe(index) {
-        let data = JSON.parse(localStorage.getItem('vidass_sub_browser_recipes')) || [];
+    function removePocketRecord(index) {
+        let data = getSharedData('pocket');
         data.splice(index, 1);
-        localStorage.setItem('vidass_sub_browser_recipes', JSON.stringify(data));
-        loadRecipes();
-        showToast("המתכון הוסר בהצלחה.");
+        saveSharedData('pocket', data);
+        loadPocketRecords();
+        showToast("הרישום הוסר בהצלחה.");
     }
 
     function showToast(msg, isError = false) {
@@ -112,7 +119,7 @@
         setTimeout(() => toast.classList.remove('show'), 3000);
     }
 
-    window.onload = loadRecipes;
+    window.onload = loadPocketRecords;
 </script>
 
 </body>

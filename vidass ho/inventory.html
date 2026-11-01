@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VIDASS Micro-App - מלאי הבית</title>
+    <!-- קישור לקובץ הסנכרון המשותף בין דיירי הבית -->
+    <script src="storage-sync.js"></script>
     <style>
         :root {
             --primary: #d84370;
@@ -40,9 +42,9 @@
     <div class="header">
         <div>
             <h1>📦 דפדפן מלאי הבית</h1>
-            <p style="font-size: 11px; color: var(--text-muted);">מקושר ישירות לדפדפן הקניות האוטומטי</p>
+            <p style="font-size: 11px; color: var(--text-muted);">מקושר ומסונכרן לכל דיירי הבית</p>
         </div>
-        <div class="badge">🟢 תקשורת פעילה</div>
+        <div class="badge">🟢 מחובר לבית המשותף</div>
     </div>
 
     <div class="input-group">
@@ -58,7 +60,8 @@
 
 <script>
     function loadInventory() {
-        const data = JSON.parse(localStorage.getItem('vidass_sub_browser_inventory')) || [];
+        // שימוש בפונקציית הסנכרון המשותפת לכל דיירי הבית
+        const data = getSharedData('inventory');
         const container = document.getElementById('inventoryList');
         
         container.innerHTML = data.length === 0 ? '<p style="text-align:center; font-size:12px; color:var(--text-muted);">אין מוצרים רשומים במלאי כרגע.</p>' : '';
@@ -66,8 +69,14 @@
             const actualIndex = data.length - 1 - index;
             container.innerHTML += `
                 <div class="item-row">
-                    <span>📦 ${item.name}</span>
-                    <button class="sync-btn" onclick="sendToShopping('${item.name}')">חסר! שלח לקניות 🛒</button>
+                    <div>
+                        <span>📦 ${item.name}</span>
+                        <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">הוסף ע"י: ${item.addedBy || 'דייר'}</div>
+                    </div>
+                    <div style="display:flex; gap:6px; align-items:center;">
+                        <button class="sync-btn" onclick="sendToShopping('${item.name}')">חסר! שלח לקניות 🛒</button>
+                        <button onclick="removeInventoryItem(${actualIndex})" style="background:rgba(239,68,68,0.1); color:var(--danger); border:1px solid rgba(239,68,68,0.3); padding:5px 8px; border-radius:6px; cursor:pointer; font-size:11px;">מחק</button>
+                    </div>
                 </div>`;
         });
     }
@@ -77,30 +86,45 @@
         const name = input.value.trim();
         if(!name) { showToast("נא להזין שם מוצר", true); return; }
 
-        let data = JSON.parse(localStorage.getItem('vidass_sub_browser_inventory')) || [];
-        data.push({ name });
-        localStorage.setItem('vidass_sub_browser_inventory', JSON.stringify(data));
+        let data = getSharedData('inventory');
+        data.push({ 
+            name, 
+            addedBy: getCurrentUser(),
+            date: new Date().toLocaleDateString('he-IL') 
+        });
+        saveSharedData('inventory', data);
 
         input.value = '';
         loadInventory();
-        showToast("המוצר נוסף למלאי הבית!");
+        showToast("המוצר נוסף למלאי ושותף לכל דיירי הבית!");
     }
 
-    // הפונקציה המקשרת בין המלאי לדפדפן הקניות!
+    function removeInventoryItem(index) {
+        let data = getSharedData('inventory');
+        data.splice(index, 1);
+        saveSharedData('inventory', data);
+        loadInventory();
+        showToast("המוצר הוסר מהמלאי.");
+    }
+
+    // הפונקציה המקשרת בין המלאי לדפדפן הקניות בצורה משותפת!
     function sendToShopping(productName) {
-        let shoppingData = JSON.parse(localStorage.getItem('vidass_sub_browser_shopping')) || [];
+        let shoppingData = getSharedData('shopping');
         
-        // בדיקה שהמוצר לא קיים כבר ברשימת הקניות
         const exists = shoppingData.some(item => item.name === productName);
         if(exists) {
             showToast("המוצר כבר קיים ברשימת הקניות!", true);
             return;
         }
 
-        shoppingData.push({ name: productName });
-        localStorage.setItem('vidass_sub_browser_shopping', JSON.stringify(shoppingData));
+        shoppingData.push({ 
+            name: productName, 
+            addedBy: getCurrentUser(),
+            date: new Date().toLocaleDateString('he-IL') 
+        });
+        saveSharedData('shopping', shoppingData);
         
-        showToast(`המוצר "${productName}" שוגר בהצלחה לדפדפן הקניות! 🛒`);
+        showToast(`המוצר "${productName}" שוגר בהצלחה לדפדפן הקניות המשותף! 🛒`);
     }
 
     function showToast(msg, isError = false) {

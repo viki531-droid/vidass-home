@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VIDASS Micro-App - מזג האוויר</title>
+    <!-- קישור לקובץ הסנכרון המשותף בין דיירי הבית -->
+    <script src="storage-sync.js"></script>
     <style>
         :root {
             --primary: #d84370;
@@ -16,18 +18,24 @@
             --text-muted: #9ca3af;
             --success: #10b981;
             --danger: #ef4444;
+            --warning: #f59e0b;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background: var(--bg-gradient); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .app-container { width: 100%; max-width: 600px; background: var(--card-bg); backdrop-filter: blur(14px); border: 1px solid var(--card-border); border-radius: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.8); padding: 24px; }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 16px; }
+        .app-container { width: 100%; max-width: 600px; background: var(--card-bg); backdrop-filter: blur(14px); border: 1px solid var(--card-border); border-radius: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.8); padding: 24px; text-align: center; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 16px; text-align: right; }
         .header h1 { font-size: 20px; color: var(--accent); }
         .badge { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--success); padding: 4px 10px; border-radius: 8px; font-size: 11px; }
+        
+        .weather-display { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 20px; margin-bottom: 16px; }
+        .weather-icon { font-size: 50px; margin-bottom: 10px; }
+        .temp { font-size: 32px; font-weight: bold; color: var(--accent); margin-bottom: 5px; }
+        
         .input-group { margin-bottom: 12px; text-align: right; }
         .input-group label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
         .input-group input { width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; color: white; font-size: 13px; outline: none; text-align: right; }
         .btn { width: 100%; padding: 11px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 5px; }
-        .weather-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .item-row { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; text-align: right; }
         .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: white; padding: 10px 20px; border-radius: 10px; font-size: 13px; transition: transform 0.3s; z-index: 1000; }
         .toast.show { transform: translateX(-50%) translateY(0); }
     </style>
@@ -37,71 +45,74 @@
 <div class="app-container">
     <div class="header">
         <div>
-            <h1>☀️ דפדפן מזג האוויר</h1>
-            <p style="font-size: 11px; color: var(--text-muted);">מיקרו-אפליקציה לתחזית שוטפת</p>
+            <h1>☀️ מזג האוויר בבית</h1>
+            <p style="font-size: 11px; color: var(--text-muted);">תחזית ועדכונים משותפים</p>
         </div>
-        <div class="badge">🟢 פעיל ומאובטח</div>
+        <div class="badge">🟢 מחובר לבית המשותף</div>
+    </div>
+
+    <div class="weather-display">
+        <div class="weather-icon">☀️</div>
+        <div class="temp">28°C</div>
+        <h2 style="font-size: 16px; color: var(--text-main);">אילת, שכונת שחמון</h2>
+        <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">שמים בהירים | אחוזי לחות: 35%</p>
     </div>
 
     <div class="input-group">
-        <label>עיר / אזור לבדיקה</label>
-        <input type="text" id="weatherCity" placeholder="לדוגמה: אילת / תל אביב...">
+        <label>הוסף הערה או תזכורת הקשורה למזג האוויר</label>
+        <input type="text" id="weatherNote" placeholder="לדוגמה: מחר צפוי חום כבד, להשקות עציצים..." onkeypress="if(event.key==='Enter') addWeatherNote()">
     </div>
-    <div class="input-group">
-        <label>טמפרטורה ומצב (לדוגמה: 30°C, שמש בהירה)</label>
-        <input type="text" id="weatherDesc" placeholder="הכנס נתוני מזג אוויר..." onkeypress="if(event.key==='Enter') addWeatherRecord()">
-    </div>
-    <button class="btn" onclick="addWeatherRecord()">שמור עדכון מזג אוויר ☀️</button>
+    <button class="btn" onclick="addWeatherNote()">שמור הערת מזג אוויר ☀️</button>
 
-    <div style="margin-top: 20px; max-height: 240px; overflow-y: auto;" id="weatherList"></div>
+    <div style="margin-top: 20px; max-height: 200px; overflow-y: auto;" id="weatherNotesList"></div>
 </div>
 
 <div class="toast" id="toastMsg">הפעולה בוצעה בהצלחה!</div>
 
 <script>
-    function loadWeather() {
-        const data = JSON.parse(localStorage.getItem('vidass_sub_browser_weather')) || [];
-        const container = document.getElementById('weatherList');
+    function loadWeatherNotes() {
+        // שימוש בפונקציית הסנכרון המשותפת לכל דיירי הבית
+        const data = getSharedData('weather');
+        const container = document.getElementById('weatherNotesList');
         
-        container.innerHTML = data.length === 0 ? '<p style="text-align:center; font-size:12px; color:var(--text-muted);">אין נתוני מזג אוויר שמורים כרגע.</p>' : '';
+        container.innerHTML = data.length === 0 ? '<p style="text-align:center; font-size:12px; color:var(--text-muted);">אין הערות מזג אוויר שמורות כרגע.</p>' : '';
         data.slice().reverse().forEach((item, index) => {
             const actualIndex = data.length - 1 - index;
             container.innerHTML += `
-                <div class="weather-card">
+                <div class="item-row">
                     <div>
-                        <strong style="color:var(--accent);">📍 ${item.city}</strong>
-                        <div style="font-size:13px; margin-top:2px;">🌡️ ${item.desc}</div>
-                        <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">עודכן: ${item.date}</div>
+                        <span>🌤️ ${item.text}</span>
+                        <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">הוסף ע"י: ${item.addedBy || 'דייר'} | ${item.date}</div>
                     </div>
-                    <button onclick="removeWeatherRecord(${actualIndex})" style="background:rgba(239,68,68,0.1); color:var(--danger); border:1px solid rgba(239,68,68,0.3); padding:5px 10px; border-radius:6px; cursor:pointer; font-size:11px;">מחק</button>
+                    <button onclick="removeWeatherNote(${actualIndex})" style="background:rgba(239,68,68,0.1); color:var(--danger); border:1px solid rgba(239,68,68,0.3); padding:4px 8px; border-radius:6px; cursor:pointer; font-size:11px;">מחק</button>
                 </div>`;
         });
     }
 
-    function addWeatherRecord() {
-        const cityInput = document.getElementById('weatherCity');
-        const descInput = document.getElementById('weatherDesc');
-        const city = cityInput.value.trim();
-        const desc = descInput.value.trim();
+    function addWeatherNote() {
+        const input = document.getElementById('weatherNote');
+        const text = input.value.trim();
+        if(!text) { showToast("נא להזין תוכן הערה", true); return; }
 
-        if(!city || !desc) { showToast("נא למלא את כל השדות", true); return; }
+        let data = getSharedData('weather');
+        data.push({ 
+            text, 
+            addedBy: getCurrentUser(),
+            date: new Date().toLocaleDateString('he-IL') 
+        });
+        saveSharedData('weather', data);
 
-        let data = JSON.parse(localStorage.getItem('vidass_sub_browser_weather')) || [];
-        data.push({ city, desc, date: new Date().toLocaleDateString('he-IL') });
-        localStorage.setItem('vidass_sub_browser_weather', JSON.stringify(data));
-
-        cityInput.value = '';
-        descInput.value = '';
-        loadWeather();
-        showToast("נתוני מזג האוויר נשמרו בהצלחה!");
+        input.value = '';
+        loadWeatherNotes();
+        showToast("ההערה נשמרה ושותפה לכל דיירי הבית!");
     }
 
-    function removeWeatherRecord(index) {
-        let data = JSON.parse(localStorage.getItem('vidass_sub_browser_weather')) || [];
+    function removeWeatherNote(index) {
+        let data = getSharedData('weather');
         data.splice(index, 1);
-        localStorage.setItem('vidass_sub_browser_weather', JSON.stringify(data));
-        loadWeather();
-        showToast("הרישום הוסר בהצלחה.");
+        saveSharedData('weather', data);
+        loadWeatherNotes();
+        showToast("ההערה הוסרה בהצלחה.");
     }
 
     function showToast(msg, isError = false) {
@@ -112,7 +123,7 @@
         setTimeout(() => toast.classList.remove('show'), 3000);
     }
 
-    window.onload = loadWeather;
+    window.onload = loadWeatherNotes;
 </script>
 
 </body>

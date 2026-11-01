@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VIDASS Micro-App - הוצאות הבית ותלושי שכר</title>
+    <!-- קישור לקובץ הסנכרון המשותף בין דיירי הבית -->
+    <script src="storage-sync.js"></script>
     <style>
         :root {
             --primary: #d84370;
@@ -39,9 +41,9 @@
     <div class="header">
         <div>
             <h1>📄 הוצאות הבית ותלושי שכר</h1>
-            <p style="font-size: 11px; color: var(--text-muted);">מיקרו-אפליקציה פיננסית מאובטחת</p>
+            <p style="font-size: 11px; color: var(--text-muted);">ניהול פיננסי משותף לכל דיירי הבית</p>
         </div>
-        <div class="badge">🟢 פעיל ומאובטח</div>
+        <div class="badge">🟢 מחובר לבית המשותף</div>
     </div>
 
     <div class="input-group">
@@ -68,7 +70,8 @@
 
 <script>
     function loadExpenses() {
-        const data = JSON.parse(localStorage.getItem('vidass_sub_browser_expenses')) || [];
+        // שימוש בפונקציית הסנכרון המשותפת לכל דיירי הבית
+        const data = getSharedData('expenses');
         const container = document.getElementById('expensesList');
         
         container.innerHTML = data.length === 0 ? '<p style="text-align:center; font-size:12px; color:var(--text-muted);">אין נתונים פיננסיים שמורים כרגע.</p>' : '';
@@ -82,7 +85,7 @@
                 <div class="item-row">
                     <div>
                         <strong style="color:${colorStyle};">${item.type}: ${item.desc}</strong>
-                        <div style="font-size:13px; font-weight:bold; margin-top:2px;">סכום: ${sign}${item.amount} ₪ <span style="font-size:10px; color:var(--text-muted); font-weight:normal;">(${item.date})</span></div>
+                        <div style="font-size:13px; font-weight:bold; margin-top:2px;">סכום: ${sign}${item.amount} ₪ <span style="font-size:10px; color:var(--text-muted); font-weight:normal;">(הוסף ע"י: ${item.addedBy || 'דייר'} | ${item.date})</span></div>
                     </div>
                     <button onclick="removeExpenseRecord(${actualIndex})" style="background:rgba(239,68,68,0.1); color:var(--danger); border:1px solid rgba(239,68,68,0.3); padding:5px 10px; border-radius:6px; cursor:pointer; font-size:11px;">מחק</button>
                 </div>`;
@@ -96,20 +99,26 @@
 
         if(!desc || !amount) { showToast("נא למלא את כל השדות", true); return; }
 
-        let data = JSON.parse(localStorage.getItem('vidass_sub_browser_expenses')) || [];
-        data.push({ type, desc, amount, date: new Date().toLocaleDateString('he-IL') });
-        localStorage.setItem('vidass_sub_browser_expenses', JSON.stringify(data));
+        let data = getSharedData('expenses');
+        data.push({ 
+            type, 
+            desc, 
+            amount, 
+            addedBy: getCurrentUser(),
+            date: new Date().toLocaleDateString('he-IL') 
+        });
+        saveSharedData('expenses', data);
 
         document.getElementById('expDesc').value = '';
         document.getElementById('expAmount').value = '';
         loadExpenses();
-        showToast("הנתון הפיננסי נשמר והוצפן בהצלחה!");
+        showToast("הנתון הפיננסי נשמר ושותף לכל דיירי הבית!");
     }
 
     function removeExpenseRecord(index) {
-        let data = JSON.parse(localStorage.getItem('vidass_sub_browser_expenses')) || [];
+        let data = getSharedData('expenses');
         data.splice(index, 1);
-        localStorage.setItem('vidass_sub_browser_expenses', JSON.stringify(data));
+        saveSharedData('expenses', data);
         loadExpenses();
         showToast("הרישום הוסר בהצלחה.");
     }
