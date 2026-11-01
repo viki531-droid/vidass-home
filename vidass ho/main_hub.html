@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIDASS Core System - מרכז השליטה הראשי</title>
+    <style>
+        :root {
+            --primary: #d84370;
+            --primary-dark: #ad1457;
+            --accent: #ff80ab;
+            --bg-gradient: linear-gradient(135deg, #0d0d0f 0%, #1a1622 100%);
+            --card-bg: rgba(26, 23, 33, 0.96);
+            --card-border: rgba(216, 67, 112, 0.4);
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --success: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 950px;
+            background: var(--card-bg);
+            backdrop-filter: blur(14px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.8);
+            padding: 24px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .header h1 { font-size: 24px; color: var(--accent); }
+        .header p { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+
+        .back-btn {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-size: 12px;
+            cursor: pointer;
+            display: none;
+            transition: 0.2s;
+        }
+        .back-btn:hover { background: var(--primary); }
+
+        .section-title {
+            font-size: 16px;
+            color: var(--accent);
+            margin: 25px 0 12px 0;
+            border-right: 3px solid var(--primary);
+            padding-right: 8px;
+        }
+
+        /* גריד הקישורים והדפדפנים */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+            gap: 12px;
+        }
+
+        .card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 16px;
+            cursor: pointer;
+            transition: 0.25s;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            text-decoration: none;
+            color: var(--text-main);
+        }
+        .card:hover {
+            background: rgba(216, 67, 112, 0.15);
+            border-color: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+        }
+        .card-icon { font-size: 26px; }
+        .card-name { font-size: 14px; font-weight: 600; }
+        .card-desc { font-size: 11px; color: var(--text-muted); line-height: 1.4; }
+        .card-action { font-size: 11px; color: var(--accent); margin-top: 4px; font-weight: bold; }
+
+        /* אזור טעינת הדפדפן המוצפן (מוסתר עד ללחיצה) */
+        #appViewer {
+            display: none;
+            width: 100%;
+            margin-top: 15px;
+        }
+        
+        iframe {
+            width: 100%;
+            height: 520px;
+            border: none;
+            border-radius: 16px;
+            background: #17141f;
+        }
+    </style>
+</head>
+<body>
+
+<div class="main-container">
+    <div class="header">
+        <div>
+            <h1 id="hubTitle">VIDASS Core System 🌐</h1>
+            <p id="hubSubtitle">מרכז הניהול והשליטה המאובטח</p>
+        </div>
+        <button class="back-btn" id="backBtn" onclick="returnToHub()">← חזרה ללוח הראשי</button>
+    </div>
+
+    <!-- מסך ראשי: לוח האם -->
+    <div id="hubDashboard">
+        
+        <!-- קטגוריה ראשית: העוזר האישי החכם שיושב בתוך המערכת -->
+        <div class="section-title">🤖 העוזר האישי החכם של הבית</div>
+        <div class="grid" style="grid-template-columns: 1fr;">
+            <div class="card" style="background: rgba(216, 67, 112, 0.1); border-color: var(--primary);" onclick="loadInternalApp('ai_assistant', 'העוזר האישי החכם של VIDASS', 'ai_assistant.html')">
+                <div style="display: flex; align-items: center; gap: 14px;">
+                    <div class="card-icon" style="font-size: 34px;">🧠</div>
+                    <div>
+                        <div class="card-name" style="font-size: 16px; color: var(--accent);">שאל את העוזר האישי: מה יש בבית בכלל?</div>
+                        <div class="card-desc" style="font-size: 12px; margin-top: 2px;">סורק אוטומטית את מלאי הבית, רשימת הקניות, המתכונים, ההוצאות, המשימות והיומן ועונה לך על כל שאלה בזמן אמת.</div>
+                    </div>
+                </div>
+                <div class="card-action" style="text-align: left; margin-top: 8px;">הכנס לעוזר האישי ↗</div>
+            </div>
+        </div>
+
+        <!-- קטגוריה 1: דפדפני הניהול הפנימיים (המוסתרים) -->
+        <div class="section-title">📂 דפדפני הניהול הפנימיים של הבית</div>
+        <div class="grid">
+            <div class="card" onclick="loadInternalApp('shopping', 'דפדפן רשימת קניות', 'shopping.html')">
+                <div class="card-icon">🛒</div>
+                <div class="card-name">רשימת קניות</div>
+                <div class="card-desc">ניהול רשימת מוצרים (מקבל נתונים ממלאי הבית).</div>
+                <div class="card-action">הכנס למערכת ↗</div>
+            </div>
+            <div class="card" onclick="loadInternalApp('inventory', 'דפדפן מלאי הבית', 'inventory.html')">
+                <div class="card-icon">📦</div>
+                <div class="card-name">מלאי הבית</div>
+                <div class="card-desc">מעקב מוצרים ושליחה אוטומטית לקניות.</div>
+                <div class="card-action">הכנס למערכת ↗</div>
+            </div>
+            <div class="card" onclick="loadInternalApp('recipes', 'דפדפן מתכונים ומטבח', 'recipes.html')">
+                <div class="card-icon">🍲</div>
+                <div class="card-name">מתכונים ומטבח</div>
+                <div class="card-desc">ניהול מתכונים משפחתיים ומחשבון מצרכים.</div>
+                <div class="card-action">הכנס למערכת ↗</div>
+            </div>
+            <div class="card" onclick="loadInternalApp('pocket', 'דפדפן דמי כיס', 'pocket.html')">
+                <div class="card-icon">💵</div>
+                <div class="card-name">דמי כיס</div>
+                <div class="card-desc">ניהול הקצבות ומעקב אישי.</div>
+                <div class="card-action">הכנס למערכת ↗</div>
+            </div>
+            <div class="card" onclick="loadInternalApp('expenses', 'דפדפן הוצאות הבית', 'expenses.html')">
+                <div class="card-icon">📄</div>
+                <div class="card-name">הוצאות הבית ותלושי שכר</div>
+                <div class="card-desc">ניהול תקציב נטו והכנסות.</div>
+                <div class="card-action">הכנס למערכת ↗</div>
+            </div>
+            <div class="card" onclick="loadInternalApp('tasks', 'דפדפן משימות ומטלות', 'tasks.html')">
+                <div class="card-icon">📌</div>
+                <div class="card-name">משימות ומטלות בית</div>
+                <div class="card-desc">ארגון משימות שוטפות ומעקב ביצוע.</div>
+                <div class="card-action">הכנס למערכת ↗</div>
+            </div>
+            <div class="card" onclick="loadInternalApp('alerts', 'דפדפן התראות מערכת', 'alerts.html')">
+                <div class="card-icon">🔔</div>
+                <div class="card-name">התראות מערכת</div>
+                <div class="card-desc">מרכז התראות אוטומטי לאפליקציה ולטלפון.</div>
+                <div class="card-action">הכנס למערכת ↗</div>
+            </div>
+            <div class="card" onclick="loadInternalApp('events', 'דפדפן ניהול אירועים', 'events.html')">
+                <div class="card-icon">🎉</div>
+                <div class="card-name">ניהול אירועים</div>
+                <div class="card-desc">תכנון חגים, אירועים ומפגשים משפחתיים.</div>
+                <div class="card-action">הכנס למערכת ↗</div>
+            </div>
+            <div class="card" onclick="loadInternalApp('travel', 'מארגן הטיולים', 'travel.html')">
+                <div class="card-icon">🚗</div>
+                <div class="card-name">מארגן הטיולים</div>
+                <div class="card-desc">תכנון נסיעות, מסלולים וחופשות.</div>
+                <div class="card-action">הכנס למערכת ↗</div>
+            </div>
+            <div class="card" onclick="loadInternalApp('weather', 'מזג האוויר', 'weather.html')">
+                <div class="card-icon">☀️</div>
+                <div class="card-name">מזג האוויר</div>
+                <div class="card-desc">תחזית שוטפת וטמפרטורות.</div>
+                <div class="card-action">הכנס למערכת ↗</div>
+            </div>
+            <div class="card" onclick="loadInternalApp('calendar', 'היומן ולוח הזמנים', 'calendar.html')">
+                <div class="card-icon">📅</div>
+                <div class="card-name">היומן</div>
+                <div class="card-desc">ניהול פגישות ולוחות זמנים.</div>
+                <div class="card-action">הכנס למערכת ↗</div>
+            </div>
+            <div class="card" onclick="loadInternalApp('birthdays', 'ימי הולדת', 'birthdays.html')">
+                <div class="card-icon">🎂</div>
+                <div class="card-name">ימי הולדת</div>
+                <div class="card-desc">תזכורות שמחות למשפחה ולחברים.</div>
+                <div class="card-action">הכנס למערכת ↗</div>
+            </div>
+            <div class="card" onclick="loadInternalApp('coach', 'הקואוצ׳ר של הבית', 'coach.html')">
+                <div class="card-icon">🧘‍♀️</div>
+                <div class="card-name">הקואוצ'ר של הבית</div>
+                <div class="card-desc">השראה, מוטיבציה ומטרות אישיות.</div>
+                <div class="card-action">הכנס למערכת ↗</div>
+            </div>
+        </div>
+
+        <!-- קטגוריה 2: קישורים חכמים למכשירי הבית (IoT) -->
+        <div class="section-title">🔌 קישורים חכמים למכשירי הבית</div>
+        <div class="grid">
+            <div class="card" onclick="openSmartDevice('טלוויזיה חכמה', '📺')">
+                <div class="card-icon">📺</div>
+                <div class="card-name">טלוויזיה חכמה</div>
+                <div class="card-desc">שליטה, הפעלה ומקורות מדיה.</div>
+                <div class="card-action">הפעל חיבור חכם ↗</div>
+            </div>
+            <div class="card" onclick="openSmartDevice('מזגן הבית', '❄️')">
+                <div class="card-icon">❄️</div>
+                <div class="card-name">מזגן הבית</div>
+                <div class="card-desc">בקרת טמפרטורה, קירור וחימום.</div>
+                <div class="card-action">הפעל חיבור חכם ↗</div>
+            </div>
+            <div class="card" onclick="openSmartDevice('אורות ותאורה', '💡')">
+                <div class="card-icon">💡</div>
+                <div class="card-name">אורות ותאורה</div>
+                <div class="card-desc">עוצמת תאורה, תרחישים וכיבוי/הדלקה.</div>
+                <div class="card-action">הפעל חיבור חכם ↗</div>
+            </div>
+            <div class="card" onclick="openSmartDevice('מצלמות אבטחה', '📷')">
+                <div class="card-icon">📷</div>
+                <div class="card-name">מצלמות אבטחה</div>
+                <div class="card-desc">צפייה בשידור חי ובטחון הבית.</div>
+                <div class="card-action">הפעל חיבור חכם ↗</div>
+            </div>
+            <div class="card" onclick="openSmartDevice('שעונים חכמים', '⌚')">
+                <div class="card-icon">⌚</div>
+                <div class="card-name">שעונים חכמים</div>
+                <div class="card-desc">מעקב מדדים, צעדים והתראות בריאות.</div>
+                <div class="card-action">הפעל חיבור חכם ↗</div>
+            </div>
+        </div>
+
+        <!-- קטגוריה 3: חיבורים חיצוניים רשמיים -->
+        <div class="section-title">🔗 חיבורים חיצוניים רשמיים</div>
+        <div class="grid">
+            <a class="card" href="https://web.whatsapp.com" target="_blank">
+                <div class="card-icon">💬</div>
+                <div class="card-name">וואטסאפ (WhatsApp)</div>
+                <div class="card-desc">קישור חיצוני מהיר להודעות.</div>
+                <div class="card-action">פתח חיצוני ↗</div>
+            </a>
+            <a class="card" href="https://mail.google.com" target="_blank">
+                <div class="card-icon">📧</div>
+                <div class="card-name">מייל (Gmail)</div>
+                <div class="card-desc">קישור חיצוני לבדיקת הודעות.</div>
+                <div class="card-action">פתח חיצוני ↗</div>
+            </a>
+        </div>
+    </div>
+
+    <!-- אזור הצגת האפליקציה הפנימית בצורה חלקה ושקופה -->
+    <div id="appViewer">
+        <iframe id="appFrame" src=""></iframe>
+    </div>
+</div>
+
+<script>
+    function loadInternalApp(appKey, appTitle, fileName) {
+        document.getElementById('hubDashboard').style.display = 'none';
+        document.getElementById('backBtn').style.display = 'block';
+        
+        document.getElementById('hubTitle').innerText = appTitle;
+        document.getElementById('hubSubtitle').innerText = "אפליקציה פנימית מנוהלת במסגרת מערכת VIDASS";
+
+        const frame = document.getElementById('appFrame');
+        frame.src = fileName;
+        document.getElementById('appViewer').style.display = 'block';
+    }
+
+    function openSmartDevice(deviceName, icon) {
+        loadInternalApp('iot', `חיבור חכם: ${deviceName}`, 'iot_device.html');
+    }
+
+    function returnToHub() {
+        document.getElementById('appViewer').style.display = 'none';
+        document.getElementById('hubDashboard').style.display = 'block';
+        document.getElementById('backBtn').style.display = 'none';
+        
+        document.getElementById('hubTitle').innerText = "VIDASS Core System 🌐";
+        document.getElementById('hubSubtitle').innerText = "מרכז הניהול והשליטה המאובטח";
+        
+        document.getElementById('appFrame').src = '';
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIDASS Micro-App - שליטה במכשירי IoT חכמים</title>
+    <style>
+        :root {
+            --primary: #d84370;
+            --primary-dark: #ad1457;
+            --accent: #ff80ab;
+            --bg-gradient: linear-gradient(135deg, #0d0d0f 0%, #1a1622 100%);
+            --card-bg: rgba(26, 23, 33, 0.96);
+            --card-border: rgba(216, 67, 112, 0.4);
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --success: #10b981;
+            --danger: #ef4444;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: var(--bg-gradient); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .app-container { width: 100%; max-width: 600px; background: var(--card-bg); backdrop-filter: blur(14px); border: 1px solid var(--card-border); border-radius: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.8); padding: 24px; text-align: center; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 20px; text-align: right; }
+        .header h1 { font-size: 20px; color: var(--accent); }
+        .badge { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--success); padding: 4px 10px; border-radius: 8px; font-size: 11px; }
+        
+        .device-icon-large { font-size: 50px; margin-bottom: 10px; }
+        .device-status-box { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 20px; margin-bottom: 20px; }
+        
+        .btn-group { display: flex; gap: 10px; margin-top: 15px; }
+        .btn { flex: 1; padding: 12px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 14px; transition: 0.2s; }
+        .btn-on { background: var(--success); color: white; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); }
+        .btn-off { background: var(--danger); color: white; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3); }
+        .btn:hover { opacity: 0.9; transform: translateY(-2px); }
+
+        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: white; padding: 10px 20px; border-radius: 10px; font-size: 13px; transition: transform 0.3s; z-index: 1000; }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="header">
+        <div>
+            <h1 id="deviceTitle">🔌 בקרת מכשיר חכם</h1>
+            <p style="font-size: 11px; color: var(--text-muted);">ניהול ישיר ממערכת VIDASS</p>
+        </div>
+        <div class="badge">🟢 מקושר ומאובטח</div>
+    </div>
+
+    <div class="device-status-box">
+        <div class="device-icon-large" id="deviceIcon">⚡</div>
+        <h2 id="deviceNameName" style="font-size: 18px; color: var(--accent); margin-bottom: 5px;">טוען מכשיר...</h2>
+        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 15px;">סטטוס חישור: <span id="connectionState" style="color: var(--success);">פעיל ומגיב</span></p>
+        
+        <div class="btn-group">
+            <button class="btn btn-on" onclick="sendDeviceCommand('הפעלה / מצב פעיל')">הפעל מכשיר 🟢</button>
+            <button class="btn btn-off" onclick="sendDeviceCommand('כיבוי / חיסכון')">כבה מכשיר 🔴</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toastMsg">הפקודה בוצעה בהצלחה!</div>
+
+<script>
+    // זיהוי המכשיר שנבחר מתוך כתובת ה-URL או אחסון מקומי
+    window.onload = function() {
+        // לדוגמה, אם הגיעו לכאן דרך הלוח הראשי, נציג נתונים דינמיים
+        document.getElementById('deviceTitle').innerText = "🔌 בקרת מכשירים חכמים (IoT)";
+        document.getElementById('deviceNameName').innerText = "מערכות בית חכם מרכזיות";
+    };
+
+    function sendDeviceCommand(action) {
+        showToast(`הפקודה "${action}" נשלחה בהצלחה למכשיר!`);
+        
+        // רישום אוטומטי למרכז ההתראות של המערכת
+        let alerts = JSON.parse(localStorage.getItem('vidass_system_alerts')) || [];
+        alerts.push({ 
+            text: `בקרת IoT: בוצעה פעולה (${action})`, 
+            time: new Date().toLocaleTimeString('he-IL'), 
+            date: new Date().toLocaleDateString('he-IL') 
+        });
+        localStorage.setItem('vidass_system_alerts', JSON.stringify(alerts));
+    }
+
+    function showToast(msg, isError = false) {
+        const toast = document.getElementById('toastMsg');
+        toast.innerText = msg;
+        toast.style.background = isError ? 'var(--danger)' : 'var(--success)';
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+</script>
+
+</body>
+</html>
