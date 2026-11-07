@@ -183,42 +183,42 @@
     <!-- קטגוריה 1: דפדפני הניהול הפנימיים -->
     <div class="section-title">📂 דפדפני הניהול והבית</div>
     <div class="grid" id="modulesGrid">
-        <div class="card" onclick="loadInternalApp('members.html')">
+        <div class="card" onclick="loadInternalApp('members.html', 'ניהול דיירים והזמנות')">
             <div class="card-icon">👥</div>
             <div class="card-name">ניהול דיירים והזמנות</div>
             <div class="card-desc">צפייה בדיירים מחוברים והוספת בני משפחה לבית.</div>
             <div class="card-action">הכנס למערכת ↗</div>
         </div>
 
-        <div class="card" onclick="loadInternalApp('shopping.html')">
+        <div class="card" onclick="loadInternalApp('shopping.html', 'רשימת קניות')">
             <div class="card-icon">🛒</div>
             <div class="card-name">רשימת קניות</div>
             <div class="card-desc">ניהול רשימת מוצרים משותפת לכל דיירי הבית.</div>
             <div class="card-action">הכנס למערכת ↗</div>
         </div>
         
-        <div class="card" onclick="loadInternalApp('inventory.html')">
+        <div class="card" onclick="loadInternalApp('inventory.html', 'מלאי הבית')">
             <div class="card-icon">📦</div>
             <div class="card-name">מלאי הבית</div>
             <div class="card-desc">מעקב מוצרים ושליחה אוטומטית לקניות.</div>
             <div class="card-action">הכנס למערכת ↗</div>
         </div>
         
-        <div class="card" onclick="loadInternalApp('tasks.html')">
+        <div class="card" onclick="loadInternalApp('tasks.html', 'משימות ומטלות בית')">
             <div class="card-icon">📌</div>
             <div class="card-name">משימות ומטלות בית</div>
             <div class="card-desc">ניהול ומעקב משימות משותף לכל הדיירים.</div>
             <div class="card-action">הכנס למערכת ↗</div>
         </div>
 
-        <div class="card" onclick="loadInternalApp('pocket.html')">
+        <div class="card" onclick="loadInternalApp('pocket.html', 'דמי כיס והקצבות')">
             <div class="card-icon">💵</div>
             <div class="card-name">דמי כיס והקצבות</div>
             <div class="card-desc">ניהול הקצבות ורישומי כספים משפחתיים.</div>
             <div class="card-action">הכנס למערכת ↗</div>
         </div>
 
-        <div class="card" onclick="loadInternalApp('travel.html')">
+        <div class="card" onclick="loadInternalApp('travel.html', 'מארגן טיולים וחופשות')">
             <div class="card-icon">🚗</div>
             <div class="card-name">מארגן טיולים וחופשות</div>
             <div class="card-desc">ניהול מסלולים, קישורי מפות ורשימות ציוד.</div>
@@ -240,24 +240,44 @@
 
 <script>
     window.onload = function() {
-        const houseCode = getCurrentHouseCode();
-        const currentUser = getCurrentUser();
-        
+        // שליפת הנתונים בצורה בטוחה מה-localStorage עם גיבוי למקרה שלא הוגדרו
+        const houseCode = (typeof getCurrentHouseCode === 'function' ? getCurrentHouseCode() : null) || 
+                          localStorage.getItem('vidass_current_house_code') || 
+                          localStorage.getItem('vidass_current_house') || 
+                          'EILAT-33';
+                          
+        const currentUser = (typeof getCurrentUser === 'function' ? getCurrentUser() : null) || 
+                            localStorage.getItem('vidass_current_user') || 
+                            'משתמש';
+
+        // עדכון התגים במסך
         document.getElementById('houseBadge').innerText = `🟢 בית: ${houseCode}`;
         document.getElementById('userBadge').innerText = `👤 משתמש: ${currentUser}`;
-        document.getElementById('greetingTitle').innerText = getPersonalizedGreeting();
+        
+        if(typeof getPersonalizedGreeting === 'function') {
+            document.getElementById('greetingTitle').innerText = getPersonalizedGreeting();
+        } else {
+            document.getElementById('greetingTitle').innerText = `שלום, ${currentUser} (בית: ${houseCode})`;
+        }
     };
 
-    function loadInternalApp(pageUrl) {
-        document.getElementById('modalTitle').innerText = "טוען מודול...";
-        document.getElementById('appFrame').src = pageUrl;
+    function loadInternalApp(pageUrl, appName) {
+        document.getElementById('modalTitle').innerText = `טוען: ${appName}...`;
+        
+        // העברת קוד הבית כפרמטר בכתובת של ה-Iframe כדי שכל דפדפן ידע מיד לאיזה בית הוא שייך
+        const houseCode = localStorage.getItem('vidass_current_house_code') || localStorage.getItem('vidass_current_house') || 'EILAT-33';
+        const separator = pageUrl.includes('?') ? '&' : '?';
+        const fullUrl = `${pageUrl}${separator}house=${encodeURIComponent(houseCode)}`;
+        
+        document.getElementById('appFrame').src = fullUrl;
         document.getElementById('appModal').style.display = 'flex';
     }
 
     function closeInternalApp() {
         document.getElementById('appModal').style.display = 'none';
         document.getElementById('appFrame').src = '';
-        // רענון נתונים מהשרת בסגירה כדי לוודא שהכל מעודכן
+        
+        // רענון נתונים בסגירה אם הפונקציה קיימת
         if(typeof fetchHouseDataFromServer === 'function') {
             fetchHouseDataFromServer(true);
         }
