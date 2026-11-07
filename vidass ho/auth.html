@@ -1,0 +1,16 @@
+window.onload = function() {
+        // מציאת קוד הבית מתוך כתובת ה-URL (אם נשלח דרך קישור וואטסאפ)
+        const urlParams = new URLSearchParams(window.location.search);
+        const houseFromUrl = urlParams.get('house');
+
+        if (houseFromUrl) {
+            // אם יש קוד בקישור, נזין אותו אוטומטית לשדות ההצטרפות ונפתח את לשונית הדיירים
+            document.getElementById('joinHouseCode').value = houseFromUrl;
+            switchTab('join');
+            showSuccess(`🏠 זוהה קישור הצטרפות אוטומטי לבית: ${houseCodeDisplay(houseFromUrl)}<br>הכנס את שמך וקוד ה-PIN האישי שלך כדי להיכנס!`);
+        }
+    };
+
+    function houseCodeDisplay(code) {
+        return `<span style="color:var(--accent); font-weight:bold;">${code}</span>`;
+    }
