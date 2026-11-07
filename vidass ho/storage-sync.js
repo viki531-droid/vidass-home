@@ -1,93 +1,60 @@
-/**
- * VIDASS Core System - Firebase Cloud Storage Sync
- * מתחבר למאגר הנתונים בזמן אמת של Firebase ומסנכרן את כל דיירי הבית בלייב
- */
+// VIDASS - Secure Local & Router Sync Engine
+// מנהל את קוד הבית, בידוד הנתונים והסנכרון המקומי
 
-// הגדרות החיבור ל-Firebase (יש לעדכן עם פרטי הפרויקט האמיתיים שלך מתוך קונסולת Firebase)
-const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-    databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT_ID.appspot.com",
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-    appId: "YOUR_APP_ID"
-};
+const VIDASS_STORAGE_PREFIX = "vidass_house_";
 
-// אתחול Firebase (במידה וטרם אותר)
-if (typeof firebase !== 'undefined' && !firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-}
-
-// קבלת קוד הבית הפעיל של המשתמש המחובר
+// קבלת קוד הבית הנוכחי (ברירת מחדל לבית לדוגמה אם לא הוגדר)
 function getCurrentHouseCode() {
-    return localStorage.getItem('vidass_current_house') || 'DEFAULT_HOUSE';
+    let houseCode = localStorage.getItem("vidass_current_house_code");
+    if (!houseCode) {
+        houseCode = "10000"; // ברירת מחדל להתחלה
+        localStorage.setItem("vidass_current_house_code", houseCode);
+    }
+    return houseCode;
 }
 
-// קבלת שם המשתמש המחובר כרגע
+// הגדרת קוד בית חדש למערכת
+function setCurrentHouseCode(code) {
+    if (code && code.trim() !== "") {
+        localStorage.setItem("vidass_current_house_code", code.trim());
+    }
+}
+
+// קבלת שם המשתמש הנוכחי במערכת
 function getCurrentUser() {
-    return localStorage.getItem('vidass_current_user') || 'דייר';
+    return localStorage.getItem("vidass_current_user") || "משתמש אנונימי";
 }
 
-// קריאת נתונים משותפים בזמן אמת מתוך בסיס הנתונים בענן לפי קוד הבית
-function getSharedData(appKey) {
-    const houseCode = getCurrentHouseCode();
-    
-    // אם Firebase זמין, ננסה לשלוף את הנתונים מהענן
-    if (typeof firebase !== 'undefined') {
-        let cachedData = localStorage.getItem(`vidass_cloud_${houseCode}_${appKey}`);
-        return cachedData ? JSON.parse(cachedData) : [];
-    }
-    
-    // גיבוי מקומי במידת הצורך
-    return JSON.parse(localStorage.getItem(`vidass_${houseCode}_${appKey}`)) || [];
-}
-
-// שמירת נתונים כך שיישלחו מיד לענן וכל שאר דיירי הבית יראו אותם בלייב
-function saveSharedData(appKey, dataArray) {
-    const houseCode = getCurrentHouseCode();
-    
-    // שמירה מקומית לגיבוי מהיר
-    localStorage.setItem(`vidass_${houseCode}_${appKey}`, JSON.stringify(dataArray));
-    localStorage.setItem(`vidass_cloud_${houseCode}_${appKey}`, JSON.stringify(dataArray));
-
-    // שמירה אמיתית בענן של Firebase תחת נתיב הבית
-    if (typeof firebase !== 'undefined') {
-        const dbRef = firebase.database().ref(`houses/${houseCode}/${appKey}`);
-        dbRef.set(dataArray).catch(error => {
-            console.error("שגיאה בסנכרון לענן:", error);
-        });
+function setCurrentUser(username) {
+    if (username) {
+        localStorage.setItem("vidass_current_user", username.trim());
     }
 }
 
-// האזנה לשינויים בענן בלייב (כדי שדייר אחר שמוסיף משהו יעדכן את המסך אצלך מיד)
-function listenToCloudChanges(appKey, callback) {
+// שליפת רשימת הדיירים הרשומים תחת קוד הבית הנוכחי
+function getHouseMembers() {
     const houseCode = getCurrentHouseCode();
-    if (typeof firebase !== 'undefined') {
-        const dbRef = firebase.database().ref(`houses/${houseCode}/${appKey}`);
-        dbRef.on('value', (snapshot) => {
-            const data = snapshot.val() || [];
-            localStorage.setItem(`vidass_cloud_${houseCode}_${appKey}`, JSON.stringify(data));
-            if (callback) callback(data);
-        });
-    }
+    const data = localStorage.getItem(`${VIDASS_STORAGE_PREFIX}${houseCode}_members`);
+    return data ? JSON.parse(data) : ["ויקי", "דוד"]; // ברירת מחדל ראשונית
 }
 
-// פונקציית עזר להוספת פריט חדש
-function addSharedItem(appKey, itemObj) {
-    let data = getSharedData(appKey);
-    itemObj.addedBy = getCurrentUser();
-    itemObj.date = new Date().toLocaleDateString('he-IL');
-    itemObj.time = new Date().toLocaleTimeString('he-IL');
-    data.push(itemObj);
-    saveSharedData(appKey, data);
-    return data;
+// שמירת רשימת הדיירים לבית הנוכחי
+function saveHouseMembers(members) {
+    const houseCode = getCurrentHouseCode();
+    localStorage.setItem(`${VIDASS_STORAGE_PREFIX}${houseCode}_members`, JSON.stringify(members));
 }
 
-// פונקציית עזר למחיקת פריט לפי אינדקס
-function removeSharedItem(appKey, index) {
-    let data = getSharedData(appKey);
-    data.splice(index, 1);
-    saveSharedData(appKey, data);
-    return data;
+// שליפת מידע משותף כללי (כמו הודעות לוח בית, קניות, משימות)
+function getSharedData(key) {
+    const houseCode = getCurrentHouseCode();
+    const fullKey = `${VIDASS_STORAGE_PREFIX}${houseCode}_${key}`;
+    const data = localStorage.getItem(fullKey);
+    return data ? JSON.parse(data) : [];
+}
+
+// שמירת מידע משותף תחת קוד הבית
+function saveSharedData(key, data) {
+    const houseCode = getCurrentHouseCode();
+    const fullKey = `${VIDASS_STORAGE_PREFIX}${houseCode}_${key}`;
+    localStorage.setItem(fullKey, JSON.stringify(data));
 }
