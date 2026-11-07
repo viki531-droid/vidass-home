@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIDASS Micro-App - ניהול דיירי הבית והזמנות</title>
+    <!-- קישור לקובץ הסנכרון המשותף של הבית -->
+    <script src="storage-sync.js"></script>
+    <style>
+        :root {
+            --primary: #d84370;
+            --primary-dark: #ad1457;
+            --accent: #ff80ab;
+            --bg-gradient: linear-gradient(135deg, #0d0d0f 0%, #1a1622 100%);
+            --card-bg: rgba(26, 23, 33, 0.96);
+            --card-border: rgba(216, 67, 112, 0.4);
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --success: #10b981;
+            --danger: #ef4444;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: var(--bg-gradient); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .app-container { width: 100%; max-width: 600px; background: var(--card-bg); backdrop-filter: blur(14px); border: 1px solid var(--card-border); border-radius: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.8); padding: 24px; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 16px; }
+        .header h1 { font-size: 20px; color: var(--accent); }
+        .badge { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--success); padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: bold; }
+        
+        .section-box { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 16px; margin-bottom: 16px; }
+        .section-box h3 { font-size: 14px; color: var(--accent); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+
+        .input-group { margin-bottom: 12px; text-align: right; }
+        .input-group label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+        .input-group input { width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; color: white; font-size: 13px; outline: none; text-align: right; }
+        .input-group input:focus { border-color: var(--primary); }
+        
+        .btn { width: 100%; padding: 11px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 5px; transition: 0.2s; }
+        .btn:hover { opacity: 0.9; }
+
+        .member-row { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 10px 14px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+        
+        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: white; padding: 10px 20px; border-radius: 10px; font-size: 13px; transition: transform 0.3s; z-index: 1000; }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="header">
+        <div>
+            <h1>👥 ניהול דיירי הבית והזמנות</h1>
+            <p style="font-size: 11px; color: var(--text-muted);">שליטה בגישה וחיבור משפחתי לענן הפרטי</p>
+        </div>
+        <div class="badge" id="houseBadge">🟢 בית: טוען...</div>
+    </div>
+
+    <!-- קופסת פרטי הבית הנוכחי -->
+    <div class="section-box">
+        <h3>🏠 פרטי קוד הבית שלך</h3>
+        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">שתף את קוד הבית הזה עם בני המשפחה (כמו דוד) כדי שיוכלו להתחבר מיד לנתונים שלך:</p>
+        <div style="display: flex; gap: 8px; align-items: center;">
+            <input type="text" id="displayHouseCode" readonly style="flex: 1; padding: 8px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: var(--accent); font-weight: bold; text-align: center;">
+            <button class="btn" style="margin-top:0; width: auto; padding: 8px 14px; font-size: 12px;" onclick="copyHouseCode()">העתק קוד 📋</button>
+        </div>
+    </div>
+
+    <!-- הוספת דייר חדש לבית -->
+    <div class="section-box">
+        <h3>➕ הוספת דייר חדש למשפחה</h3>
+        <div class="input-group">
+            <label>שם הדייר (לדוגמה: דוד)</label>
+            <input type="text" id="newMemberName" placeholder="הכנס שם מלא..." onkeypress="if(event.key==='Enter') addMember()">
+        </div>
+        <button class="btn" onclick="addMember()">הוסף דייר לבית 👥</button>
+    </div>
+
+    <!-- רשימת הדיירי המחוברים כרגע -->
+    <div class="section-box">
+        <h3>📋 דיירי הבית המחוברים כרגע (<span id="membersCount">0</span>)</h3>
+        <div style="max-height: 200px; overflow-y: auto;" id="membersList"></div>
+    </div>
+</div>
+
+<div class="toast" id="toastMsg">הפעולה בוצעה בהצלחה!</div>
+
+<script>
+    window.onload = function() {
+        const houseCode = getCurrentHouseCode();
+        document.getElementById('houseBadge').innerText = `🟢 בית: ${houseCode}`;
+        document.getElementById('displayHouseCode').value = houseCode;
+        loadMembers();
+    };
+
+    function loadMembers() {
+        const members = getHouseMembers();
+        const container = document.getElementById('membersList');
+        document.getElementById('membersCount').innerText = members.length;
+
+        container.innerHTML = members.length === 0 ? '<p style="text-align:center; font-size:12px; color:var(--text-muted);">אין דיירים רשומים כרגע.</p>' : '';
+        
+        members.forEach((member, index) => {
+            const isCurrent = member === getCurrentUser();
+            container.innerHTML += `
+                <div class="member-row">
+                    <div>
+                        <strong style="color:var(--accent);">👤 ${member}</strong>
+                        ${isCurrent ? '<span style="font-size:10px; color:var(--success); margin-right:6px;">(אתה/את כאן)</span>' : ''}
+                    </div>
+                    ${members.length > 1 ? `<button onclick="removeMember(${index})" style="background:rgba(239,68,68,0.1); color:var(--danger); border:1px solid rgba(239,68,68,0.3); padding:4px 8px; border-radius:6px; cursor:pointer; font-size:11px;">הסר</button>` : ''}
+                </div>`;
+        });
+    }
+
+    function addMember() {
+        const input = document.getElementById('newMemberName');
+        const name = input.value.trim();
+        if(!name) { showToast("נא להזין שם דייר", true); return; }
+
+        let members = getHouseMembers();
+        if(members.includes(name)) {
+            showToast("הדייר כבר קיים ברשימה!", true);
+            return;
+        }
+
+        members.push(name);
+        saveHouseMembers(members);
+        
+        input.value = '';
+        loadMembers();
+        showToast(`הדייר ${name} נוסף בהצלחה לבית!`);
+    }
+
+    function removeMember(index) {
+        let members = getHouseMembers();
+        const removed = members.splice(index, 1);
+        saveHouseMembers(members);
+        loadMembers();
+        showToast(`הדייר ${removed} הוסר מהבית.`);
+    }
+
+    function copyHouseCode() {
+        const codeInput = document.getElementById('displayHouseCode');
+        codeInput.select();
+        navigator.clipboard.writeText(codeInput.value);
+        showToast("קוד הבית הועתק ללוח!");
+    }
+
+    function showToast(msg, isError = false) {
+        const toast = document.getElementById('toastMsg');
+        toast.innerText = msg;
+        toast.style.background = isError ? 'var(--danger)' : 'var(--success)';
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+</script>
+
+</body>
+</html>
