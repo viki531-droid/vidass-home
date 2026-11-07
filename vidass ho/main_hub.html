@@ -1,32 +1,268 @@
-<!-- קטגוריה 1: דפדפני הניהול הפנימיים -->
-<div class="section-title">📂 דפדפני הניהול הפנימיים של הבית</div>
-<div class="grid" id="modulesGrid">
-    <!-- כרטיסייה חדשה לניהול דיירי הבית והזמנות -->
-    <div class="card" onclick="loadInternalApp('members', 'ניהול דיירי הבית והזמנות', 'members.html')">
-        <div class="card-icon">👥</div>
-        <div class="card-name">ניהול דיירים והזמנות</div>
-        <div class="card-desc">צפייה בדיירים מחוברים והוספת בני משפחה לבית.</div>
-        <div class="card-action">הכנס למערכת ↗</div>
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIDASS - מרכז בקרה וניהול משפחתי חכם</title>
+    <!-- קישור לקובץ הסנכרון והאחסון האחיד -->
+    <script src="storage-sync.js"></script>
+    <style>
+        :root {
+            --primary: #d84370;
+            --primary-dark: #ad1457;
+            --accent: #ff80ab;
+            --bg-gradient: linear-gradient(135deg, #0d0d0f 0%, #1a1622 100%);
+            --card-bg: rgba(26, 23, 33, 0.96);
+            --card-border: rgba(216, 67, 112, 0.4);
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --success: #10b981;
+            --danger: #ef4444;
+            --gold: #f59e0b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .hub-container {
+            width: 100%;
+            max-width: 900px;
+            background: var(--card-bg);
+            backdrop-filter: blur(14px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.8);
+            padding: 28px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 16px;
+            margin-bottom: 24px;
+        }
+
+        .header h1 { font-size: 22px; color: var(--accent); }
+        .header p { font-size: 12px; color: var(--text-muted); }
+
+        .badges-bar {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .badge {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: var(--success);
+            padding: 6px 12px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .badge-user {
+            background: rgba(216, 67, 112, 0.15);
+            border: 1px solid var(--card-border);
+            color: var(--accent);
+        }
+
+        .section-title {
+            font-size: 15px;
+            color: var(--gold);
+            margin-bottom: 14px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 18px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            background: rgba(216, 67, 112, 0.08);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+        }
+
+        .card-icon { font-size: 28px; margin-bottom: 8px; }
+        .card-name { font-size: 15px; font-weight: bold; color: var(--text-main); margin-bottom: 4px; }
+        .card-desc { font-size: 12px; color: var(--text-muted); line-height: 1.4; margin-bottom: 12px; }
+        .card-action { font-size: 11px; color: var(--accent); font-weight: bold; }
+
+        .iframe-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .iframe-content {
+            width: 100%;
+            max-width: 750px;
+            height: 85vh;
+            background: #1a1622;
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.9);
+        }
+
+        .iframe-header {
+            background: rgba(0,0,0,0.4);
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .close-btn {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            padding: 6px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        iframe { width: 100%; height: 100%; border: none; background: transparent; }
+    </style>
+</head>
+<body>
+
+<div class="hub-container">
+    <div class="header">
+        <div>
+            <h1 id="greetingTitle">VIDASS - לחצני ניהול מרכזיים</h1>
+            <p>מערכת ענן פרטית מסונכרנת בזמן אמת</p>
+        </div>
+        <div class="badges-bar">
+            <div class="badge badge-user" id="userBadge">👤 משתמש: טוען...</div>
+            <div class="badge" id="houseBadge">🟢 בית: טוען...</div>
+        </div>
     </div>
 
-    <div class="card" onclick="loadInternalApp('shopping', 'דפדפן רשימת קניות', 'shopping.html')">
-        <div class="card-icon">🛒</div>
-        <div class="card-name">רשימת קניות</div>
-        <div class="card-desc">ניהול רשימת מוצרים (מקבל נתונים ממלאי הבית).</div>
-        <div class="card-action">הכנס למערכת ↗</div>
-    </div>
-    
-    <div class="card" onclick="loadInternalApp('inventory', 'דפדפן מלאי הבית', 'inventory.html')">
-        <div class="card-icon">📦</div>
-        <div class="card-name">מלאי הבית</div>
-        <div class="card-desc">מעקב מוצרים ושליחה אוטומטית לקניות.</div>
-        <div class="card-action">הכנס למערכת ↗</div>
-    </div>
-    
-    <div class="card" onclick="loadInternalApp('recipes', 'דפדפן מתכונים ומטבח', 'recipes.html')">
-        <div class="card-icon">🍲</div>
-        <div class="card-name">מתכונים ומטבח</div>
-        <div class="card-desc">ניהול מתכונים משפחתיים ומחשבון מצרכים.</div>
-        <div class="card-action">הכנס למערכת ↗</div>
+    <!-- קטגוריה 1: דפדפני הניהול הפנימיים -->
+    <div class="section-title">📂 דפדפני הניהול והבית</div>
+    <div class="grid" id="modulesGrid">
+        <div class="card" onclick="loadInternalApp('members.html')">
+            <div class="card-icon">👥</div>
+            <div class="card-name">ניהול דיירים והזמנות</div>
+            <div class="card-desc">צפייה בדיירים מחוברים והוספת בני משפחה לבית.</div>
+            <div class="card-action">הכנס למערכת ↗</div>
+        </div>
+
+        <div class="card" onclick="loadInternalApp('shopping.html')">
+            <div class="card-icon">🛒</div>
+            <div class="card-name">רשימת קניות</div>
+            <div class="card-desc">ניהול רשימת מוצרים משותפת לכל דיירי הבית.</div>
+            <div class="card-action">הכנס למערכת ↗</div>
+        </div>
+        
+        <div class="card" onclick="loadInternalApp('inventory.html')">
+            <div class="card-icon">📦</div>
+            <div class="card-name">מלאי הבית</div>
+            <div class="card-desc">מעקב מוצרים ושליחה אוטומטית לקניות.</div>
+            <div class="card-action">הכנס למערכת ↗</div>
+        </div>
+        
+        <div class="card" onclick="loadInternalApp('tasks.html')">
+            <div class="card-icon">📌</div>
+            <div class="card-name">משימות ומטלות בית</div>
+            <div class="card-desc">ניהול ומעקב משימות משותף לכל הדיירים.</div>
+            <div class="card-action">הכנס למערכת ↗</div>
+        </div>
+
+        <div class="card" onclick="loadInternalApp('pocket.html')">
+            <div class="card-icon">💵</div>
+            <div class="card-name">דמי כיס והקצבות</div>
+            <div class="card-desc">ניהול הקצבות ורישומי כספים משפחתיים.</div>
+            <div class="card-action">הכנס למערכת ↗</div>
+        </div>
+
+        <div class="card" onclick="loadInternalApp('travel.html')">
+            <div class="card-icon">🚗</div>
+            <div class="card-name">מארגן טיולים וחופשות</div>
+            <div class="card-desc">ניהול מסלולים, קישורי מפות ורשימות ציוד.</div>
+            <div class="card-action">הכנס למערכת ↗</div>
+        </div>
     </div>
 </div>
+
+<!-- מודל להצגת המיקרו-אפליקציות בצורה חלקה -->
+<div class="iframe-modal" id="appModal">
+    <div class="iframe-content">
+        <div class="iframe-header">
+            <strong id="modalTitle" style="color: var(--accent); font-size: 14px;">ניהול מערכת</strong>
+            <button class="close-btn" onclick="closeInternalApp()">סגור ✖</button>
+        </div>
+        <iframe id="appFrame" src=""></iframe>
+    </div>
+</div>
+
+<script>
+    window.onload = function() {
+        const houseCode = getCurrentHouseCode();
+        const currentUser = getCurrentUser();
+        
+        document.getElementById('houseBadge').innerText = `🟢 בית: ${houseCode}`;
+        document.getElementById('userBadge').innerText = `👤 משתמש: ${currentUser}`;
+        document.getElementById('greetingTitle').innerText = getPersonalizedGreeting();
+    };
+
+    function loadInternalApp(pageUrl) {
+        document.getElementById('modalTitle').innerText = "טוען מודול...";
+        document.getElementById('appFrame').src = pageUrl;
+        document.getElementById('appModal').style.display = 'flex';
+    }
+
+    function closeInternalApp() {
+        document.getElementById('appModal').style.display = 'none';
+        document.getElementById('appFrame').src = '';
+        // רענון נתונים מהשרת בסגירה כדי לוודא שהכל מעודכן
+        if(typeof fetchHouseDataFromServer === 'function') {
+            fetchHouseDataFromServer(true);
+        }
+    }
+</script>
+
+</body>
+</html>
