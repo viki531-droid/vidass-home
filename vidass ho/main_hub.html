@@ -35,7 +35,7 @@
 
         .hub-container {
             width: 100%;
-            max-width: 900px;
+            max-width: 950px;
             background: var(--card-bg);
             backdrop-filter: blur(14px);
             border: 1px solid var(--card-border);
@@ -132,7 +132,7 @@
 
         .iframe-content {
             width: 100%;
-            max-width: 750px;
+            max-width: 800px;
             height: 85vh;
             background: #1a1622;
             border: 1px solid var(--card-border);
@@ -171,7 +171,7 @@
 <div class="hub-container">
     <div class="header">
         <div>
-            <h1 id="greetingTitle">VIDASS - לחצני ניהול מרכזיים</h1>
+            <h1 id="greetingTitle">VIDASS - מרכז בקרה וניהול משפחתי חכם</h1>
             <p>מערכת ענן פרטית מסונכרנת בזמן אמת</p>
         </div>
         <div class="badges-bar">
@@ -180,12 +180,12 @@
         </div>
     </div>
 
-    <!-- קטגוריה 1: דפדפני הניהול הפנימיים -->
+    <!-- קטגוריה 1: דפדפני הניהול והבית -->
     <div class="section-title">📂 דפדפני הניהול והבית</div>
     <div class="grid" id="modulesGrid">
-        <div class="card" onclick="loadInternalApp('members.html', 'ניהול דיירים והזמנות')">
+        <div class="card" onclick="loadInternalApp('members.html', 'ניהול דיירים והרשאות')">
             <div class="card-icon">👥</div>
-            <div class="card-name">ניהול דיירים והזמנות</div>
+            <div class="card-name">ניהול דיירים והרשאות</div>
             <div class="card-desc">צפייה בדיירים מחוברים והוספת בני משפחה לבית.</div>
             <div class="card-action">הכנס למערכת ↗</div>
         </div>
@@ -211,10 +211,10 @@
             <div class="card-action">הכנס למערכת ↗</div>
         </div>
 
-        <div class="card" onclick="loadInternalApp('pocket.html', 'דמי כיס והקצבות')">
+        <div class="card" onclick="loadInternalApp('expenses.html', 'הוצאות ותקציב הבית')">
             <div class="card-icon">💵</div>
-            <div class="card-name">דמי כיס והקצבות</div>
-            <div class="card-desc">ניהול הקצבות ורישומי כספים משפחתיים.</div>
+            <div class="card-name">הוצאות ותקציב הבית</div>
+            <div class="card-desc">ניהול הוצאות כספיות ומעקב תקציבי חודשי.</div>
             <div class="card-action">הכנס למערכת ↗</div>
         </div>
 
@@ -222,6 +222,20 @@
             <div class="card-icon">🚗</div>
             <div class="card-name">מארגן טיולים וחופשות</div>
             <div class="card-desc">ניהול מסלולים, קישורי מפות ורשימות ציוד.</div>
+            <div class="card-action">הכנס למערכת ↗</div>
+        </div>
+
+        <div class="card" onclick="loadInternalApp('alerts.html', 'התראות מערכת')">
+            <div class="card-icon">🔔</div>
+            <div class="card-name">התראות מערכת</div>
+            <div class="card-desc">מרכז התראות ועדכונים חיים לכל בני הבית.</div>
+            <div class="card-action">הכנס למערכת ↗</div>
+        </div>
+
+        <div class="card" onclick="loadInternalApp('ai_assistant.html', 'עוזר חכם VIDASS')">
+            <div class="card-icon">🤖</div>
+            <div class="card-name">עוזר חכם VIDASS</div>
+            <div class="card-desc">שיחה עם העוזר החכם של משפחתכם בניהול הבית.</div>
             <div class="card-action">הכנס למערכת ↗</div>
         </div>
     </div>
@@ -240,7 +254,7 @@
 
 <script>
     window.onload = function() {
-        // שליפת הנתונים בצורה בטוחה מה-localStorage עם גיבוי למקרה שלא הוגדרו
+        // שליפת הנתונים בצורה בטוחה עם גיבויים
         const houseCode = (typeof getCurrentHouseCode === 'function' ? getCurrentHouseCode() : null) || 
                           localStorage.getItem('vidass_current_house_code') || 
                           localStorage.getItem('vidass_current_house') || 
@@ -264,7 +278,7 @@
     function loadInternalApp(pageUrl, appName) {
         document.getElementById('modalTitle').innerText = `טוען: ${appName}...`;
         
-        // העברת קוד הבית כפרמטר בכתובת של ה-Iframe כדי שכל דפדפן ידע מיד לאיזה בית הוא שייך
+        // העברת קוד הבית כפרמטר בכתובת של ה-Iframe
         const houseCode = localStorage.getItem('vidass_current_house_code') || localStorage.getItem('vidass_current_house') || 'EILAT-33';
         const separator = pageUrl.includes('?') ? '&' : '?';
         const fullUrl = `${pageUrl}${separator}house=${encodeURIComponent(houseCode)}`;

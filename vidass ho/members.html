@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIDASS Micro-App - ניהול דיירי הבית והזמנות</title>
-    <!-- קישור לקובץ הסנכרון המשותף של הבית -->
+    <title>VIDASS - ניהול דיירים והזמנות</title>
+    <!-- קישור לקובץ הסנכרון והאחסון האחיד -->
     <script src="storage-sync.js"></script>
     <style>
         :root {
@@ -20,173 +20,258 @@
             --danger: #ef4444;
             --gold: #f59e0b;
         }
+
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background: var(--bg-gradient); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .app-container { width: 100%; max-width: 650px; background: var(--card-bg); backdrop-filter: blur(14px); border: 1px solid var(--card-border); border-radius: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.8); padding: 24px; }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 16px; }
-        .header h1 { font-size: 20px; color: var(--accent); }
-        .badge { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--success); padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: bold; }
-        
-        .section-box { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 16px; margin-bottom: 16px; }
-        .section-box h3 { font-size: 14px; color: var(--accent); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
 
-        .input-group { margin-bottom: 12px; text-align: right; }
-        .input-group label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
-        .input-group input { width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; color: white; font-size: 13px; outline: none; text-align: right; }
-        .input-group input:focus { border-color: var(--primary); }
-        
-        .row-inputs { display: flex; gap: 10px; }
-        .row-inputs .input-group { flex: 1; }
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
 
-        .btn { width: 100%; padding: 11px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 5px; transition: 0.2s; }
-        .btn:hover { opacity: 0.9; }
-        .btn-gold { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .app-container {
+            width: 100%;
+            max-width: 750px;
+            background: var(--card-bg);
+            backdrop-filter: blur(14px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.8);
+            padding: 28px;
+        }
 
-        .member-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px 16px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
-        
-        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: white; padding: 10px 20px; border-radius: 10px; font-size: 13px; transition: transform 0.3s; z-index: 1000; }
-        .toast.show { transform: translateX(-50%) translateY(0); }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 16px;
+            margin-bottom: 20px;
+        }
+
+        .header h1 { font-size: 20px; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+        .house-badge { background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: var(--success); padding: 5px 12px; border-radius: 10px; font-size: 11px; font-weight: bold; }
+
+        .input-section {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr 1.2fr auto;
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 700px) {
+            .input-section { grid-template-columns: 1fr; }
+        }
+
+        .input-section input, .input-section select {
+            padding: 12px 14px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            color: white;
+            font-size: 13px;
+            outline: none;
+            text-align: right;
+        }
+
+        .input-section option {
+            background: #1a1622;
+            color: white;
+        }
+
+        .input-section input:focus, .input-section select:focus {
+            border-color: var(--primary);
+        }
+
+        .add-btn {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            padding: 0 20px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 13px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .add-btn:hover { opacity: 0.9; }
+
+        .members-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 50vh;
+            overflow-y: auto;
+            padding-left: 4px;
+        }
+
+        .member-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 14px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .member-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .member-name {
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--text-main);
+        }
+
+        .member-meta {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .delete-btn {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 6px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .delete-btn:hover { background: rgba(239, 68, 68, 0.2); }
+
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-muted);
+            font-size: 13px;
+        }
     </style>
 </head>
 <body>
 
 <div class="app-container">
     <div class="header">
-        <div>
-            <h1>👥 ניהול דיירי הבית והזמנות</h1>
-            <p style="font-size: 11px; color: var(--text-muted);">ניהול חברי משפחה, טלפונים וקישורי גישה לענן</p>
-        </div>
-        <div class="badge" id="houseBadge">🟢 בית: טוען...</div>
+        <h1>👥 ניהול דיירי הבית והרשאות</h1>
+        <div class="house-badge" id="houseBadgeDisplay">🟢 בית: טוען...</div>
     </div>
 
-    <!-- קופסת קישור הבית והזמנת דיירים -->
-    <div class="section-box">
-        <h3>🏠 קישור הזמנה לדיירי הבית</h3>
-        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">שלח את הקישור או קוד הבית לבני המשפחה כדי שיוכלו להצטרף באופן אוטומטי:</p>
-        <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 8px;">
-            <input type="text" id="displayHouseCode" readonly style="flex: 1; padding: 8px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: var(--accent); font-weight: bold; text-align: center;">
-            <button class="btn" style="margin-top:0; width: auto; padding: 8px 14px; font-size: 12px;" onclick="copyHouseCode()">העתק קוד 📋</button>
-        </div>
-        <button class="btn btn-gold" onclick="copyInviteLink()">📤 העתק קישור הזמנה מלא לוואטסאפ</button>
+    <div class="input-section">
+        <input type="text" id="memberNameInput" placeholder="שם הדייר/ת (לדוגמה: דוד)..." onkeypress="if(event.key==='Enter') addMember()">
+        <input type="text" id="memberPhoneInput" placeholder="מספר טלפון (אופציונלי)..." onkeypress="if(event.key==='Enter') addMember()">
+        <select id="memberRoleInput">
+            <option value="מנהל הבית">👑 מנהל הבית</option>
+            <option value="דייר משפחה">🏡 דייר משפחה</option>
+            <option value="אורח / צופה">👁️ אורח / צופה</option>
+        </select>
+        <button class="add-btn" onclick="addMember()">הוסף דייר ➕</button>
     </div>
 
-    <!-- הוספת דייר חדש עם טלפון -->
-    <div class="section-box">
-        <h3>➕ הוספת דייר חדש למערכת הבית</h3>
-        <div class="row-inputs">
-            <div class="input-group">
-                <label>שם מלא של הדייר</label>
-                <input type="text" id="newMemberName" placeholder="לדוגמה: דוד...">
-            </div>
-            <div class="input-group">
-                <label>מספר טלפון נייד</label>
-                <input type="tel" id="newMemberPhone" placeholder="לדוגמה: 0501234567...">
-            </div>
-        </div>
-        <button class="btn" onclick="addMember()">הוסף דייר ועדכן רשימה 👥</button>
-    </div>
-
-    <!-- רשימת הדיירים המחוברים עם פרטים מלאים -->
-    <div class="section-box">
-        <h3>📋 דיירי הבית הרשומים (<span id="membersCount">0</span>)</h3>
-        <div style="max-height: 240px; overflow-y: auto;" id="membersList"></div>
+    <div class="members-list" id="membersListContainer">
+        <!-- רשימת הדיירים תטען לכאן דינמית -->
     </div>
 </div>
 
-<div class="toast" id="toastMsg">הפעולה בוצעה בהצלחה!</div>
-
 <script>
+    // זיהוי קוד הבית והתאמה למערכת הסנכרון
+    const urlParams = new URLSearchParams(window.location.search);
+    let houseCode = urlParams.get('house') || 
+                    (typeof getCurrentHouseCode === 'function' ? getCurrentHouseCode() : null) || 
+                    localStorage.getItem('vidass_current_house_code') || 
+                    localStorage.getItem('vidass_current_house') || 
+                    'EILAT-33';
+
+    houseCode = houseCode.trim();
+    localStorage.setItem('vidass_current_house_code', houseCode);
+    localStorage.setItem('vidass_current_house', houseCode);
+
     window.onload = function() {
-        const houseCode = getCurrentHouseCode();
-        document.getElementById('houseBadge').innerText = `🟢 בית: ${houseCode}`;
-        document.getElementById('displayHouseCode').value = houseCode;
+        document.getElementById('houseBadgeDisplay').innerText = `🟢 בית: ${houseCode}`;
         loadMembers();
     };
 
     function loadMembers() {
-        // שליפת רשימת הדיירים המלאה מהמערכת המשותפת
-        let members = getHouseMembers();
-        const container = document.getElementById('membersList');
-        document.getElementById('membersCount').innerText = members.length;
+        // ניהול דיירים נשמר בתוך מערך המנוהל תחת מפתח members
+        const members = (typeof getSharedData === 'function') ? getSharedData('members') : [];
+        const container = document.getElementById('membersListContainer');
 
-        container.innerHTML = members.length === 0 ? '<p style="text-align:center; font-size:12px; color:var(--text-muted);">אין דיירים רשומים כרגע.</p>' : '';
-        
+        if (!members || members.length === 0) {
+            container.innerHTML = `<div class="empty-state">אין דיירים רשומים כרגע. אפשר להוסיף דייר חדש למעלה!</div>`;
+            return;
+        }
+
+        container.innerHTML = '';
         members.forEach((member, index) => {
-            // תמיכה בפורמט ישן (מחרוזת) ופורמט חדש (אובייקט עם שם וטלפון)
-            let name = typeof member === 'object' ? member.name : member;
-            let phone = typeof member === 'object' ? (member.phone || 'לא צוין') : 'לא צוין';
-            let role = (index === 0) ? '👑 מנהל הבית (ראש קבוצה)' : '👥 דייר מורשה';
-            const isCurrent = name === getCurrentUser();
-
             container.innerHTML += `
-                <div class="member-card">
-                    <div style="text-align: right;">
-                        <strong style="color:var(--accent); font-size:14px;">👤 ${name}</strong> ${isCurrent ? '<span style="font-size:10px; color:var(--success);">(אתה/את כאן)</span>' : ''}
-                        <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">📞 טלפון: ${phone} | תפקיד: ${role}</div>
+                <div class="member-item">
+                    <div class="member-info">
+                        <div class="member-name">👤 ${escapeHtml(member.name)}</div>
+                        <div class="member-meta">תפקיד: <strong>${escapeHtml(member.role || 'דייר')}</strong> | טלפון: ${escapeHtml(member.phone || 'לא צוין')}</div>
                     </div>
-                    ${index !== 0 ? `<button onclick="removeMember(${index})" style="background:rgba(239,68,68,0.1); color:var(--danger); border:1px solid rgba(239,68,68,0.3); padding:5px 10px; border-radius:6px; cursor:pointer; font-size:11px;">הסר</button>` : '<span style="font-size:10px; color:var(--gold);">ראשי</span>'}
-                </div>`;
+                    <button class="delete-btn" onclick="deleteMember(${index})">הסר דייר 🗑️</button>
+                </div>
+            `;
         });
     }
 
     function addMember() {
-        const nameInput = document.getElementById('newMemberName');
-        const phoneInput = document.getElementById('newMemberPhone');
+        const nameInput = document.getElementById('memberNameInput');
+        const phoneInput = document.getElementById('memberPhoneInput');
+        const roleInput = document.getElementById('memberRoleInput');
+        
         const name = nameInput.value.trim();
-        const phone = phoneInput.value.trim();
-
-        if(!name || !phone) {
-            showToast("נא למלא את שם הדייר ומספר הטלפון", true);
+        const phone = phoneInput.value.trim() || 'לא צוין';
+        const role = roleInput.value;
+        
+        if (!name) {
+            alert("נא להזין את שם הדייר/ת.");
             return;
         }
 
-        let members = getHouseMembers();
-        
-        // בדיקה האם הדייר כבר קיים
-        const exists = members.some(m => (typeof m === 'object' ? m.name : m) === name);
-        if(exists) {
-            showToast("הדייר כבר קיים ברשימה!", true);
-            return;
-        }
+        let members = (typeof getSharedData === 'function') ? getSharedData('members') : [];
 
-        // הוספת אובייקט דייר הכולל שם וטלפון
-        members.push({ name: name, phone: phone, role: 'דייר' });
-        saveHouseMembers(members);
-        
+        members.push({
+            name: name,
+            phone: phone,
+            role: role
+        });
+
+        saveAndRefresh(members);
         nameInput.value = '';
         phoneInput.value = '';
+        nameInput.focus();
+    }
+
+    function deleteMember(index) {
+        let members = (typeof getSharedData === 'function') ? getSharedData('members') : [];
+        if (members[index] !== undefined) {
+            members.splice(index, 1);
+            saveAndRefresh(members);
+        }
+    }
+
+    function saveAndRefresh(membersArray) {
+        if (typeof saveSharedData === 'function') {
+            saveSharedData('members', membersArray);
+        } else {
+            localStorage.setItem('vidass_members_' + houseCode, JSON.stringify(membersArray));
+        }
         loadMembers();
-        showToast(`הדייר ${name} נוסף בהצלחה למשפחה! 👥`);
     }
 
-    function removeMember(index) {
-        let members = getHouseMembers();
-        const removed = members.splice(index, 1);
-        saveHouseMembers(members);
-        loadMembers();
-        showToast("הדייר הוסר מרשימת הבית.");
-    }
-
-    function copyHouseCode() {
-        const codeInput = document.getElementById('displayHouseCode');
-        codeInput.select();
-        navigator.clipboard.writeText(codeInput.value);
-        showToast("קוד הבית הועתק ללוח!");
-    }
-
-    function copyInviteLink() {
-        const houseCode = getCurrentHouseCode();
-        const inviteText = `שלום! הצטרף למערכת הבית החכם של VIDASS באמצעות קוד הבית שלי: ${houseCode}\nקישור לכניסה: ${window.location.origin}/auth.html`;
-        navigator.clipboard.writeText(inviteText);
-        showToast("קישור ההזמנה המלא הועתק ללוח לשליחה לוואטסאפ! 📤");
-    }
-
-    function showToast(msg, isError = false) {
-        const toast = document.getElementById('toastMsg');
-        toast.innerText = msg;
-        toast.style.background = isError ? 'var(--danger)' : 'var(--success)';
-        toast.classList.add('show');
-        setTimeout(() => toast.classList.remove('show'), 3000);
+    function escapeHtml(str) {
+        return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
     }
 </script>
 

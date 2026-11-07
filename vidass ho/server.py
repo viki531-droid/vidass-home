@@ -5,7 +5,6 @@ import os
 app = Flask(__name__)
 DB_FILE = "vidass_data.json"
 
-# טעינת הנתונים מהקובץ המקומי בשרת עם הגנה מפני קבצים ריקים או פגומים
 def load_db():
     if not os.path.exists(DB_FILE):
         return {}
@@ -16,7 +15,6 @@ def load_db():
         print(f"שגיאה בטעינת מסד הנתונים: {e}")
         return {}
 
-# שמירת הנתונים בקובץ המקומי בשרת בצורה מאובטחת
 def save_db(data):
     try:
         with open(DB_FILE, "w", encoding="utf-8") as f:
@@ -24,60 +22,70 @@ def save_db(data):
     except Exception as e:
         print(f"שגיאה בשמירת מסד הנתונים: {e}")
 
-# נתיב בדיקת תקינות השרת (Health Check)
 @app.route('/api/health', methods=['GET'])
 def health_check():
     return jsonify({"status": "online", "system": "VIDASS Private Cloud Core"})
 
-# נתיב לקבלת כל הנתונים והמודולים של בית מסוים לפי קוד הבית
+# נקודת קצה חדשה לאימות קוד בית וסיסמה
+@app.route('/api/auth', methods=['POST'])
+def authenticate_house():
+    db = load_db()
+    req_data = request.json or {}
+    house_code = req_data.get('house_code', '').strip().upper()
+    password = req_data.get('password', '').strip()
+
+    if not house_code:
+        return jsonify({"status": "error", "message": "נא להזין קוד בית"}), 400
+
+    # אם הבית לא קיים עדיין, ניצור אותו אוטומטית עם סיסמת ברירת מחדל
+    if house_code not in db:
+        db[house_code] = {
+            "password": password if password else "1234",
+            "members": [{"name": "ויקי", "phone": "לא צוין", "role": "מנהל הבית"}],
+            "data": {
+                "shopping": [], "inventory": [], "tasks": [], "recipes": [], 
+                "pocket": [], "travel": [], "weather": [], "expenses": [], "calendar": [], "alerts": []
+            }
+        }
+        save_db(db)
+        return jsonify({"status": "success", "message": "הבית נוצר בהצלחה והחיבור אושר!"})
+
+    # בדיקת תקינות סיסמה לבית קיים
+    stored_password = db[house_code].get("password", "1234")
+    if stored_password != password:
+        return jsonify({"status": "error", "message": "סיסמת בית שגויה!"}), 401
+
+    return jsonify({"status": "success", "message": "האימות עבר בהצלחה!"})
+
 @app.route('/api/get/<house_code>', methods=['GET'])
 def get_house_data(house_code):
     db = load_db()
-    # אם קוד הבית קיים, נחזיר אותו. אם לא, נחזיר מבנה ריק ומאובטח לבית חדש
-    house_data = db.get(house_code, {
-        "admin": "",
-        "members": [],
-        "data": {
-            "inventory": [],
-            "shopping": [],
-            "tasks": [],
-            "recipes": [],
-            "expenses": [],
-            "calendar": [],
-            "birthdays": [],
-            "travel": [],
-            "weather": [],
-            "coach": [],
-            "alerts": [],
-            "pocket": []
-        }
-    })
-    return jsonify(house_data)
+    house_code = house_code.strip().upper()
+    
+    if house_code not in db:
+        return jsonify({"status": "error", "message": "הבית אינו קיים במערכת"}), 404
 
-# נתיב לעדכון ושמירת נתונים של הבית בזמן אמת מכל המכשירים של בני הבית
+    # מחזירים את נתוני הבית (ללא סיסמה מטעמי אבטחה)
+    house_package = {
+        "members": db[house_code].get("members", []),
+        "data": db[house_code].get("data", {})
+    }
+    return jsonify(house_package)
+
 @app.route('/api/save/<house_code>', methods=['POST'])
 def save_house_data(house_code):
     db = load_db()
-    req_data = request.json
+    house_code = house_code.strip().upper()
+    req_data = request.json or {}
     
-    if not req_data:
-        return jsonify({"status": "error", "message": "לא התקבלו נתונים לשמירה"}), 400
-
     if house_code not in db:
-        db[house_code] = {
-            "members": [], 
-            "data": {
-                "inventory": [], "shopping": [], "tasks": [], "recipes": [], 
-                "expenses": [], "calendar": [], "birthdays": [], "travel": [], 
-                "weather": [], "coach": [], "alerts": [], "pocket": []
-            }
-        }
-    
-    # עדכון רשימת חברי הבית (הדיירים) אם קיימים בבקשה
+        return jsonify({"status": "error", "message": "הבית אינו קיים, נדרש אימות ראשוני"}), 404
+
+    # עדכון רשימת הדיירים אם קיימת בבקשה
     if "members" in req_data:
         db[house_code]["members"] = req_data["members"]
         
-    # עדכון או הוספה של מודולים (קניות, משימות, מלאי, דמי כיס וכו')
+    # עדכון המודולים השונים בזמן אמת
     if "data" in req_data:
         for module_key, module_val in req_data["data"].items():
             db[house_code]["data"][module_key] = module_val
@@ -86,6 +94,5 @@ def save_house_data(house_code):
     return jsonify({"status": "success", "message": "הנתונים עודכנו בענן הפרטי בהצלחה!"})
 
 if __name__ == '__main__':
-    print("🚀 שרת הענן הפרטי של VIDASS מופעל ורץ ברשת המאובטחת...")
-    # השרת רץ על פורט 5000 ונגיש לכל מכשירי המשפחה דרך רשת Tailscale
+    print("🚀 שרת הענן הפרטי של VIDASS רץ כעת ומוכן עם אבטחת סיסמאות לבתים...")
     app.run(host='0.0.0.0', port=5000, debug=True)

@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIDASS Micro-App - מלאי הבית</title>
-    <!-- קישור לקובץ הסנכרון המשותף בין דיירי הבית -->
+    <title>VIDASS - ניהול מלאי הבית</title>
+    <!-- קישור לקובץ הסנכרון והאחסון האחיד -->
     <script src="storage-sync.js"></script>
     <style>
         :root {
@@ -18,129 +18,307 @@
             --text-muted: #9ca3af;
             --success: #10b981;
             --danger: #ef4444;
+            --warning: #f59e0b;
         }
+
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background: var(--bg-gradient); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .app-container { width: 100%; max-width: 600px; background: var(--card-bg); backdrop-filter: blur(14px); border: 1px solid var(--card-border); border-radius: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.8); padding: 24px; }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 16px; }
-        .header h1 { font-size: 20px; color: var(--accent); }
-        .badge { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--success); padding: 4px 10px; border-radius: 8px; font-size: 11px; }
-        .input-group { margin-bottom: 12px; text-align: right; }
-        .input-group label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
-        .input-group input { width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; color: white; font-size: 13px; outline: none; text-align: right; }
-        .btn { width: 100%; padding: 11px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 5px; }
-        .item-row { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
-        .sync-btn { background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.4); padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: bold; }
-        .sync-btn:hover { background: var(--success); color: white; }
-        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: white; padding: 10px 20px; border-radius: 10px; font-size: 13px; transition: transform 0.3s; z-index: 1000; }
-        .toast.show { transform: translateX(-50%) translateY(0); }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 750px;
+            background: var(--card-bg);
+            backdrop-filter: blur(14px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.8);
+            padding: 28px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 16px;
+            margin-bottom: 20px;
+        }
+
+        .header h1 { font-size: 20px; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+        .house-badge { background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: var(--success); padding: 5px 12px; border-radius: 10px; font-size: 11px; font-weight: bold; }
+
+        .input-section {
+            display: grid;
+            grid-template-columns: 2fr 1fr auto;
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 600px) {
+            .input-section { grid-template-columns: 1fr; }
+        }
+
+        .input-section input, .input-section select {
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            color: white;
+            font-size: 13px;
+            outline: none;
+            text-align: right;
+        }
+
+        .input-section input option, .input-section select option {
+            background: #1a1622;
+            color: white;
+        }
+
+        .input-section input:focus, .input-section select:focus {
+            border-color: var(--primary);
+        }
+
+        .add-btn {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            padding: 0 22px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 13px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .add-btn:hover { opacity: 0.9; }
+
+        .inventory-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 50vh;
+            overflow-y: auto;
+            padding-left: 4px;
+        }
+
+        .inventory-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 14px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: 0.2s;
+        }
+
+        .inventory-item.low-stock {
+            border-color: rgba(245, 158, 11, 0.4);
+            background: rgba(245, 158, 11, 0.04);
+        }
+
+        .item-info {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .item-name {
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--text-main);
+        }
+
+        .item-meta {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .item-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .action-btn {
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            transition: 0.2s;
+        }
+
+        .shop-btn {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        .shop-btn:hover { background: rgba(16, 185, 129, 0.3); }
+
+        .delete-btn {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+        .delete-btn:hover { background: rgba(239, 68, 68, 0.2); }
+
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-muted);
+            font-size: 13px;
+        }
     </style>
 </head>
 <body>
 
 <div class="app-container">
     <div class="header">
-        <div>
-            <h1>📦 דפדפן מלאי הבית</h1>
-            <p style="font-size: 11px; color: var(--text-muted);">מקושר ומסונכרן לכל דיירי הבית</p>
-        </div>
-        <div class="badge" id="houseBadge">🟢 מחובר לבית המשותף</div>
+        <h1>📦 מלאי הבית ומעקב מוצרים</h1>
+        <div class="house-badge" id="houseBadgeDisplay">🟢 בית: טוען...</div>
     </div>
 
-    <div class="input-group">
-        <label>הוסף מוצר למלאי הבית (לדוגמה: שמן, קמח, חלב)</label>
-        <input type="text" id="inventoryItem" placeholder="שם המוצר במלאי..." onkeypress="if(event.key==='Enter') addInventoryItem()">
+    <div class="input-section">
+        <input type="text" id="itemNameInput" placeholder="שם המוצר (לדוגמה: שמן זית, חלב)..." onkeypress="if(event.key==='Enter') addItem()">
+        <input type="text" id="itemQtyInput" placeholder="כמות (לדוגמה: 2 יח', 1 ליטר)..." onkeypress="if(event.key==='Enter') addItem()">
+        <button class="add-btn" onclick="addItem()">הוסף למלאי ➕</button>
     </div>
-    <button class="btn" onclick="addInventoryItem()">הוסף למלאי הבית 📦</button>
 
-    <div style="margin-top: 20px; max-height: 260px; overflow-y: auto;" id="inventoryList"></div>
+    <div class="inventory-list" id="inventoryListContainer">
+        <!-- פריטי המלאי יטענו לכאן דינמית -->
+    </div>
 </div>
 
-<div class="toast" id="toastMsg">הפעולה בוצעה בהצלחה!</div>
-
 <script>
+    // זיהוי קוד הבית והתאמה למערכת הסנכרון
+    const urlParams = new URLSearchParams(window.location.search);
+    let houseCode = urlParams.get('house') || 
+                    (typeof getCurrentHouseCode === 'function' ? getCurrentHouseCode() : null) || 
+                    localStorage.getItem('vidass_current_house_code') || 
+                    localStorage.getItem('vidass_current_house') || 
+                    'EILAT-33';
+
+    houseCode = houseCode.trim();
+    localStorage.setItem('vidass_current_house_code', houseCode);
+    localStorage.setItem('vidass_current_house', houseCode);
+
     window.onload = function() {
-        const houseCode = getCurrentHouseCode();
-        if(houseCode) {
-            document.getElementById('houseBadge').innerText = `🟢 בית: ${houseCode}`;
-        }
+        document.getElementById('houseBadgeDisplay').innerText = `🟢 בית: ${houseCode}`;
         loadInventory();
     };
 
     function loadInventory() {
-        // שימוש בפונקציית הסנכרון המשותפת לכל דיירי הבית[cite: 8]
-        const data = getSharedData('inventory');
-        const container = document.getElementById('inventoryList');
-        
-        container.innerHTML = data.length === 0 ? '<p style="text-align:center; font-size:12px; color:var(--text-muted);">אין מוצרים רשומים במלאי כרגע.</p>' : '';
-        data.slice().reverse().forEach((item, index) => {
-            const actualIndex = data.length - 1 - index;
-            container.innerHTML += `
-                <div class="item-row">
-                    <div>
-                        <span>📦 ${item.name}</span>
-                        <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">הוסף ע"י: ${item.addedBy || 'דייר'}</div>
-                    </div>
-                    <div style="display:flex; gap:6px; align-items:center;">
-                        <button class="sync-btn" onclick="sendToShopping('${item.name}')">חסר! שלח לקניות 🛒</button>
-                        <button onclick="removeInventoryItem(${actualIndex})" style="background:rgba(239,68,68,0.1); color:var(--danger); border:1px solid rgba(239,68,68,0.3); padding:5px 8px; border-radius:6px; cursor:pointer; font-size:11px;">מחק</button>
-                    </div>
-                </div>`;
-        });
-    }
+        const inventory = (typeof getSharedData === 'function') ? getSharedData('inventory') : [];
+        const container = document.getElementById('inventoryListContainer');
 
-    function addInventoryItem() {
-        const input = document.getElementById('inventoryItem');
-        const name = input.value.trim();
-        if(!name) { showToast("נא להזין שם מוצר", true); return; }
-
-        let data = getSharedData('inventory');
-        data.push({ 
-            name, 
-            addedBy: getCurrentUser(),
-            date: new Date().toLocaleDateString('he-IL') 
-        });
-        saveSharedData('inventory', data);
-
-        input.value = '';
-        loadInventory();
-        showToast("המוצר נוסף למלאי ושותף לכל דיירי הבית!");
-    }
-
-    function removeInventoryItem(index) {
-        let data = getSharedData('inventory');
-        data.splice(index, 1);
-        saveSharedData('inventory', data);
-        loadInventory();
-        showToast("המוצר הוסר מהמלאי.");
-    }
-
-    // הפונקציה המקשרת בין המלאי לדפדפן הקניות בצורה משותפת![cite: 8]
-    function sendToShopping(productName) {
-        let shoppingData = getSharedData('shopping');
-        
-        const exists = shoppingData.some(item => item.name === productName);
-        if(exists) {
-            showToast("המוצר כבר קיים ברשימת הקניות!", true);
+        if (!inventory || inventory.length === 0) {
+            container.innerHTML = `<div class="empty-state">אין פריטים רשומים במלאי כרגע. אפשר להוסיף פריטים חדשים למעלה!</div>`;
             return;
         }
 
-        shoppingData.push({ 
-            name: productName, 
-            addedBy: getCurrentUser(),
-            date: new Date().toLocaleDateString('he-IL') 
+        container.innerHTML = '';
+        inventory.slice().reverse().forEach((item, index) => {
+            const actualIndex = inventory.length - 1 - index;
+            container.innerHTML += `
+                <div class="inventory-item">
+                    <div class="item-info">
+                        <div class="item-name">📦 ${escapeHtml(item.name)}</div>
+                        <div class="item-meta">כמות: <strong>${escapeHtml(item.quantity || '1')}</strong> | עודכן ע"י: ${escapeHtml(item.addedBy || 'דייר')}</div>
+                    </div>
+                    <div class="item-actions">
+                        <button class="action-btn shop-btn" onclick="sendToShopping('${escapeHtml(item.name)}')">העבר לקניות 🛒</button>
+                        <button class="action-btn delete-btn" onclick="deleteItem(${actualIndex})">מחק 🗑️</button>
+                    </div>
+                </div>
+            `;
         });
-        saveSharedData('shopping', shoppingData);
-        
-        showToast(`המוצר "${productName}" שוגר בהצלחה לדפדפן הקניות המשותף! 🛒`);
     }
 
-    function showToast(msg, isError = false) {
-        const toast = document.getElementById('toastMsg');
-        toast.innerText = msg;
-        toast.style.background = isError ? 'var(--danger)' : 'var(--success)';
-        toast.classList.add('show');
-        setTimeout(() => toast.classList.remove('show'), 3000);
+    function addItem() {
+        const nameInput = document.getElementById('itemNameInput');
+        const qtyInput = document.getElementById('itemQtyInput');
+        
+        const name = nameInput.value.trim();
+        const quantity = qtyInput.value.trim() || '1 יח\'';
+        
+        if (!name) return;
+
+        let inventory = (typeof getSharedData === 'function') ? getSharedData('inventory') : [];
+        const currentUser = (typeof getCurrentUser === 'function' ? getCurrentUser() : null) || 
+                            localStorage.getItem('vidass_current_user') || 
+                            'דייר';
+
+        inventory.push({
+            name: name,
+            quantity: quantity,
+            addedBy: currentUser,
+            date: new Date().toLocaleDateString('he-IL')
+        });
+
+        saveAndRefresh(inventory);
+        nameInput.value = '';
+        qtyInput.value = '';
+        nameInput.focus();
+    }
+
+    function deleteItem(index) {
+        let inventory = (typeof getSharedData === 'function') ? getSharedData('inventory') : [];
+        if (inventory[index] !== undefined) {
+            inventory.splice(index, 1);
+            saveAndRefresh(inventory);
+        }
+    }
+
+    // פונקציה חכמה שמעבירה מוצר מהמלאי ישירות לרשימת הקניות המשותפת!
+    function sendToShopping(itemName) {
+        let shopping = (typeof getSharedData === 'function') ? getSharedData('shopping') : [];
+        const currentUser = (typeof getCurrentUser === 'function' ? getCurrentUser() : null) || 
+                            localStorage.getItem('vidass_current_user') || 
+                            'דייר';
+
+        // בדיקה שהמוצר לא קיים כבר ברשימת הקניות
+        const exists = shopping.some(item => item.text === itemName);
+        if (!exists) {
+            shopping.push({
+                text: itemName,
+                completed: false,
+                addedBy: currentUser,
+                date: new Date().toLocaleDateString('he-IL')
+            });
+
+            if (typeof saveSharedData === 'function') {
+                saveSharedData('shopping', shopping);
+            } else {
+                localStorage.setItem('vidass_shopping_' + houseCode, JSON.stringify(shopping));
+            }
+            alert(`המוצר "${itemName}" הועבר בהצלחה לרשימת הקניות! 🛒`);
+        } else {
+            alert(`המוצר "${itemName}" כבר קיים ברשימת הקניות.`);
+        }
+    }
+
+    function saveAndRefresh(inventoryArray) {
+        if (typeof saveSharedData === 'function') {
+            saveSharedData('inventory', inventoryArray);
+        } else {
+            localStorage.setItem('vidass_inventory_' + houseCode, JSON.stringify(inventoryArray));
+        }
+        loadInventory();
+    }
+
+    function escapeHtml(str) {
+        return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
     }
 </script>
 

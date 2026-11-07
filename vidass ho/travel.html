@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIDASS Micro-App - מארגן טיולים וחופשות מתקדם</title>
-    <!-- קישור לקובץ הסנכרון המשותף בין דיירי הבית -->
+    <title>VIDASS - מארגן טיולים וחופשות</title>
+    <!-- קישור לקובץ הסנכרון והאחסון האחיד -->
     <script src="storage-sync.js"></script>
     <style>
         :root {
@@ -20,196 +20,288 @@
             --danger: #ef4444;
             --gold: #f59e0b;
         }
+
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background: var(--bg-gradient); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .app-container { width: 100%; max-width: 680px; background: var(--card-bg); backdrop-filter: blur(14px); border: 1px solid var(--card-border); border-radius: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.8); padding: 24px; }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 16px; }
-        .header h1 { font-size: 20px; color: var(--accent); }
-        .badge { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--success); padding: 4px 10px; border-radius: 8px; font-size: 11px; }
-        
-        .section-box { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 16px; margin-bottom: 16px; }
-        .section-box h3 { color: var(--gold); font-size: 14px; margin-bottom: 10px; }
 
-        .input-group { margin-bottom: 12px; text-align: right; }
-        .input-group label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
-        .input-group input, .input-group textarea { width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; color: white; font-size: 13px; outline: none; text-align: right; }
-        .input-group textarea { resize: none; height: 60px; }
-        
-        .row-inputs { display: flex; gap: 10px; }
-        .row-inputs .input-group { flex: 1; }
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
 
-        .btn { width: 100%; padding: 11px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 5px; transition: 0.2s; }
-        .btn:hover { opacity: 0.9; }
+        .app-container {
+            width: 100%;
+            max-width: 750px;
+            background: var(--card-bg);
+            backdrop-filter: blur(14px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.8);
+            padding: 28px;
+        }
 
-        .trip-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 16px; margin-bottom: 12px; font-size: 13px; }
-        .trip-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 8px; }
-        
-        .map-link { display: inline-block; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: var(--gold); padding: 4px 10px; border-radius: 8px; text-decoration: none; font-size: 11px; font-weight: bold; margin-top: 6px; }
-        .map-link:hover { background: rgba(245, 158, 11, 0.3); }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 16px;
+            margin-bottom: 20px;
+        }
 
-        .checklist-item { display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.02); padding: 6px 10px; border-radius: 8px; margin-top: 4px; font-size: 12px; }
+        .header h1 { font-size: 20px; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+        .house-badge { background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: var(--success); padding: 5px 12px; border-radius: 10px; font-size: 11px; font-weight: bold; }
 
-        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: white; padding: 10px 20px; border-radius: 10px; font-size: 13px; transition: transform 0.3s; z-index: 1000; }
-        .toast.show { transform: translateX(-50%) translateY(0); }
+        .input-section {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr 1.5fr auto;
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 700px) {
+            .input-section { grid-template-columns: 1fr; }
+        }
+
+        .input-section input {
+            padding: 12px 14px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            color: white;
+            font-size: 13px;
+            outline: none;
+            text-align: right;
+        }
+
+        .input-section input:focus {
+            border-color: var(--primary);
+        }
+
+        .add-btn {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            padding: 0 20px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 13px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .add-btn:hover { opacity: 0.9; }
+
+        .travel-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 50vh;
+            overflow-y: auto;
+            padding-left: 4px;
+        }
+
+        .travel-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 14px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .travel-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex: 1;
+        }
+
+        .travel-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--text-main);
+        }
+
+        .travel-meta {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .travel-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .map-link-btn {
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: bold;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+
+        .map-link-btn:hover { background: rgba(59, 130, 246, 0.3); }
+
+        .delete-btn {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 6px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .delete-btn:hover { background: rgba(239, 68, 68, 0.2); }
+
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-muted);
+            font-size: 13px;
+        }
     </style>
 </head>
 <body>
 
 <div class="app-container">
     <div class="header">
-        <div>
-            <h1>🚗 מארגן טיולים וחופשות מתקדם</h1>
-            <p style="font-size: 11px; color: var(--text-muted);">ניהול מסלולים, קישורי מפות ורשימות ציוד משפחתיות</p>
-        </div>
-        <div class="badge" id="houseBadge">🟢 מחובר לבית המשותף</div>
+        <h1>🚗 מארגן טיולים וחופשות</h1>
+        <div class="house-badge" id="houseBadgeDisplay">🟢 בית: טוען...</div>
     </div>
 
-    <!-- אזור הוספת טיול חדש -->
-    <div class="section-box">
-        <h3>➕ תכנון טיול או חופשה חדשה</h3>
-        <div class="row-inputs">
-            <div class="input-group">
-                <label>יעד הטיול / החופשה</label>
-                <input type="text" id="tripDestination" placeholder="לדוגמה: סוף שבוע באילת / טיול בצפון...">
-            </div>
-            <div class="input-group">
-                <label>תאריך ושעה</label>
-                <input type="text" id="tripDate" placeholder="לדוגמה: 15/07/2026 בשעה 08:00...">
-            </div>
-        </div>
-
-        <div class="input-group">
-            <label>קישור למפה (Google Maps / Waze Link)</label>
-            <input type="url" id="tripMapUrl" placeholder="הדבק כאן את קישור המפה או הניווט...">
-        </div>
-
-        <div class="input-group">
-            <label>תאור המסלול, מלון והערות חשובות</label>
-            <textarea id="tripNotes" placeholder="פרט את זמני הנסיעה, מקומות עצירה, ציוד נדרש או הנחיות מיוחדות..."></textarea>
-        </div>
-
-        <div class="input-group">
-            <label>פריטים לאריזה / ציוד נדרש (הפרד בפסיקים)</label>
-            <input type="text" id="tripGear" placeholder="לדוגמה: בגדי ים, קרם הגנה, מטען נייד, מפתחות...">
-        </div>
-
-        <button class="btn" onclick="addTripRecord()">שמור טיול מלא למערכת המשפחתית 🚗</button>
+    <div class="input-section">
+        <input type="text" id="destinationInput" placeholder="יעד או שם הטיול (לדוגמה: טיול שבת בפארק שחמון)..." onkeypress="if(event.key==='Enter') addTravelItem()">
+        <input type="text" id="dateInput" placeholder="תאריך (לדוגמה: 15.06.2026)..." onkeypress="if(event.key==='Enter') addTravelItem()">
+        <input type="text" id="mapLinkInput" placeholder="קישור למפה (אופציונלי)..." onkeypress="if(event.key==='Enter') addTravelItem()">
+        <button class="add-btn" onclick="addTravelItem()">הוסף טיול ➕</button>
     </div>
 
-    <h3 style="font-size: 14px; color: var(--accent); margin-bottom: 8px; text-align: right;">טיולים וחופשות מתוכננים:</h3>
-    <div style="max-height: 280px; overflow-y: auto;" id="tripsList"></div>
+    <div class="travel-list" id="travelListContainer">
+        <!-- יעדי הטיולים יטענו לכאן דינמית -->
+    </div>
 </div>
 
-<div class="toast" id="toastMsg">הפעולה בוצעה בהצלחה!</div>
-
 <script>
+    // זיהוי קוד הבית והתאמה למערכת הסנכרון
+    const urlParams = new URLSearchParams(window.location.search);
+    let houseCode = urlParams.get('house') || 
+                    (typeof getCurrentHouseCode === 'function' ? getCurrentHouseCode() : null) || 
+                    localStorage.getItem('vidass_current_house_code') || 
+                    localStorage.getItem('vidass_current_house') || 
+                    'EILAT-33';
+
+    houseCode = houseCode.trim();
+    localStorage.setItem('vidass_current_house_code', houseCode);
+    localStorage.setItem('vidass_current_house', houseCode);
+
     window.onload = function() {
-        const houseCode = getCurrentHouseCode();
-        if(houseCode) {
-            document.getElementById('houseBadge').innerText = `🟢 בית: ${houseCode}`;
-        }
-        loadTrips();
+        document.getElementById('houseBadgeDisplay').innerText = `🟢 בית: ${houseCode}`;
+        loadTravels();
     };
 
-    function loadTrips() {
-        const data = getSharedData('travel');
-        const container = document.getElementById('tripsList');
-        
-        container.innerHTML = data.length === 0 ? '<p style="text-align:center; font-size:12px; color:var(--text-muted);">אין טיולים מתוכננים במערכת כרגע.</p>' : '';
-        
-        data.slice().reverse().forEach((item, index) => {
-            const actualIndex = data.length - 1 - index;
-            
-            // יצירת כפתור מפה אם הוכנס קישור
-            let mapBtnHTML = '';
-            if(item.mapUrl) {
-                let cleanUrl = item.mapUrl.startsWith('http') ? item.mapUrl : 'https://' + item.mapUrl;
-                mapBtnHTML = `<a href="${cleanUrl}" target="_blank" class="map-link">📍 פתח ניווט במפה (Google/Waze)</a>`;
-            }
+    function loadTravels() {
+        const travels = (typeof getSharedData === 'function') ? getSharedData('travel') : [];
+        const container = document.getElementById('travelListContainer');
 
-            // יצירת רשימת ציוד (צ'ק ליסט)
-            let gearHTML = '';
-            if(item.gear && item.gear.length > 0) {
-                gearHTML = `<div style="margin-top: 8px; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 6px;">
-                    <div style="font-size:11px; color:var(--gold); font-weight:bold; margin-bottom:4px;">🎒 רשימת ציוד ופריטים לאריזה:</div>`;
-                item.gear.forEach((gearItem, gIndex) => {
-                    gearHTML += `
-                        <div class="checklist-item">
-                            <span>✔️ ${gearItem}</span>
-                        </div>`;
-                });
-                gearHTML += `</div>`;
-            }
-
-            container.innerHTML += `
-                <div class="trip-card">
-                    <div class="trip-header">
-                        <div>
-                            <strong style="color:var(--accent); font-size:15px;">🚗 ${item.destination}</strong>
-                            <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">🕒 מועד: ${item.tripDate || 'לא צוין'}</div>
-                        </div>
-                        <button onclick="removeTripRecord(${actualIndex})" style="background:rgba(239,68,68,0.1); color:var(--danger); border:1px solid rgba(239,68,68,0.3); padding:5px 10px; border-radius:6px; cursor:pointer; font-size:11px;">מחק</button>
-                    </div>
-                    <div style="font-size:13px; color:var(--text-main); margin-bottom:6px; white-space:pre-line;">${item.notes || 'אין הערות נוספות.'}</div>
-                    ${mapBtnHTML}
-                    ${gearHTML}
-                    <div style="font-size:10px; color:var(--success); margin-top:6px; text-align: left;">נוסף ע"י: ${item.addedBy || 'דייר'} | ${item.date}</div>
-                </div>`;
-        });
-    }
-
-    function addTripRecord() {
-        const destination = document.getElementById('tripDestination').value.trim();
-        const tripDate = document.getElementById('tripDate').value.trim();
-        const mapUrl = document.getElementById('tripMapUrl').value.trim();
-        const notes = document.getElementById('tripNotes').value.trim();
-        const gearRaw = document.getElementById('tripGear').value.trim();
-
-        if(!destination) {
-            showToast("נא להזין לפחות את יעד הטיול", true);
+        if (!travels || travels.length === 0) {
+            container.innerHTML = `<div class="empty-state">אין טיולים או חופשות מתוכננים כרגע. אפשר להוסיף יעד חדש למעלה!</div>`;
             return;
         }
 
-        // פירוק פריטי הציוד לפי פסיקים לפריטים נפרדים
-        let gearList = gearRaw ? gearRaw.split(',').map(item => item.trim()).filter(item => item.length > 0) : [];
+        container.innerHTML = '';
+        travels.slice().reverse().forEach((item, index) => {
+            const actualIndex = travels.length - 1 - index;
+            
+            let mapButtonHtml = '';
+            if (item.mapLink) {
+                let cleanLink = item.mapLink.trim();
+                if (!cleanLink.startsWith('http://') && !cleanLink.startsWith('https://')) {
+                    cleanLink = 'https://' + cleanLink;
+                }
+                mapButtonHtml = `<a href="${escapeHtml(cleanLink)}" target="_blank" class="map-link-btn">🗺️ פתח מפה</a>`;
+            }
 
-        let data = getSharedData('travel');
-        data.push({ 
-            destination, 
-            tripDate,
-            mapUrl,
-            notes,
-            gear: gearList,
-            addedBy: getCurrentUser(),
-            date: new Date().toLocaleDateString('he-IL') 
+            container.innerHTML += `
+                <div class="travel-item">
+                    <div class="travel-info">
+                        <div class="travel-title">📍 ${escapeHtml(item.destination)}</div>
+                        <div class="travel-meta">תאריך: <strong>${escapeHtml(item.date || 'לא צוין')}</strong> | נוסף ע"י: ${escapeHtml(item.addedBy || 'דייר')}</div>
+                    </div>
+                    <div class="travel-actions">
+                        ${mapButtonHtml}
+                        <button class="delete-btn" onclick="deleteTravel(${actualIndex})">מחק 🗑️</button>
+                    </div>
+                </div>
+            `;
         });
-        saveSharedData('travel', data);
-
-        // איפוס שדות
-        document.getElementById('tripDestination').value = '';
-        document.getElementById('tripDate').value = '';
-        document.getElementById('tripMapUrl').value = '';
-        document.getElementById('tripNotes').value = '';
-        document.getElementById('tripGear').value = '';
-
-        loadTrips();
-        showToast("תכנון הטיול, המפה ורשימת הציוד נשמרו בהצלחה!");
     }
 
-    function removeTripRecord(index) {
-        let data = getSharedData('travel');
-        data.splice(index, 1);
-        saveSharedData('travel', data);
-        loadTrips();
-        showToast("הטיול הוסר מרשימת החופשות.");
+    function addTravelItem() {
+        const destInput = document.getElementById('destinationInput');
+        const dateInput = document.getElementById('dateInput');
+        const mapInput = document.getElementById('mapLinkInput');
+        
+        const destination = destInput.value.trim();
+        const date = dateInput.value.trim() || 'קרוב';
+        const mapLink = mapInput.value.trim();
+        
+        if (!destination) {
+            alert("נא להזין יעד או שם לטיול.");
+            return;
+        }
+
+        let travels = (typeof getSharedData === 'function') ? getSharedData('travel') : [];
+        const currentUser = (typeof getCurrentUser === 'function' ? getCurrentUser() : null) || 
+                            localStorage.getItem('vidass_current_user') || 
+                            'דייר';
+
+        travels.push({
+            destination: destination,
+            date: date,
+            mapLink: mapLink,
+            addedBy: currentUser
+        });
+
+        saveAndRefresh(travels);
+        destInput.value = '';
+        dateInput.value = '';
+        mapInput.value = '';
+        destInput.focus();
     }
 
-    function showToast(msg, isError = false) {
-        const toast = document.getElementById('toastMsg');
-        toast.innerText = msg;
-        toast.style.background = isError ? 'var(--danger)' : 'var(--success)';
-        toast.classList.add('show');
-        setTimeout(() => toast.classList.remove('show'), 3000);
+    function deleteTravel(index) {
+        let travels = (typeof getSharedData === 'function') ? getSharedData('travel') : [];
+        if (travels[index] !== undefined) {
+            travels.splice(index, 1);
+            saveAndRefresh(travels);
+        }
+    }
+
+    function saveAndRefresh(travelsArray) {
+        if (typeof saveSharedData === 'function') {
+            saveSharedData('travel', travelsArray);
+        } else {
+            localStorage.setItem('vidass_travel_' + houseCode, JSON.stringify(travelsArray));
+        }
+        loadTravels();
+    }
+
+    function escapeHtml(str) {
+        return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
     }
 </script>
 

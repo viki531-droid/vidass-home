@@ -44,7 +44,7 @@
             <h1>🔔 דפדפן התראות מערכת</h1>
             <p style="font-size: 11px; color: var(--text-muted);">מרכז התראות משותף לכל דיירי הבית</p>
         </div>
-        <div class="badge" id="houseBadge">🟢 מחובר לבית המשותף</div>
+        <div class="badge" id="houseBadge">🟢 טוען בית...</div>
     </div>
 
     <div class="status-box">
@@ -63,17 +63,26 @@
 <div class="toast" id="toastMsg">הפעולה בוצעה בהצלחה!</div>
 
 <script>
+    // מנגנון זיהוי והצמדת קוד הבית בצורה בטוחה
+    const urlParams = new URLSearchParams(window.location.search);
+    let houseCode = urlParams.get('house') || 
+                    (typeof getCurrentHouseCode === 'function' ? getCurrentHouseCode() : null) || 
+                    localStorage.getItem('vidass_current_house_code') || 
+                    localStorage.getItem('vidass_current_house') || 
+                    'EILAT-33';
+
+    houseCode = houseCode.trim();
+    localStorage.setItem('vidass_current_house_code', houseCode);
+    localStorage.setItem('vidass_current_house', houseCode);
+
     window.onload = function() {
-        const houseCode = getCurrentHouseCode();
-        if(houseCode) {
-            document.getElementById('houseBadge').innerText = `🟢 בית: ${houseCode}`;
-        }
+        document.getElementById('houseBadge').innerText = `🟢 בית: ${houseCode}`;
         loadAlerts();
     };
 
     function loadAlerts() {
         // שימוש בפונקציית הסנכרון המשותפת לכל דיירי הבית
-        const data = getSharedData('alerts');
+        const data = (typeof getSharedData === 'function') ? getSharedData('alerts') : [];
         const container = document.getElementById('alertsList');
         
         container.innerHTML = data.length === 0 ? '<p style="text-align:center; font-size:12px; color:var(--text-muted);">אין התראות פעילות כרגע.</p>' : '';
@@ -95,14 +104,24 @@
         const text = input.value.trim();
         if(!text) { showToast("נא להזין תוכן התראה", true); return; }
 
-        let data = getSharedData('alerts');
+        let data = (typeof getSharedData === 'function') ? getSharedData('alerts') : [];
+        
+        const currentUser = (typeof getCurrentUser === 'function' ? getCurrentUser() : null) || 
+                            localStorage.getItem('vidass_current_user') || 
+                            'דייר';
+
         data.push({ 
             text, 
-            addedBy: getCurrentUser(),
+            addedBy: currentUser,
             time: new Date().toLocaleTimeString('he-IL'), 
             date: new Date().toLocaleDateString('he-IL') 
         });
-        saveSharedData('alerts', data);
+        
+        if(typeof saveSharedData === 'function') {
+            saveSharedData('alerts', data);
+        } else {
+            localStorage.setItem('vidass_alerts_' + houseCode, JSON.stringify(data));
+        }
 
         input.value = '';
         loadAlerts();
@@ -110,9 +129,15 @@
     }
 
     function removeAlert(index) {
-        let data = getSharedData('alerts');
+        let data = (typeof getSharedData === 'function') ? getSharedData('alerts') : [];
         data.splice(index, 1);
-        saveSharedData('alerts', data);
+        
+        if(typeof saveSharedData === 'function') {
+            saveSharedData('alerts', data);
+        } else {
+            localStorage.setItem('vidass_alerts_' + houseCode, JSON.stringify(data));
+        }
+        
         loadAlerts();
         showToast("ההתראה אושרה והוסרה.");
     }

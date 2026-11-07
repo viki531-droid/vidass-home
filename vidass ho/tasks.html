@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIDASS Micro-App - משימות ומטלות בית</title>
-    <!-- קישור לקובץ הסנכרון המשותף בין דיירי הבית -->
+    <title>VIDASS - ניהול משימות ומטלות בית</title>
+    <!-- קישור לקובץ הסנכרון והאחסון האחיד -->
     <script src="storage-sync.js"></script>
     <style>
         :root {
@@ -18,103 +18,274 @@
             --text-muted: #9ca3af;
             --success: #10b981;
             --danger: #ef4444;
+            --gold: #f59e0b;
         }
+
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background: var(--bg-gradient); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .app-container { width: 100%; max-width: 600px; background: var(--card-bg); backdrop-filter: blur(14px); border: 1px solid var(--card-border); border-radius: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.8); padding: 24px; }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 16px; }
-        .header h1 { font-size: 20px; color: var(--accent); }
-        .badge { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--success); padding: 4px 10px; border-radius: 8px; font-size: 11px; }
-        .input-group { margin-bottom: 12px; text-align: right; }
-        .input-group label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
-        .input-group input { width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; color: white; font-size: 13px; outline: none; text-align: right; }
-        .btn { width: 100%; padding: 11px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 5px; }
-        .item-row { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
-        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: white; padding: 10px 20px; border-radius: 10px; font-size: 13px; transition: transform 0.3s; z-index: 1000; }
-        .toast.show { transform: translateX(-50%) translateY(0); }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 700px;
+            background: var(--card-bg);
+            backdrop-filter: blur(14px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.8);
+            padding: 28px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 16px;
+            margin-bottom: 20px;
+        }
+
+        .header h1 { font-size: 20px; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+        .house-badge { background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: var(--success); padding: 5px 12px; border-radius: 10px; font-size: 11px; font-weight: bold; }
+
+        .input-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+
+        .input-section input {
+            flex: 1;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            color: white;
+            font-size: 13px;
+            outline: none;
+            text-align: right;
+        }
+
+        .input-section input:focus {
+            border-color: var(--primary);
+        }
+
+        .add-btn {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            padding: 0 22px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 13px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .add-btn:hover { opacity: 0.9; }
+
+        .tasks-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 50vh;
+            overflow-y: auto;
+            padding-left: 4px;
+        }
+
+        .task-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 14px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: 0.2s;
+        }
+
+        .task-item.completed {
+            background: rgba(16, 185, 129, 0.05);
+            border-color: rgba(16, 185, 129, 0.2);
+            opacity: 0.75;
+        }
+
+        .task-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .task-checkbox {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--success);
+            cursor: pointer;
+        }
+
+        .task-text {
+            font-size: 14px;
+            color: var(--text-main);
+            word-break: break-word;
+        }
+
+        .task-item.completed .task-text {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        .task-meta {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .delete-btn {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 6px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .delete-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-muted);
+            font-size: 13px;
+        }
     </style>
 </head>
 <body>
 
 <div class="app-container">
     <div class="header">
-        <div>
-            <h1>📌 דפדפן משימות ומטלות בית</h1>
-            <p style="font-size: 11px; color: var(--text-muted);">ניהול ומעקב משימות משותף לכל דיירי הבית</p>
-        </div>
-        <div class="badge" id="houseBadge">🟢 מחובר לבית המשותף</div>
+        <h1>📌 משימות ומטלות בית</h1>
+        <div class="house-badge" id="houseBadgeDisplay">🟢 בית: טוען...</div>
     </div>
 
-    <div class="input-group">
-        <label>הוסף מטלה או משימה חדשה</label>
-        <input type="text" id="taskInput" placeholder="לדוגמה: לטייל עם ג'ולי, לקפל כביסה..." onkeypress="if(event.key==='Enter') addTask()">
+    <div class="input-section">
+        <input type="text" id="taskInput" placeholder="הוסף משימה חדשה (לדוגמה: לקנות חלב, לתקן את הדלת)..." onkeypress="if(event.key==='Enter') addTask()">
+        <button class="add-btn" onclick="addTask()">הוסף משימה ➕</button>
     </div>
-    <button class="btn" onclick="addTask()">הוסף משימה למערכת 📌</button>
 
-    <div style="margin-top: 20px; max-height: 240px; overflow-y: auto;" id="tasksList"></div>
+    <div class="tasks-list" id="tasksListContainer">
+        <!-- המשימות יטענו לכאן דינמית -->
+    </div>
 </div>
 
-<div class="toast" id="toastMsg">הפעולה בוצעה בהצלחה!</div>
-
 <script>
+    // זיהוי קוד הבית והתאמה למערכת הסנכרון
+    const urlParams = new URLSearchParams(window.location.search);
+    let houseCode = urlParams.get('house') || 
+                    (typeof getCurrentHouseCode === 'function' ? getCurrentHouseCode() : null) || 
+                    localStorage.getItem('vidass_current_house_code') || 
+                    localStorage.getItem('vidass_current_house') || 
+                    'EILAT-33';
+
+    houseCode = houseCode.trim();
+    localStorage.setItem('vidass_current_house_code', houseCode);
+    localStorage.setItem('vidass_current_house', houseCode);
+
     window.onload = function() {
-        const houseCode = getCurrentHouseCode();
-        if(houseCode) {
-            document.getElementById('houseBadge').innerText = `🟢 בית: ${houseCode}`;
-        }
+        document.getElementById('houseBadgeDisplay').innerText = `🟢 בית: ${houseCode}`;
         loadTasks();
     };
 
     function loadTasks() {
-        const data = getSharedData('tasks');
-        const container = document.getElementById('tasksList');
-        
-        container.innerHTML = data.length === 0 ? '<p style="text-align:center; font-size:12px; color:var(--text-muted);">אין משימות פתוחות כרגע.</p>' : '';
-        data.slice().reverse().forEach((item, index) => {
-            const actualIndex = data.length - 1 - index;
+        const tasks = (typeof getSharedData === 'function') ? getSharedData('tasks') : [];
+        const container = document.getElementById('tasksListContainer');
+
+        if (!tasks || tasks.length === 0) {
+            container.innerHTML = `<div class="empty-state">אין משימות פעילות כרגע. אפשר להוסיף משימה חדשה למעלה!</div>`;
+            return;
+        }
+
+        container.innerHTML = '';
+        // הצגת המשימות (החדשות ביותר למעלה)
+        tasks.slice().reverse().forEach((task, index) => {
+            const actualIndex = tasks.length - 1 - index;
             container.innerHTML += `
-                <div class="item-row">
-                    <div>
-                        <strong style="color:var(--accent);">📌 ${item.text}</strong>
-                        <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">הוסף ע"י: ${item.addedBy || 'דייר'} | ${item.date}</div>
+                <div class="task-item ${task.completed ? 'completed' : ''}">
+                    <div class="task-info">
+                        <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''} onclick="toggleTask(${actualIndex})">
+                        <div>
+                            <div class="task-text">${escapeHtml(task.text)}</div>
+                            <div class="task-meta">נוסף ע"י: ${escapeHtml(task.addedBy || 'דייר')} | ${task.date || ''}</div>
+                        </div>
                     </div>
-                    <button onclick="removeTask(${actualIndex})" style="background:rgba(239,68,68,0.1); color:var(--danger); border:1px solid rgba(239,68,68,0.3); padding:5px 10px; border-radius:6px; cursor:pointer; font-size:11px;">בוצע / מחיקה</button>
-                </div>`;
+                    <button class="delete-btn" onclick="deleteTask(${actualIndex})">מחק 🗑️</button>
+                </div>
+            `;
         });
     }
 
     function addTask() {
         const input = document.getElementById('taskInput');
         const text = input.value.trim();
-        if(!text) { showToast("נא להזין תוכן משימה", true); return; }
+        if (!text) return;
 
-        let data = getSharedData('tasks');
-        data.push({ 
-            text, 
-            addedBy: getCurrentUser(),
-            date: new Date().toLocaleDateString('he-IL') 
+        let tasks = (typeof getSharedData === 'function') ? getSharedData('tasks') : [];
+        const currentUser = (typeof getCurrentUser === 'function' ? getCurrentUser() : null) || 
+                            localStorage.getItem('vidass_current_user') || 
+                            'דייר';
+
+        tasks.push({
+            text: text,
+            completed: false,
+            addedBy: currentUser,
+            date: new Date().toLocaleDateString('he-IL')
         });
-        saveSharedData('tasks', data);
 
+        saveAndRefresh(tasks);
         input.value = '';
-        loadTasks();
-        showToast("המשימה נוספה ושותפה לכל דיירי הבית!");
     }
 
-    function removeTask(index) {
-        let data = getSharedData('tasks');
-        data.splice(index, 1);
-        saveSharedData('tasks', data);
-        loadTasks();
-        showToast("כל הכבוד! המשימה הושלמה והוסרה.");
+    function toggleTask(index) {
+        let tasks = (typeof getSharedData === 'function') ? getSharedData('tasks') : [];
+        if (tasks[index]) {
+            tasks[index].completed = !tasks[index].completed;
+            saveAndRefresh(tasks);
+        }
     }
 
-    function showToast(msg, isError = false) {
-        const toast = document.getElementById('toastMsg');
-        toast.innerText = msg;
-        toast.style.background = isError ? 'var(--danger)' : 'var(--success)';
-        toast.classList.add('show');
-        setTimeout(() => toast.classList.remove('show'), 3000);
+    function deleteTask(index) {
+        let tasks = (typeof getSharedData === 'function') ? getSharedData('tasks') : [];
+        if (tasks[index] !== undefined) {
+            tasks.splice(index, 1);
+            saveAndRefresh(tasks);
+        }
+    }
+
+    function saveAndRefresh(tasksArray) {
+        if (typeof saveSharedData === 'function') {
+            saveSharedData('tasks', tasksArray);
+        } else {
+            localStorage.setItem('vidass_tasks_' + houseCode, JSON.stringify(tasksArray));
+        }
+        loadTasks();
+    }
+
+    // הגנה מפני הזרקת קוד בטקסט
+    function escapeHtml(str) {
+        return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
     }
 </script>
 
