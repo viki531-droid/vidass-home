@@ -42,7 +42,7 @@
             <h1>📌 דפדפן משימות ומטלות בית</h1>
             <p style="font-size: 11px; color: var(--text-muted);">ניהול ומעקב משימות משותף לכל דיירי הבית</p>
         </div>
-        <div class="badge">🟢 מחובר לבית המשותף</div>
+        <div class="badge" id="houseBadge">🟢 מחובר לבית המשותף</div>
     </div>
 
     <div class="input-group">
@@ -57,6 +57,14 @@
 <div class="toast" id="toastMsg">הפעולה בוצעה בהצלחה!</div>
 
 <script>
+    window.onload = function() {
+        const houseCode = getCurrentHouseCode();
+        if(houseCode) {
+            document.getElementById('houseBadge').innerText = `🟢 בית: ${houseCode}`;
+        }
+        loadTasks();
+    };
+
     function loadTasks() {
         // שימוש בפונקציית הסנכרון המשותפת לכל דיירי הבית
         const data = getSharedData('tasks');
@@ -109,8 +117,6 @@
         toast.classList.add('show');
         setTimeout(() => toast.classList.remove('show'), 3000);
     }
-
-    window.onload = loadTasks;
 </script>
 
 </body>

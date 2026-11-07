@@ -44,7 +44,7 @@
             <h1>📦 דפדפן מלאי הבית</h1>
             <p style="font-size: 11px; color: var(--text-muted);">מקושר ומסונכרן לכל דיירי הבית</p>
         </div>
-        <div class="badge">🟢 מחובר לבית המשותף</div>
+        <div class="badge" id="houseBadge">🟢 מחובר לבית המשותף</div>
     </div>
 
     <div class="input-group">
@@ -59,6 +59,14 @@
 <div class="toast" id="toastMsg">הפעולה בוצעה בהצלחה!</div>
 
 <script>
+    window.onload = function() {
+        const houseCode = getCurrentHouseCode();
+        if(houseCode) {
+            document.getElementById('houseBadge').innerText = `🟢 בית: ${houseCode}`;
+        }
+        loadInventory();
+    };
+
     function loadInventory() {
         // שימוש בפונקציית הסנכרון המשותפת לכל דיירי הבית
         const data = getSharedData('inventory');
@@ -134,8 +142,6 @@
         toast.classList.add('show');
         setTimeout(() => toast.classList.remove('show'), 3000);
     }
-
-    window.onload = loadInventory;
 </script>
 
 </body>

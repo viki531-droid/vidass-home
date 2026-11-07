@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VIDASS Core System - מרכז השליטה הראשי</title>
+    <!-- קישור לקובץ הסנכרון המשותף של הבית -->
+    <script src="storage-sync.js"></script>
     <style>
         :root {
             --primary: #d84370;
@@ -52,11 +54,29 @@
             border-bottom: 1px solid rgba(255,255,255,0.1);
             padding-bottom: 15px;
             margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
         }
         .header h1 { font-size: 24px; color: var(--accent); }
         .header p { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
 
-        .back-btn {
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .badge-house {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: var(--success);
+            padding: 6px 12px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .back-btn, .logout-btn {
             background: rgba(255,255,255,0.1);
             color: white;
             border: 1px solid rgba(255,255,255,0.2);
@@ -64,10 +84,31 @@
             border-radius: 10px;
             font-size: 12px;
             cursor: pointer;
-            display: none;
             transition: 0.2s;
         }
-        .back-btn:hover { background: var(--primary); }
+        .back-btn { display: none; }
+        .back-btn:hover, .logout-btn:hover { background: var(--primary); }
+
+        /* שורת חיפוש מהירה למערכות הבית */
+        .search-box {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 14px;
+            color: white;
+            font-size: 13px;
+            outline: none;
+            text-align: right;
+        }
+        .search-box input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(216, 67, 112, 0.3);
+        }
 
         .section-title {
             font-size: 16px;
@@ -132,12 +173,21 @@
             <h1 id="hubTitle">VIDASS Core System 🌐</h1>
             <p id="hubSubtitle">מרכז הניהול והשליטה המאובטח</p>
         </div>
-        <button class="back-btn" id="backBtn" onclick="returnToHub()">← חזרה ללוח הראשי</button>
+        <div class="header-actions">
+            <div class="badge-house" id="houseCodeBadge">🟢 בית: לא מוגדר</div>
+            <button class="back-btn" id="backBtn" onclick="returnToHub()">← חזרה ללוח הראשי</button>
+            <button class="logout-btn" onclick="logoutSystem()">התנתק 🚪</button>
+        </div>
     </div>
 
     <!-- מסך ראשי: לוח האם -->
     <div id="hubDashboard">
         
+        <!-- שורת חיפוש מהירה למודולים -->
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="🔍 חפש דפדפן או מערכת ניהול בבית (לדוגמה: קניות, מלאי, יומן)..." onkeyup="filterCards()">
+        </div>
+
         <!-- קטגוריה ראשית: העוזר האישי החכם שיושב בתוך המערכת -->
         <div class="section-title">🤖 העוזר האישי החכם של הבית</div>
         <div class="grid" style="grid-template-columns: 1fr;">
@@ -153,9 +203,9 @@
             </div>
         </div>
 
-        <!-- קטגוריה 1: דפדפני הניהול הפנימיים (המוסתרים) -->
+        <!-- קטגוריה 1: דפדפני הניהול הפנימיים -->
         <div class="section-title">📂 דפדפני הניהול הפנימיים של הבית</div>
-        <div class="grid">
+        <div class="grid" id="modulesGrid">
             <div class="card" onclick="loadInternalApp('shopping', 'דפדפן רשימת קניות', 'shopping.html')">
                 <div class="card-icon">🛒</div>
                 <div class="card-name">רשימת קניות</div>
@@ -289,13 +339,41 @@
         </div>
     </div>
 
-    <!-- אזור הצגת האפליקציה הפנימית בצורה חלקה ושקופה -->
+    <!-- אזור טעינת האפליקציה הפנימית בצורה חלקה ושקופה -->
     <div id="appViewer">
         <iframe id="appFrame" src=""></iframe>
     </div>
 </div>
 
 <script>
+    window.onload = function() {
+        const greeting = getPersonalizedGreeting();
+        const houseCode = getCurrentHouseCode();
+        const user = getCurrentUser();
+
+        if(houseCode) {
+            document.getElementById('houseCodeBadge').innerText = `🟢 בית: ${houseCode} (${user || 'דייר'})`;
+        }
+
+        document.getElementById('hubSubtitle').innerText = `${greeting}, מחובר למערכת הניהול המאובטחת של VIDASS`;
+    };
+
+    // פונקציית חיפוש מהירה לסינון כרטיסיות הניהול
+    function filterCards() {
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        const cards = document.querySelectorAll('#modulesGrid .card');
+        
+        cards.forEach(card => {
+            const name = card.querySelector('.card-name').innerText.toLowerCase();
+            const desc = card.querySelector('.card-desc').innerText.toLowerCase();
+            if(name.includes(query) || desc.includes(query)) {
+                card.style.display = 'flex';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+
     function loadInternalApp(appKey, appTitle, fileName) {
         document.getElementById('hubDashboard').style.display = 'none';
         document.getElementById('backBtn').style.display = 'block';
@@ -317,10 +395,17 @@
         document.getElementById('hubDashboard').style.display = 'block';
         document.getElementById('backBtn').style.display = 'none';
         
+        const greeting = getPersonalizedGreeting();
         document.getElementById('hubTitle').innerText = "VIDASS Core System 🌐";
-        document.getElementById('hubSubtitle').innerText = "מרכז הניהול והשליטה המאובטח";
+        document.getElementById('hubSubtitle').innerText = `${greeting}, מחובר למערכת הניהול המאובטחת של VIDASS`;
         
         document.getElementById('appFrame').src = '';
+    }
+
+    function logoutSystem() {
+        localStorage.removeItem('vidass_current_house');
+        localStorage.removeItem('vidass_current_user');
+        window.location.href = 'login.html';
     }
 </script>
 

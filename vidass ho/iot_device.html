@@ -47,7 +47,7 @@
             <h1 id="deviceTitle">🔌 בקרת מכשיר חכם</h1>
             <p style="font-size: 11px; color: var(--text-muted);">ניהול ישיר ממערכת VIDASS</p>
         </div>
-        <div class="badge">🟢 מחובר לבית המשותף</div>
+        <div class="badge" id="houseBadge">🟢 מחובר לבית המשותף</div>
     </div>
 
     <div class="device-status-box">
@@ -66,6 +66,11 @@
 
 <script>
     window.onload = function() {
+        const houseCode = getCurrentHouseCode();
+        if(houseCode) {
+            document.getElementById('houseBadge').innerText = `🟢 בית: ${houseCode}`;
+        }
+
         document.getElementById('deviceTitle').innerText = "🔌 בקרת מכשירים חכמים (IoT)";
         document.getElementById('deviceNameName').innerText = "מערכות בית חכם מרכזיות";
     };

@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VIDASS Secure System - כניסה והרשמה</title>
+    <!-- קישור לקובץ הסנכרון המשותף -->
+    <script src="storage-sync.js"></script>
     <style>
         :root {
             --primary: #d84370;
@@ -89,7 +91,7 @@
         }
         .input-group input, .input-group select {
             width: 100%;
-            padding: 11px 14px;
+            padding: 11px 40px 11px 14px; /* מקום לכפתור העין בצד שמאל */
             background: rgba(255,255,255,0.05);
             border: 1px solid rgba(255,255,255,0.15);
             border-radius: 10px;
@@ -107,7 +109,7 @@
             border: none;
             color: var(--text-muted);
             cursor: pointer;
-            font-size: 14px;
+            font-size: 16px;
         }
 
         .btn {
@@ -190,7 +192,9 @@
     <div id="section-login" class="form-section active">
         <div class="input-group">
             <label>קוד הבית (House Code)</label>
-            <input type="text" id="loginHouseCode" placeholder="הכנס את קוד הבית...">
+            <div class="password-wrapper">
+                <input type="text" id="loginHouseCode" placeholder="הכנס את קוד הבית...">
+            </div>
         </div>
         <div class="input-group">
             <label>קוד סודי (PIN)</label>
@@ -270,7 +274,10 @@
         <div id="recoveryStep2" style="display:none;">
             <div class="input-group">
                 <label id="displayQuestion" style="color:var(--accent); font-weight:bold;"></label>
-                <input type="text" id="recAnswer" placeholder="הכנס את התשובה הסודית שלך...">
+                <div class="password-wrapper">
+                    <input type="password" id="recAnswer" placeholder="הכנס את התשובה הסודית שלך...">
+                    <button type="button" class="toggle-password" onclick="togglePass('recAnswer', this)">👁️</button>
+                </div>
             </div>
             <button class="btn" onclick="verifyRecovery()">אמת שחזור והצג קוד 🔓</button>
         </div>
@@ -337,7 +344,6 @@
             return;
         }
 
-        // שמירת נתוני הבית החדש בענן / LocalStorage המשותף לכל דיירי הבית
         houses[houseCode] = {
             admin: name,
             pin: pin,
@@ -376,7 +382,6 @@
             return;
         }
 
-        // הוספת הדייר החדש לרשימת הדיירים של הבית
         if(!houses[houseCode].members.includes(name)) {
             houses[houseCode].members.push(name);
             localStorage.setItem('vidass_all_houses', JSON.stringify(houses));
@@ -418,7 +423,6 @@
             showError("אין בתים רשומים במכשיר. צור בית חדש תחילה.");
             return;
         }
-        // כניסה מהירה לבית הראשון הרשום במכשיר באמצעות ביומטריה
         localStorage.setItem('vidass_current_house', keys[0]);
         localStorage.setItem('vidass_current_user', houses[keys[0]].admin);
         window.location.href = 'main_hub.html';
