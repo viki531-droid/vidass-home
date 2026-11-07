@@ -1,15 +1,12 @@
 // ==========================================
 // VIDASS - Secure Local & Flask Server Sync Engine
-// מנהל את קוד הבית, בידוד הנתונים, האחסון המקומי והסנכרון מול שרת הענן הפרטי
+// מנהל את קוד הבית, בידוד הנתונים, האחסון המקומי והסנכרון בין כל בני הבית
 // ==========================================
 
 const VIDASS_STORAGE_PREFIX = "vidass_house_";
 
-// כתובת שרת ה-Flask הפרטי (ניתן לשנות לכתובת ה-Tailscale או ה-IP של השרת התידעי בבית)
-// אם משתמשים בלוקאל-הוסט או בשרת פנימי, הכתובת מתעדכנת אוטומטית
+// כתובת שרת ה-Flask הפרטי (ניתן לעדכן לכתובת ה-IP של השרת שלך ברשת Tailscale)
 const getFlaskServerUrl = () => {
-    // ניתן להגדיר כתובת IP קבועה של שרת ה-Tailscale הביתי שלך, למשל: "http://100.x.x.x:5000"
-    // כברירת מחדל מתחבר לשרת המקומי באותו מארח או לשרת ה-Flask שלך:
     return localStorage.getItem("vidass_flask_server_url") || "http://localhost:5000";
 };
 
@@ -20,25 +17,29 @@ function setFlaskServerUrl(url) {
     }
 }
 
-// קבלת קוד הבית הנוכחי
+// קבלת קוד הבית הנוכחי (זהה לכל בני הבית שרוצים לראות את אותם נתונים)
 function getCurrentHouseCode() {
     let houseCode = localStorage.getItem("vidass_current_house") || localStorage.getItem("vidass_current_house_code");
     if (!houseCode) {
-        houseCode = "EILAT-33"; // ברירת מחדל מותאמת אישית לבית
+        houseCode = "EILAT-33"; // קוד ברירת מחדל משותף
         localStorage.setItem("vidass_current_house", houseCode);
+        localStorage.setItem("vidass_current_house_code", houseCode);
     }
     return houseCode;
 }
 
-// הגדרת קוד בית חדש למערכת
+// הגדרת קוד בית משותף (כאשר מתחברים לבית קיים של המשפחה)
 function setCurrentHouseCode(code) {
     if (code && code.trim() !== "") {
-        localStorage.setItem("vidass_current_house", code.trim());
-        localStorage.setItem("vidass_current_house_code", code.trim());
+        const cleanCode = code.trim();
+        localStorage.setItem("vidass_current_house", cleanCode);
+        localStorage.setItem("vidass_current_house_code", cleanCode);
+        // טעינה מיידית של נתוני הבית החדש מהשרת
+        fetchHouseDataFromServer();
     }
 }
 
-// קבלת שם המשתמש הנוכחי במערכת (למשל: ויקי או דוד)
+// קבלת שם המשתמש הנוכחי במכשיר (ויקי, דוד וכו')
 function getCurrentUser() {
     return localStorage.getItem("vidass_current_user") || "ויקי";
 }
@@ -49,38 +50,31 @@ function setCurrentUser(username) {
     }
 }
 
-// ברכה אישית לפי שעות היום המותאמת אישית
+// ברכה אישית לפי שעות היום
 function getPersonalizedGreeting() {
     const hour = new Date().getHours();
     const user = getCurrentUser();
-    if (hour >= 5 && hour < 12) {
-        return `בוקר טוב, ${user}`;
-    } else if (hour >= 12 && hour < 17) {
-        return `צהריים טובים, ${user}`;
-    } else if (hour >= 17 && hour < 21) {
-        return `ערב טוב, ${user}`;
-    } else {
-        return `לילה טוב, ${user}`;
-    }
+    if (hour >= 5 && hour < 12) return `בוקר טוב, ${user}`;
+    if (hour >= 12 && hour < 17) return `צהריים טובים, ${user}`;
+    if (hour >= 17 && hour < 21) return `ערב טוב, ${user}`;
+    return `לילה טוב, ${user}`;
 }
 
 // שליפת רשימת הדיירים הרשומים תחת קוד הבית הנוכחי
 function getHouseMembers() {
     const houseCode = getCurrentHouseCode();
     const data = localStorage.getItem(`${VIDASS_STORAGE_PREFIX}${houseCode}_members`);
-    return data ? JSON.parse(data) : ["ויקי", "דוד"];
+    return data ? JSON.parse(data) : [getCurrentUser(), "דוד"];
 }
 
-// שמירת רשימת הדיירים לבית הנוכחי
+// שמירת רשימת הדיירים לבית הנוכחי ועדכון השרת
 function saveHouseMembers(members) {
     const houseCode = getCurrentHouseCode();
     localStorage.setItem(`${VIDASS_STORAGE_PREFIX}${houseCode}_members`, JSON.stringify(members));
-    
-    // סנכרון רקע מול שרת ה-Flask אם קיים
     syncWithFlaskServer({ members: members });
 }
 
-// שליפת מידע משותף כללי (כמו קניות, משימות, מלאי, דמי כיס וכו')
+// שליפת מידע משותף (קניות, משימות, דמי כיס וכו')
 function getSharedData(key) {
     const houseCode = getCurrentHouseCode();
     const fullKey = `${VIDASS_STORAGE_PREFIX}${houseCode}_${key}`;
@@ -88,23 +82,21 @@ function getSharedData(key) {
     return data ? JSON.parse(data) : [];
 }
 
-// שמירת מידע משותף תחת קוד הבית (גם מקומית וגם בשרת ה-Flask הפרטי)
+// שמירת מידע משותף תחת קוד הבית המשותף (מקומי + שרת ענן פרטי)
 function saveSharedData(key, data) {
     const houseCode = getCurrentHouseCode();
     const fullKey = `${VIDASS_STORAGE_PREFIX}${houseCode}_${key}`;
     
-    // 1. שמירה מיידית בזיכרון המקומי (Local Storage) לגיבוי מהיר
+    // 1. שמירה מקומית מיידית
     localStorage.setItem(fullKey, JSON.stringify(data));
 
-    // 2. שליחה ברקע לשרת ה-Flask הפרטי כדי ששאר 8 הטלפונים בבית יראו את העדכון
-    let payload = {
-        data: {}
-    };
+    // 2. שליחה לשרת ה-Flask כדי ששאר הטלפונים בבית יראו מיד את השינוי
+    let payload = { data: {} };
     payload.data[key] = data;
     syncWithFlaskServer(payload);
 }
 
-// פונקציית תקשורת אסינכרונית עם שרת ה-Flask של הענן הפרטי
+// תקשורת עם שרת ה-Flask הפרטי
 async function syncWithFlaskServer(payload) {
     const houseCode = getCurrentHouseCode();
     const serverUrl = getFlaskServerUrl();
@@ -112,22 +104,18 @@ async function syncWithFlaskServer(payload) {
     try {
         const response = await fetch(`${serverUrl}/api/save/${houseCode}`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
-        
         if (!response.ok) {
-            console.warn("התראה: שרת הענן הפרטי לא הגיב כמצופה, הנתונים נשמרו בגיבוי המקומי.");
+            console.warn("התראה: שרת הענן הפרטי לא זמין, עובד על זיכרון מקומי.");
         }
     } catch (error) {
-        // שגיאת תקשורת שקטה (כשהשרת כבוי, המערכת ממשיכה לעבוד חלק מקומית)
-        console.log("מצב לא מקוון (Offline Mode): פועל על אחסון מקומי מאובטח.");
+        console.log("מצב לא מקוון (Offline): פועל על אחסון מקומי מאובטח.");
     }
 }
 
-// פונקציית טעינה ראשונית מהשרת בעת הפעלת המערכת
+// משיכת הנתונים העדכניים ביותר מהשרת עבור קוד הבית
 async function fetchHouseDataFromServer() {
     const houseCode = getCurrentHouseCode();
     const serverUrl = getFlaskServerUrl();
@@ -136,13 +124,14 @@ async function fetchHouseDataFromServer() {
         const response = await fetch(`${serverUrl}/api/get/${houseCode}`);
         if (response.ok) {
             const serverData = await response.json();
-            if (serverData && serverData.data) {
-                // עדכון האחסון המקומי בנתונים החדשים מהשרת
+            if (serverData) {
                 if (serverData.members) {
                     localStorage.setItem(`${VIDASS_STORAGE_PREFIX}${houseCode}_members`, JSON.stringify(serverData.members));
                 }
-                for (const [key, val] of Object.entries(serverData.data)) {
-                    localStorage.setItem(`${VIDASS_STORAGE_PREFIX}${houseCode}_${key}`, JSON.stringify(val));
+                if (serverData.data) {
+                    for (const [key, val] of Object.entries(serverData.data)) {
+                        localStorage.setItem(`${VIDASS_STORAGE_PREFIX}${houseCode}_${key}`, JSON.stringify(val));
+                    }
                 }
                 console.log("הנתונים סונכרנו בהצלחה מענן הבית הפרטי!");
             }
@@ -152,7 +141,7 @@ async function fetchHouseDataFromServer() {
     }
 }
 
-// הפעלה אוטומטית של בדיקת סנכרון עם טעינת הדף
+// סנכרון אוטומטי בעליית הדף
 window.addEventListener('DOMContentLoaded', () => {
     fetchHouseDataFromServer();
 });
