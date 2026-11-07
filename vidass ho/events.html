@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIDASS Micro-App - הקואוצ'ר של הבית</title>
+    <title>VIDASS Micro-App - אירועים ופעילויות</title>
     <!-- קישור לקובץ הסנכרון המשותף בין דיירי הבית -->
     <script src="storage-sync.js"></script>
     <style>
@@ -27,14 +27,11 @@
         .header h1 { font-size: 20px; color: var(--accent); }
         .badge { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--success); padding: 4px 10px; border-radius: 8px; font-size: 11px; }
         
-        .motivation-box { background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 14px; padding: 16px; margin-bottom: 16px; text-align: center; }
-        .motivation-box h3 { color: var(--gold); font-size: 15px; margin-bottom: 6px; }
-        .motivation-box p { font-size: 13px; color: var(--text-main); line-height: 1.5; font-style: italic; }
-
         .input-group { margin-bottom: 12px; text-align: right; }
         .input-group label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
         .input-group input { width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; color: white; font-size: 13px; outline: none; text-align: right; }
         .btn { width: 100%; padding: 11px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 5px; }
+        
         .item-row { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
         .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: white; padding: 10px 20px; border-radius: 10px; font-size: 13px; transition: transform 0.3s; z-index: 1000; }
         .toast.show { transform: translateX(-50%) translateY(0); }
@@ -45,91 +42,84 @@
 <div class="app-container">
     <div class="header">
         <div>
-            <h1>🧘‍♀️ הקואוצ'ר של הבית</h1>
-            <p style="font-size: 11px; color: var(--text-muted);">הדרכה, מוטיבציה ורווחה משותפת לכל הבית</p>
+            <h1>🎉 דפדפן אירועים ופעילויות</h1>
+            <p style="font-size: 11px; color: var(--text-muted);">ניהול וריכוז אירועים משותפים לכל הבית</p>
         </div>
         <div class="badge" id="houseBadge">🟢 מחובר לבית המשותף</div>
     </div>
 
-    <div class="motivation-box">
-        <h3>💡 משפט השראה יומי</h3>
-        <p id="dailyQuote">"הצלחה בניהול הבית והחיים מתחילה בסדר פנימי ובשאיפה מתמדת להתקדם קדימה באנרגיה חיובית."</p>
-    </div>
-
     <div class="input-group">
-        <label>הגדרת מטרה אישית או יעד להשראה</label>
-        <input type="text" id="goalInput" placeholder="לדוגמה: שמירה על רוגע, תכנון שבוע מוצלח..." onkeypress="if(event.key==='Enter') addGoal()">
+        <label>שם האירוע / הפעילות</label>
+        <input type="text" id="eventTitle" placeholder="לדוגמה: ארוחת ערב משפחתית, טיול בפארק...">
     </div>
-    <button class="btn" onclick="addGoal()">הוסף מטרה אישית 🎯</button>
+    <div class="input-group">
+        <label>מועד האירוע (תאריך ושעה)</label>
+        <input type="text" id="eventDate" placeholder="לדוגמה: מוצאי שבת בשעה 20:30..." onkeypress="if(event.key==='Enter') addEvent()">
+    </div>
+    <button class="btn" onclick="addEvent()">שמור אירוע במערכת 🎉</button>
 
-    <div style="margin-top: 20px; max-height: 220px; overflow-y: auto;" id="goalsList"></div>
+    <div style="margin-top: 20px; max-height: 240px; overflow-y: auto;" id="eventsList"></div>
 </div>
 
 <div class="toast" id="toastMsg">הפעולה בוצעה בהצלחה!</div>
 
 <script>
-    const quotes = [
-        "\"הצלחה בניהול הבית והחיים מתחילה בסדר פנימי ובשאיפה מתמדת להתקדם קדימה באנרגיה חיובית.\"",
-        "\"כל צעד קטן שאת עושה היום בבניית העתיד שלך הוא השקעה מנצחת למחר.\"",
-        "\"סביבה מסודרת, שקטה ומאובטחת יוצרת שקט נפשי ויצירתיות אינסופית.\"",
-        "\"הדרך הטובה ביותר לחזות את העתיד שלך היא ליצור אותו בעצמך במו ידיך.\""
-    ];
-
     window.onload = function() {
         const houseCode = getCurrentHouseCode();
         if(houseCode) {
             document.getElementById('houseBadge').innerText = `🟢 בית: ${houseCode}`;
         }
-
-        // הצגת משפט השראה מתחלף אקראי
-        const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
-        document.getElementById('dailyQuote').innerText = randomQuote;
-        loadGoals();
+        loadEvents();
     };
 
-    function loadGoals() {
+    function loadEvents() {
         // שימוש בפונקציית הסנכרון המשותפת לכל דיירי הבית
-        const data = getSharedData('coach');
-        const container = document.getElementById('goalsList');
+        const data = getSharedData('events');
+        const container = document.getElementById('eventsList');
         
-        container.innerHTML = data.length === 0 ? '<p style="text-align:center; font-size:12px; color:var(--text-muted);">אין מטרות אישיות רשומות כרגע.</p>' : '';
+        container.innerHTML = data.length === 0 ? '<p style="text-align:center; font-size:12px; color:var(--text-muted);">אין אירועים או פעילויות רשומים כרגע.</p>' : '';
         data.slice().reverse().forEach((item, index) => {
             const actualIndex = data.length - 1 - index;
             container.innerHTML += `
                 <div class="item-row">
                     <div>
-                        <strong style="color:var(--accent);">🎯 ${item.text}</strong>
-                        <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">הוסף ע"י: ${item.addedBy || 'דייר'} | נוסף: ${item.date}</div>
+                        <strong style="color:var(--accent);">🎉 ${item.title}</strong>
+                        <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">🕒 ${item.when} (נוסף ע"י: ${item.addedBy || 'דייר'})</div>
                     </div>
-                    <button onclick="removeGoal(${actualIndex})" style="background:rgba(239,68,68,0.1); color:var(--danger); border:1px solid rgba(239,68,68,0.3); padding:5px 10px; border-radius:6px; cursor:pointer; font-size:11px;">הושג / מחיקה</button>
+                    <button onclick="removeEvent(${actualIndex})" style="background:rgba(239,68,68,0.1); color:var(--danger); border:1px solid rgba(239,68,68,0.3); padding:5px 10px; border-radius:6px; cursor:pointer; font-size:11px;">מחק</button>
                 </div>`;
         });
     }
 
-    function addGoal() {
-        const input = document.getElementById('goalInput');
-        const text = input.value.trim();
-        if(!text) { showToast("נא להזין תוכן מטרה", true); return; }
+    function addEvent() {
+        const titleInput = document.getElementById('eventTitle');
+        const dateInput = document.getElementById('eventDate');
+        const title = titleInput.value.trim();
+        const when = dateInput.value.trim();
 
-        let data = getSharedData('coach');
+        if(!title || !when) { showToast("נא למלא את כל השדות", true); return; }
+
+        let data = getSharedData('events');
         data.push({ 
-            text, 
+            title, 
+            when,
             addedBy: getCurrentUser(),
-            date: new Date().toLocaleDateString('he-IL') 
+            date: new Date().toLocaleDateString('he-IL')
         });
-        saveSharedData('coach', data);
+        saveSharedData('events', data);
 
-        input.value = '';
-        loadGoals();
-        showToast("המטרה האישית נוספה ושותפה לכל דיירי הבית!");
+        titleInput.value = '';
+        dateInput.value = '';
+        loadEvents();
+        showToast("האירוע נוסף בהצלחה ושותף לכל דיירי הבית!");
     }
 
-    function removeGoal(index) {
-        let data = getSharedData('coach');
+    function removeEvent(index) {
+        let data = getSharedData('events');
         data.splice(index, 1);
-        saveSharedData('coach', data);
-        loadGoals();
-        showToast("כל הכבוד! המטרה הושלמה בהצלחה.");
+        saveSharedData('events', data);
+        loadEvents();
+        showToast("האירוע הוסר מהמערכת.");
     }
 
     function showToast(msg, isError = false) {

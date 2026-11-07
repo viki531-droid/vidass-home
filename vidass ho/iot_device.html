@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIDASS Micro-App - שליטה במכשירי IoT חכמים</title>
+    <title>VIDASS Micro-App - שליטה ובקרת מכשירים חכמים (IoT)</title>
     <!-- קישור לקובץ הסנכרון המשותף בין דיירי הבית -->
     <script src="storage-sync.js"></script>
     <style>
@@ -18,22 +18,37 @@
             --text-muted: #9ca3af;
             --success: #10b981;
             --danger: #ef4444;
+            --gold: #f59e0b;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background: var(--bg-gradient); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .app-container { width: 100%; max-width: 600px; background: var(--card-bg); backdrop-filter: blur(14px); border: 1px solid var(--card-border); border-radius: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.8); padding: 24px; text-align: center; }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 20px; text-align: right; }
+        .app-container { width: 100%; max-width: 650px; background: var(--card-bg); backdrop-filter: blur(14px); border: 1px solid var(--card-border); border-radius: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.8); padding: 24px; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 16px; }
         .header h1 { font-size: 20px; color: var(--accent); }
         .badge { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--success); padding: 4px 10px; border-radius: 8px; font-size: 11px; }
         
-        .device-icon-large { font-size: 50px; margin-bottom: 10px; }
-        .device-status-box { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 20px; margin-bottom: 20px; }
+        .setup-box { background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 14px; padding: 14px; margin-bottom: 16px; }
+        .setup-box h3 { color: var(--gold); font-size: 14px; margin-bottom: 8px; }
+
+        .input-group { margin-bottom: 10px; text-align: right; }
+        .input-group label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 3px; }
+        .input-group input, .input-group select { width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; color: white; font-size: 13px; outline: none; text-align: right; }
+        .input-group option { background: #1a1622; color: white; }
         
-        .btn-group { display: flex; gap: 10px; margin-top: 15px; }
-        .btn { flex: 1; padding: 12px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 14px; transition: 0.2s; }
-        .btn-on { background: var(--success); color: white; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); }
-        .btn-off { background: var(--danger); color: white; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3); }
-        .btn:hover { opacity: 0.9; transform: translateY(-2px); }
+        .row-inputs { display: flex; gap: 10px; }
+        .row-inputs .input-group { flex: 1; }
+
+        .btn { width: 100%; padding: 11px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 5px; transition: 0.2s; }
+        .btn:hover { opacity: 0.9; }
+        .btn-connect { background: linear-gradient(135deg, #f59e0b, #d97706); }
+
+        .device-row { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+        .device-actions { display: flex; gap: 6px; }
+        
+        .btn-action { padding: 6px 10px; border-radius: 8px; font-size: 11px; font-weight: bold; cursor: pointer; border: none; }
+        .btn-on { background: rgba(16, 185, 129, 0.2); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.4); }
+        .btn-off { background: rgba(239, 68, 68, 0.2); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.4); }
+        .btn-del { background: rgba(255,255,255,0.05); color: var(--text-muted); border: 1px solid rgba(255,255,255,0.1); }
 
         .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: white; padding: 10px 20px; border-radius: 10px; font-size: 13px; transition: transform 0.3s; z-index: 1000; }
         .toast.show { transform: translateX(-50%) translateY(0); }
@@ -44,25 +59,41 @@
 <div class="app-container">
     <div class="header">
         <div>
-            <h1 id="deviceTitle">🔌 בקרת מכשיר חכם</h1>
-            <p style="font-size: 11px; color: var(--text-muted);">ניהול ישיר ממערכת VIDASS</p>
+            <h1>🔌 בקרת מכשירים חכמים (IoT)</h1>
+            <p style="font-size: 11px; color: var(--text-muted);">הגדרת קישורים, כתובות IP ושליטה מרחוק</p>
         </div>
         <div class="badge" id="houseBadge">🟢 מחובר לבית המשותף</div>
     </div>
 
-    <div class="device-status-box">
-        <div class="device-icon-large" id="deviceIcon">⚡</div>
-        <h2 id="deviceNameName" style="font-size: 18px; color: var(--accent); margin-bottom: 5px;">מערכות בית חכם מרכזיות</h2>
-        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 15px;">סטטוס חישור: <span id="connectionState" style="color: var(--success);">פעיל ומגיב</span></p>
-        
-        <div class="btn-group">
-            <button class="btn btn-on" onclick="sendDeviceCommand('הפעלה / מצב פעיל')">הפעל מכשיר 🟢</button>
-            <button class="btn btn-off" onclick="sendDeviceCommand('כיבוי / חיסכון')">כבה מכשיר 🔴</button>
+    <!-- אזור הגדרה וחיבור מכשיר חדש -->
+    <div class="setup-box">
+        <h3>🔗 הוספה והתחברות למכשיר חכם חדש</h3>
+        <div class="row-inputs">
+            <div class="input-group">
+                <label>שם המכשיר</label>
+                <input type="text" id="devName" placeholder="לדוגמה: דוד חשמל, מזגן סלון...">
+            </div>
+            <div class="input-group">
+                <label>סוג פרוטוקול / מערכת</label>
+                <select id="devType">
+                    <option value="Tuya / Smart Life API">Tuya / Smart Life API</option>
+                    <option value="כתובת IP מקומית (Local IP)">כתובת IP מקומית (Local IP)</option>
+                    <option value="מתג חכם רשתי (Smart Relay)">מתג חכם רשתי (Smart Relay)</option>
+                </select>
+            </div>
         </div>
+        <div class="input-group">
+            <label>קוד קישור / כתובת IP / מזהה API (Token / IP)</label>
+            <input type="text" id="devToken" placeholder="הדבק כאן את כתובת ה-IP או מזהה הקישור (לדוגמה: 192.168.1.50 או API_KEY)..." onkeypress="if(event.key==='Enter') addAndConnectDevice()">
+        </div>
+        <button class="btn btn-connect" onclick="addAndConnectDevice()">חבר והגדר מכשיר חדש 🔗</button>
     </div>
+
+    <h3 style="font-size: 14px; color: var(--accent); margin-bottom: 8px; text-align: right;">מכשירים חכמים מחוברים בבית:</h3>
+    <div style="max-height: 240px; overflow-y: auto;" id="devicesList"></div>
 </div>
 
-<div class="toast" id="toastMsg">הפקודה בוצעה בהצלחה!</div>
+<div class="toast" id="toastMsg">הפעולה בוצעה בהצלחה!</div>
 
 <script>
     window.onload = function() {
@@ -70,23 +101,90 @@
         if(houseCode) {
             document.getElementById('houseBadge').innerText = `🟢 בית: ${houseCode}`;
         }
-
-        document.getElementById('deviceTitle').innerText = "🔌 בקרת מכשירים חכמים (IoT)";
-        document.getElementById('deviceNameName').innerText = "מערכות בית חכם מרכזיות";
+        loadDevices();
     };
 
-    function sendDeviceCommand(action) {
-        showToast(`הפקודה "${action}" נשלחה בהצלחה למכשיר!`);
+    function loadDevices() {
+        const data = getSharedData('iot_devices');
+        const container = document.getElementById('devicesList');
         
-        // שימוש בפונקציית הסנכרון המשותפת לעדכון מרכז ההתראות של כל דיירי הבית
-        let alerts = getSharedData('alerts');
-        alerts.push({ 
-            text: `בקרת IoT: בוצעה פעולה (${action})`, 
-            addedBy: getCurrentUser(),
-            time: new Date().toLocaleTimeString('he-IL'), 
-            date: new Date().toLocaleDateString('he-IL') 
+        container.innerHTML = data.length === 0 ? '<p style="text-align:center; font-size:12px; color:var(--text-muted);">אין מכשירים חכמים מוגדרים במערכת כרגע.</p>' : '';
+        
+        data.slice().reverse().forEach((item, index) => {
+            const actualIndex = data.length - 1 - index;
+            const statusColor = item.status === 'מופעל' ? 'var(--success)' : 'var(--text-muted)';
+
+            container.innerHTML += `
+                <div class="device-row">
+                    <div style="text-align: right;">
+                        <strong style="color:var(--accent); font-size:14px;">⚡ ${item.name}</strong>
+                        <div style="font-size:11px; color:var(--text-muted);">קישור: ${item.token} (${item.type})</div>
+                        <div style="font-size:11px; margin-top:2px;">סטטוס: <span style="color:${statusColor}; font-weight:bold;">${item.status || 'כבוי'}</span></div>
+                    </div>
+                    <div class="device-actions">
+                        <button class="btn-action btn-on" onclick="toggleDevice(${actualIndex}, 'מופעל')">הפעל 🟢</button>
+                        <button class="btn-action btn-off" onclick="toggleDevice(${actualIndex}, 'כבוי')">כבה 🔴</button>
+                        <button class="btn-action btn-del" onclick="removeDevice(${actualIndex})">🗑️</button>
+                    </div>
+                </div>`;
         });
-        saveSharedData('alerts', alerts);
+    }
+
+    function addAndConnectDevice() {
+        const name = document.getElementById('devName').value.trim();
+        const type = document.getElementById('devType').value;
+        const token = document.getElementById('devToken').value.trim();
+
+        if(!name || !token) {
+            showToast("נא למלא את שם המכשיר ואת קוד הקישור / כתובת ה-IP", true);
+            return;
+        }
+
+        let data = getSharedData('iot_devices');
+        data.push({
+            name,
+            type,
+            token,
+            status: "כבוי",
+            addedBy: getCurrentUser(),
+            date: new Date().toLocaleDateString('he-IL')
+        });
+        saveSharedData('iot_devices', data);
+
+        // איפוס שדות
+        document.getElementById('devName').value = '';
+        document.getElementById('devToken').value = '';
+
+        loadDevices();
+        showToast(`המכשיר "${name} הוצמד וחבר בהצלחה לענן הבית! 🔌`);
+    }
+
+    function toggleDevice(index, newStatus) {
+        let data = getSharedData('iot_devices');
+        if(data[index]) {
+            data[index].status = newStatus;
+            saveSharedData('iot_devices', data);
+            loadDevices();
+            showToast(`הפקודה נשלחה בהצלחה למכשיר "${data[index].name}": סטטוס ${newStatus}`);
+
+            // רישום במרכז ההתראות המשותף של הבית
+            let alerts = getSharedData('alerts');
+            alerts.push({
+                text: `מכשיר חכם (${data[index].name}): שונה סטטוס ל-${newStatus}`,
+                addedBy: getCurrentUser(),
+                time: new Date().toLocaleTimeString('he-IL'),
+                date: new Date().toLocaleDateString('he-IL')
+            });
+            saveSharedData('alerts', alerts);
+        }
+    }
+
+    function removeDevice(index) {
+        let data = getSharedData('iot_devices');
+        data.splice(index, 1);
+        saveSharedData('iot_devices', data);
+        loadDevices();
+        showToast("המכשיר הוסר מרשימת הבקרה.");
     }
 
     function showToast(msg, isError = false) {

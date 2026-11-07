@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIDASS Micro-App - יומן ולוח זמנים</title>
+    <title>VIDASS Micro-App - יומן ולוח זמנים חכם</title>
     <!-- קישור לקובץ הסנכרון המשותף בין דיירי הבית -->
     <script src="storage-sync.js"></script>
     <style>
@@ -12,23 +12,55 @@
             --primary-dark: #ad1457;
             --accent: #ff80ab;
             --bg-gradient: linear-gradient(135deg, #0d0d0f 0%, #1a1622 100%);
-            --card-bg: rgba(26, 23, 33, 0.96);
+            --card-bg: rgba(26, 23, 33, 0.92);
             --card-border: rgba(216, 67, 112, 0.4);
             --text-main: #f3f4f6;
             --text-muted: #9ca3af;
             --success: #10b981;
             --danger: #ef4444;
+            --gold: #f59e0b;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background: var(--bg-gradient); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .app-container { width: 100%; max-width: 600px; background: var(--card-bg); backdrop-filter: blur(14px); border: 1px solid var(--card-border); border-radius: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.8); padding: 24px; }
+        
+        body { 
+            background: var(--bg-gradient); 
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: var(--text-main); 
+            min-height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            padding: 20px; 
+            transition: background 0.5s ease;
+        }
+
+        .app-container { width: 100%; max-width: 650px; background: var(--card-bg); backdrop-filter: blur(14px); border: 1px solid var(--card-border); border-radius: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.8); padding: 24px; }
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 16px; }
         .header h1 { font-size: 20px; color: var(--accent); }
         .badge { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--success); padding: 4px 10px; border-radius: 8px; font-size: 11px; }
+        
+        .bg-settings-box { background: rgba(216, 67, 112, 0.08); border: 1px solid rgba(216, 67, 112, 0.3); border-radius: 14px; padding: 12px; margin-bottom: 16px; font-size: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .bg-settings-box input[type="file"] { display: none; }
+        .upload-lbl { background: var(--primary); color: white; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .upload-lbl:hover { background: var(--primary-dark); }
+
+        .smart-box { background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 14px; padding: 14px; margin-bottom: 16px; }
+        .smart-box h3 { color: var(--gold); font-size: 14px; margin-bottom: 6px; }
+        
         .input-group { margin-bottom: 12px; text-align: right; }
         .input-group label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
-        .input-group input { width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; color: white; font-size: 13px; outline: none; text-align: right; }
-        .btn { width: 100%; padding: 11px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 5px; }
+        .input-group input, .input-group textarea { width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; color: white; font-size: 13px; outline: none; text-align: right; }
+        .input-group textarea { resize: none; height: 60px; }
+        
+        .row-inputs { display: flex; gap: 10px; }
+        .row-inputs .input-group { flex: 1; }
+
+        .btn { width: 100%; padding: 11px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 5px; transition: 0.2s; }
+        .btn:hover { opacity: 0.9; }
+        .btn-smart { background: linear-gradient(135deg, #f59e0b, #d97706); margin-top: 6px; }
+
         .item-row { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
         .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: white; padding: 10px 20px; border-radius: 10px; font-size: 13px; transition: transform 0.3s; z-index: 1000; }
         .toast.show { transform: translateX(-50%) translateY(0); }
@@ -40,22 +72,48 @@
     <div class="header">
         <div>
             <h1>📅 דפדפן היומן ולוח הזמנים</h1>
-            <p style="font-size: 11px; color: var(--text-muted);">ניהול פגישות משותף לכל הבית</p>
+            <p style="font-size: 11px; color: var(--text-muted);">ניהול פגישות חכם, תורים אוטומטיים ורקע אישי</p>
         </div>
         <div class="badge" id="houseBadge">🟢 מחובר לבית המשותף</div>
     </div>
 
-    <div class="input-group">
-        <label>כותרת הפגישה / האירוע</label>
-        <input type="text" id="eventTitle" placeholder="לדוגמה: פגישה, לימודים, תור...">
+    <!-- הגדרת תמונת רקע אישית ליומן -->
+    <div class="bg-settings-box">
+        <div>
+            <strong>🖼️ תמונת רקע ליומן</strong>
+            <div style="font-size: 10px; color: var(--text-muted);">העלי תמונה שתשמש רקע חודשי ליומן</div>
+        </div>
+        <div style="display: flex; gap: 6px;">
+            <label class="upload-lbl">
+                העלה תמונה 📁
+                <input type="file" id="bgImageLoader" accept="image/*" onchange="handleBgUpload(event)">
+            </label>
+            <button onclick="resetBackground()" style="background:rgba(239,68,68,0.2); color:var(--danger); border:1px solid rgba(239,68,68,0.4); padding:6px 10px; border-radius:8px; cursor:pointer; font-size:11px;">איפוס רקע</button>
+        </div>
     </div>
-    <div class="input-group">
-        <label>תאריך ושעה</label>
-        <input type="text" id="eventTime" placeholder="לדוגמה: יום ראשון בשעה 16:00..." onkeypress="if(event.key==='Enter') addCalendarEvent()">
-    </div>
-    <button class="btn" onclick="addCalendarEvent()">שמור אירוע ביומן 📅</button>
 
-    <div style="margin-top: 20px; max-height: 240px; overflow-y: auto;" id="calendarList"></div>
+    <!-- אזור קליטה אוטומטית הודעות תורים -->
+    <div class="smart-box">
+        <h3>🤖 קליטה אוטומטית מהודעת תור / SMS / וואטסאפ</h3>
+        <div class="input-group" style="margin-bottom: 6px;">
+            <textarea id="rawSmsInput" placeholder="הדבק כאן את הודעת התור שקיבלת (לדוגמה: 'נקבע לך תור לד''ר כהן ביום שלישי 15/06 בשעה 10:30')..."></textarea>
+        </div>
+        <button class="btn btn-smart" onclick="parseAndAddSmsEvent()">פענח והכנס ליומן אוטומטית ⚡</button>
+    </div>
+
+    <div class="row-inputs">
+        <div class="input-group">
+            <label>כותרת הפגישה / האירוע</label>
+            <input type="text" id="eventTitle" placeholder="לדוגמה: פגישה, לימודים, תור...">
+        </div>
+        <div class="input-group">
+            <label>תאריך ושעה</label>
+            <input type="text" id="eventTime" placeholder="לדוגמה: 15/06 בשעה 10:30...">
+        </div>
+    </div>
+    <button class="btn" onclick="addCalendarEvent()">שמור אירוע ידנית ביומן 📅</button>
+
+    <div style="margin-top: 20px; max-height: 220px; overflow-y: auto;" id="calendarList"></div>
 </div>
 
 <div class="toast" id="toastMsg">הפעולה בוצעה בהצלחה!</div>
@@ -66,11 +124,44 @@
         if(houseCode) {
             document.getElementById('houseBadge').innerText = `🟢 בית: ${houseCode}`;
         }
+        loadBackground();
         loadCalendarEvents();
     };
 
+    // טעינת תמונת הרקע האישית שנשמרה
+    function loadBackground() {
+        const houseCode = getCurrentHouseCode();
+        const savedBg = localStorage.getItem(`vidass_calendar_bg_${houseCode}`);
+        if(savedBg) {
+            document.body.style.backgroundImage = `linear-gradient(rgba(13, 13, 15, 0.85), rgba(26, 22, 34, 0.85)), url(${savedBg})`;
+        }
+    }
+
+    // העלאת תמונה והגדרתה כרקע
+    function handleBgUpload(event) {
+        const file = event.target.files[0];
+        if(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64Image = e.target.result;
+                const houseCode = getCurrentHouseCode();
+                localStorage.setItem(`vidass_calendar_bg_${houseCode}`, base64Image);
+                loadBackground();
+                showToast("🖼️ תמונת הרקע של היומן עודכנה בהצלחה!");
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    // איפוס תמונת הרקע לברירת המחדל
+    function resetBackground() {
+        const houseCode = getCurrentHouseCode();
+        localStorage.removeItem(`vidass_calendar_bg_${houseCode}`);
+        document.body.style.backgroundImage = '';
+        showToast("תמונת הרקע אופסה לברירת המחדל.");
+    }
+
     function loadCalendarEvents() {
-        // שימוש בפונקציית הסנכרון המשותפת לכל דיירי הבית
         const data = getSharedData('calendar');
         const container = document.getElementById('calendarList');
         
@@ -86,6 +177,46 @@
                     <button onclick="removeCalendarEvent(${actualIndex})" style="background:rgba(239,68,68,0.1); color:var(--danger); border:1px solid rgba(239,68,68,0.3); padding:5px 10px; border-radius:6px; cursor:pointer; font-size:11px;">מחק</button>
                 </div>`;
         });
+    }
+
+    // פענוח הודעות תורים אוטומטיות
+    function parseAndAddSmsEvent() {
+        const text = document.getElementById('rawSmsInput').value.trim();
+        if(!text) {
+            showToast("נא להדביק הודעת טקסט לפענוח", true);
+            return;
+        }
+
+        let extractedTitle = "תור חדש (מהודעה)";
+        let extractedTime = "נקבע בהודעה";
+
+        const timeMatch = text.match(/([0-2]?[0-9]:[0-5][0-9])/);
+        if(timeMatch) { extractedTime = timeMatch[1]; }
+
+        const dateMatch = text.match(/([0-3]?[0-9]\/[0-1]?[0-9])/);
+        if(dateMatch) { extractedTime = dateMatch[1] + (timeMatch ? " בשעה " + timeMatch[1] : ""); }
+
+        if(text.includes("ד\"ר") || text.includes("דר'")) {
+            const parts = text.split(/ד\"ר|דר'/);
+            if(parts[1]) { extractedTitle = "תור אצל ד\"ר " + parts[1].trim().split(" ")[0]; }
+        } else if(text.includes("תור")) {
+            extractedTitle = "תור משוריין חדש";
+        } else {
+            extractedTitle = text.substring(0, 25) + "...";
+        }
+
+        let data = getSharedData('calendar');
+        data.push({ 
+            title: extractedTitle, 
+            time: extractedTime + " (" + text.substring(0, 30) + "...)",
+            addedBy: getCurrentUser(),
+            date: new Date().toLocaleDateString('he-IL')
+        });
+        saveSharedData('calendar', data);
+
+        document.getElementById('rawSmsInput').value = '';
+        loadCalendarEvents();
+        showToast("⚡ ההודעה פוענחה בהצלחה והתווספה ליומן הבית!");
     }
 
     function addCalendarEvent() {

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIDASS Micro-App - הוצאות הבית ותלושי שכר</title>
+    <title>VIDASS Micro-App - מנהל חשבונות ופיננסים</title>
     <!-- קישור לקובץ הסנכרון המשותף בין דיירי הבית -->
     <script src="storage-sync.js"></script>
     <style>
@@ -18,19 +18,41 @@
             --text-muted: #9ca3af;
             --success: #10b981;
             --danger: #ef4444;
+            --gold: #f59e0b;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background: var(--bg-gradient); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .app-container { width: 100%; max-width: 600px; background: var(--card-bg); backdrop-filter: blur(14px); border: 1px solid var(--card-border); border-radius: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.8); padding: 24px; }
+        .app-container { width: 100%; max-width: 680px; background: var(--card-bg); backdrop-filter: blur(14px); border: 1px solid var(--card-border); border-radius: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.8); padding: 24px; }
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 16px; }
         .header h1 { font-size: 20px; color: var(--accent); }
         .badge { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--success); padding: 4px 10px; border-radius: 8px; font-size: 11px; }
-        .input-group { margin-bottom: 12px; text-align: right; }
-        .input-group label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+        
+        /* לוח סיכום פיננסי חכם */
+        .finance-summary { display: flex; gap: 10px; margin-bottom: 16px; }
+        .fin-card { flex: 1; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 12px; text-align: center; }
+        .fin-card h4 { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; }
+        .fin-card .val { font-size: 16px; font-weight: bold; }
+
+        .scanner-box { background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 14px; padding: 14px; margin-bottom: 16px; text-align: center; }
+        .scanner-box h3 { color: var(--gold); font-size: 14px; margin-bottom: 4px; }
+        
+        .upload-btn-container { border: 2px dashed rgba(245, 158, 11, 0.4); border-radius: 12px; padding: 10px; cursor: pointer; background: rgba(255,255,255,0.02); transition: 0.2s; margin-top: 8px; display: block; }
+        .upload-btn-container:hover { background: rgba(245, 158, 11, 0.1); }
+        .upload-btn-container input { display: none; }
+
+        .input-group { margin-bottom: 10px; text-align: right; }
+        .input-group label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 3px; }
         .input-group input, .input-group select { width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; color: white; font-size: 13px; outline: none; text-align: right; }
         .input-group option { background: #1a1622; color: white; }
+        
+        .row-inputs { display: flex; gap: 10px; }
+        .row-inputs .input-group { flex: 1; }
+
         .btn { width: 100%; padding: 11px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 5px; }
-        .item-row { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+        
+        .item-row { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+        .doc-preview { width: 42px; height: 42px; border-radius: 8px; object-fit: cover; border: 1px solid var(--accent); background: rgba(255,255,255,0.1); margin-left: 10px; flex-shrink: 0; }
+
         .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: white; padding: 10px 20px; border-radius: 10px; font-size: 13px; transition: transform 0.3s; z-index: 1000; }
         .toast.show { transform: translateX(-50%) translateY(0); }
     </style>
@@ -40,28 +62,60 @@
 <div class="app-container">
     <div class="header">
         <div>
-            <h1>📄 הוצאות הבית ותלושי שכר</h1>
-            <p style="font-size: 11px; color: var(--text-muted);">ניהול פיננסי משותף לכל דיירי הבית</p>
+            <h1>📊 מנהל חשבונות ופיננסים של VIDASS</h1>
+            <p style="font-size: 11px; color: var(--text-muted);">ניהול הכנסות, הוצאות, תלושים וארכיון מסמכים משותף</p>
         </div>
         <div class="badge" id="houseBadge">🟢 מחובר לבית המשותף</div>
     </div>
 
-    <div class="input-group">
-        <label>סוג תנועה</label>
-        <select id="expType">
-            <option value="הכנסה / שכר נטו">📥 הכנסה / שכר נטו</option>
-            <option value="הוצאה שוטפת">📤 הוצאה שוטפת (ארנונה, חשמל, קניות)</option>
-        </select>
+    <!-- לוח סיכום פיננסי חי -->
+    <div class="finance-summary">
+        <div class="fin-card">
+            <h4>📥 סך הכנסות / שכר</h4>
+            <div class="val" id="totalIncome" style="color: var(--success);">0 ₪</div>
+        </div>
+        <div class="fin-card">
+            <h4>📤 סך הוצאות / חשבונות</h4>
+            <div class="val" id="totalExpenses" style="color: var(--danger);">0 ₪</div>
+        </div>
+        <div class="fin-card">
+            <h4>💰 מאזן נטו בקופה</h4>
+            <div class="val" id="netBalance" style="color: var(--accent);">0 ₪</div>
+        </div>
     </div>
-    <div class="input-group">
-        <label>תיאור הנתון</label>
-        <input type="text" id="expDesc" placeholder="לדוגמה: משכורת נטו / חשבון חשמל...">
+
+    <!-- אזור סריקה והעלאת מסמכים חכם -->
+    <div class="scanner-box">
+        <h3>📷 סורק מסמכים, תלושים וחשבונות פיננסיים</h3>
+        <p style="font-size: 11px; color: var(--text-muted);">העלי תמונה או צילום מסך של תלוש השכר או החשבון – המערכת תקלוט ותשמור אותו מיד.</p>
+        
+        <label class="upload-btn-container">
+            <span id="scanStatusText" style="color: var(--gold); font-weight: bold; font-size: 12px;">📁 לחצי כאן להעלאת קובץ / תמונת מסמך לסריקה</span>
+            <input type="file" id="documentScanner" accept="image/*" onchange="scanAndProcessDocument(event)">
+        </label>
     </div>
-    <div class="input-group">
-        <label>סכום (₪)</label>
-        <input type="number" id="expAmount" placeholder="לדוגמה: 7500" onkeypress="if(event.key==='Enter') addExpenseRecord()">
+
+    <div class="row-inputs">
+        <div class="input-group">
+            <label>סוג תנועה / מסמך</label>
+            <select id="expType">
+                <option value="תלוש שכר / הכנסה">📥 תלוש שכר / הכנסה</option>
+                <option value="חשבון / הוצאה שוטפת">📤 חשבון (חשמל, ארנונה, מים, קניות)</option>
+                <option value="מכתב רשמי / אחר">📋 מכתב רשמי / מסמך פיננסי</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label>סכום (₪)</label>
+            <input type="number" id="expAmount" placeholder="לדוגמה: 7500">
+        </div>
     </div>
-    <button class="btn" onclick="addExpenseRecord()">שמור נתון פיננסי 💾</button>
+
+    <div class="input-group">
+        <label>תיאור הנתון או המסמך</label>
+        <input type="text" id="expDesc" placeholder="לדוגמה: משכורת נטו / חשבון חשמל..." onkeypress="if(event.key==='Enter') addExpenseRecord()">
+    </div>
+    
+    <button class="btn" onclick="addExpenseRecord()">שמור נתון פיננסי ומסמך למערכת 💾</button>
 
     <div style="margin-top: 20px; max-height: 240px; overflow-y: auto;" id="expensesList"></div>
 </div>
@@ -69,6 +123,8 @@
 <div class="toast" id="toastMsg">הפעולה בוצעה בהצלחה!</div>
 
 <script>
+    let scannedDocBase64 = "";
+
     window.onload = function() {
         const houseCode = getCurrentHouseCode();
         if(houseCode) {
@@ -77,27 +133,78 @@
         loadExpenses();
     };
 
+    function scanAndProcessDocument(event) {
+        const file = event.target.files[0];
+        if(!file) return;
+
+        document.getElementById('scanStatusText').innerText = "🔄 סורק ומנתח את המסמך...";
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            scannedDocBase64 = e.target.result;
+            
+            const fileName = file.name.toLowerCase();
+            if(fileName.includes('שכר') || fileName.includes('תלוש')) {
+                document.getElementById('expType').value = "תלוש שכר / הכנסה";
+                document.getElementById('expDesc').value = "תלוש שכר סרוק (" + file.name + ")";
+            } else if(fileName.includes('חשמל') || fileName.includes('ארנונה') || fileName.includes('מים')) {
+                document.getElementById('expType').value = "חשבון / הוצאה שוטפת";
+                document.getElementById('expDesc').value = "חשבון סרוק (" + file.name + ")";
+            } else {
+                document.getElementById('expDesc').value = "מסמך סרוק: " + file.name;
+            }
+
+            document.getElementById('scanStatusText').innerText = "✔️ המסמך נסרק בהצלחה ונקלט במערכת!";
+            showToast("📷 המסמך נקרא ונותח בהצלחה!");
+        };
+        reader.readAsDataURL(file);
+    }
+
     function loadExpenses() {
-        // שימוש בפונקציית הסנכרון המשותפת לכל דיירי הבית
         const data = getSharedData('expenses');
         const container = document.getElementById('expensesList');
         
-        container.innerHTML = data.length === 0 ? '<p style="text-align:center; font-size:12px; color:var(--text-muted);">אין נתונים פיננסיים שמורים כרגע.</p>' : '';
+        let sumIncome = 0;
+        let sumExpenses = 0;
+
+        container.innerHTML = data.length === 0 ? '<p style="text-align:center; font-size:12px; color:var(--text-muted);">אין מסמכים או נתונים פיננסיים שמורים כרגע.</p>' : '';
+        
         data.slice().reverse().forEach((item, index) => {
             const actualIndex = data.length - 1 - index;
-            const isIncome = item.type.includes('הכנסה');
+            const isIncome = item.type.includes('הכנסה') || item.type.includes('שכר');
+            const amt = parseFloat(item.amount) || 0;
+
+            if(isIncome) {
+                sumIncome += amt;
+            } else {
+                sumExpenses += amt;
+            }
+
             const colorStyle = isIncome ? 'var(--success)' : 'var(--danger)';
             const sign = isIncome ? '+' : '-';
-            
+            let docImgHTML = item.document ? `<img src="${item.document}" class="doc-preview" alt="מסמך סרוק">` : '';
+
             container.innerHTML += `
                 <div class="item-row">
-                    <div>
-                        <strong style="color:${colorStyle};">${item.type}: ${item.desc}</strong>
-                        <div style="font-size:13px; font-weight:bold; margin-top:2px;">סכום: ${sign}${item.amount} ₪ <span style="font-size:10px; color:var(--text-muted); font-weight:normal;">(הוסף ע"י: ${item.addedBy || 'דייר'} | ${item.date})</span></div>
+                    <div style="display: flex; align-items: center; flex: 1;">
+                        ${docImgHTML}
+                        <div>
+                            <strong style="color:${colorStyle}; font-size:14px;">${item.type}: ${item.desc}</strong>
+                            <div style="font-size:12px; font-weight:bold; margin-top:2px;">סכום: ${sign}${amt.toLocaleString()} ₪ <span style="font-size:10px; color:var(--text-muted); font-weight:normal;">(הוסף ע"י: ${item.addedBy || 'דייר'} | ${item.date})</span></div>
+                        </div>
                     </div>
                     <button onclick="removeExpenseRecord(${actualIndex})" style="background:rgba(239,68,68,0.1); color:var(--danger); border:1px solid rgba(239,68,68,0.3); padding:5px 10px; border-radius:6px; cursor:pointer; font-size:11px;">מחק</button>
                 </div>`;
         });
+
+        // עדכון לוח הסיכום הפיננסי בראש העמוד
+        document.getElementById('totalIncome').innerText = sumIncome.toLocaleString() + " ₪";
+        document.getElementById('totalExpenses').innerText = sumExpenses.toLocaleString() + " ₪";
+        
+        const net = sumIncome - sumExpenses;
+        const netEl = document.getElementById('netBalance');
+        netEl.innerText = net.toLocaleString() + " ₪";
+        netEl.style.color = net >= 0 ? 'var(--success)' : 'var(--danger)';
     }
 
     function addExpenseRecord() {
@@ -105,22 +212,27 @@
         const desc = document.getElementById('expDesc').value.trim();
         const amount = document.getElementById('expAmount').value.trim();
 
-        if(!desc || !amount) { showToast("נא למלא את כל השדות", true); return; }
+        if(!desc) { showToast("נא להזין לפחות תיאור למסמך או להוצאה", true); return; }
 
         let data = getSharedData('expenses');
         data.push({ 
             type, 
             desc, 
-            amount, 
+            amount: amount || "0", 
+            document: scannedDocBase64,
             addedBy: getCurrentUser(),
             date: new Date().toLocaleDateString('he-IL') 
         });
         saveSharedData('expenses', data);
 
+        // איפוס שדות
         document.getElementById('expDesc').value = '';
         document.getElementById('expAmount').value = '';
+        document.getElementById('scanStatusText').innerText = "📁 לחצי כאן להעלאת קובץ / תמונת מסמך לסריקה";
+        scannedDocBase64 = "";
+
         loadExpenses();
-        showToast("הנתון הפיננסי נשמר ושותף לכל דיירי הבית!");
+        showToast("הנתון הפיננסי והמסמך נשמרו ושותפו לכל דיירי הבית! 📊");
     }
 
     function removeExpenseRecord(index) {

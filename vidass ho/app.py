@@ -31,7 +31,7 @@ def get_house_data(house_code):
     db = load_db()
     # מבנה נתונים מלא ומוגן לכל בית חדש או קיים
     house_data = db.get(house_code, {
-        "members": ["ויקי"],
+        "members": [{"name": "ויקי", "phone": "לא צוין", "role": "מנהל הבית"}],
         "data": {
             "shopping": [],
             "inventory": [],
@@ -56,7 +56,7 @@ def save_house_data(house_code):
 
     if house_code not in db:
         db[house_code] = {
-            "members": ["ויקי"], 
+            "members": [{"name": "ויקי", "phone": "לא צוין", "role": "מנהל הבית"}], 
             "data": {
                 "shopping": [], "inventory": [], "tasks": [], "recipes": [], 
                 "pocket": [], "travel": [], "weather": [], "expenses": [], "calendar": []

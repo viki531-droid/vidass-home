@@ -1,12 +1,11 @@
 // ==========================================
-// VIDASS - Unified Secure Real-Time House Sync Engine
-// מנוע סנכרון מאוחד ואחיד לכל דפדפני הבית מול שרת הענן הפרטי
+// VIDASS - Clean & Unified Storage & Sync Engine (Fixed & Robust)
 // ==========================================
 
 const VIDASS_STORAGE_PREFIX = "vidass_house_";
 let globalSyncInterval = null;
 
-// כתובת שרת ה-Flask הפרטי (ניתן לעדכן לכתובת ה-IP של השרת ברשת Tailscale)
+// כתובת שרת ה-Flask (ניתן לשנות לכתובת ה-IP או ה-Tailscale של השרת בבית)
 const getFlaskServerUrl = () => {
     return localStorage.getItem("vidass_flask_server_url") || "http://localhost:5000";
 };
@@ -21,14 +20,14 @@ function setFlaskServerUrl(url) {
 function getCurrentHouseCode() {
     let houseCode = localStorage.getItem("vidass_current_house") || localStorage.getItem("vidass_current_house_code");
     if (!houseCode) {
-        houseCode = "EILAT-33"; // קוד ברירת מחדל משותף
+        houseCode = "EILAT-33"; // ברירת מחדל מותאמת
         localStorage.setItem("vidass_current_house", houseCode);
         localStorage.setItem("vidass_current_house_code", houseCode);
     }
     return houseCode;
 }
 
-// הצטרפות לבית קיים (כאשר דייר מזין קוד בית)
+// הגדרת קוד בית חדש (הצטרפות לבית)
 function setCurrentHouseCode(code) {
     if (code && code.trim() !== "") {
         const cleanCode = code.trim();
@@ -38,23 +37,26 @@ function setCurrentHouseCode(code) {
     }
 }
 
-// קבלת שם המשתמש הנוכחי במכשיר (למשל: ויקי או דוד)
+// קבלת שם המשתמש הנוכחי במכשיר (ויקי / דוד)
 function getCurrentUser() {
     return localStorage.getItem("vidass_current_user") || "ויקי";
 }
 
 function setCurrentUser(username) {
     if (username) {
-        localStorage.setItem("vidass_current_user", username.trim());
-        registerMemberToHouse(username.trim());
+        const cleanName = username.trim();
+        localStorage.setItem("vidass_current_user", cleanName);
+        registerMemberToHouse(cleanName);
     }
 }
 
-// רישום דייר חדש לרשימת הבית
+// רישום דייר חדש לרשימת הבית וסנכרון מיידי מול השרת
 function registerMemberToHouse(userName) {
     let members = getHouseMembers();
-    if (!members.includes(userName)) {
-        members.push(userName);
+    // תמיכה במבנה חדש של אובייקטים או מחרוזות
+    const exists = members.some(m => (typeof m === 'object' ? m.name : m) === userName);
+    if (!exists) {
+        members.push({ name: userName, phone: "לא צוין", role: "דייר" });
         saveHouseMembers(members);
     }
 }
@@ -73,17 +75,19 @@ function getPersonalizedGreeting() {
 function getHouseMembers() {
     const houseCode = getCurrentHouseCode();
     const data = localStorage.getItem(`${VIDASS_STORAGE_PREFIX}${houseCode}_members`);
-    return data ? JSON.parse(data) : [getCurrentUser()];
+    return data ? JSON.parse(data) : [{ name: getCurrentUser(), phone: "לא צוין", role: "מנהל הבית" }];
 }
 
-// שמירת רשימת הדיירים ועדכון השרת
+// שמירת רשימת הדיירים ועדכון מיידי של השרת
 function saveHouseMembers(members) {
     const houseCode = getCurrentHouseCode();
     localStorage.setItem(`${VIDASS_STORAGE_PREFIX}${houseCode}_members`, JSON.stringify(members));
+    
+    // שליחה מיידית לשרת כדי שדוד ושאר הטלפונים יראו את הדייר החדש
     syncWithFlaskServer({ members: members });
 }
 
-// שליפת מידע משותף מכל מודול (קניות, מלאי, משימות, דמי כיס וכו')
+// שליפת מידע משותף (קניות, משימות, מלאי וכו')
 function getSharedData(key) {
     const houseCode = getCurrentHouseCode();
     const fullKey = `${VIDASS_STORAGE_PREFIX}${houseCode}_${key}`;
@@ -96,10 +100,10 @@ function saveSharedData(key, data) {
     const houseCode = getCurrentHouseCode();
     const fullKey = `${VIDASS_STORAGE_PREFIX}${houseCode}_${key}`;
     
-    // 1. שמירה מקומית מיידית לתגובה חלקה
+    // 1. שמירה מקומית מיידית
     localStorage.setItem(fullKey, JSON.stringify(data));
 
-    // 2. שליחה לשרת ה-Flask כדי ששאר בני הבית יראו מיד את השינוי
+    // 2. שליחה לשרת ה-Flask
     let payload = { data: {} };
     payload.data[key] = data;
     syncWithFlaskServer(payload);
@@ -121,7 +125,7 @@ async function syncWithFlaskServer(payload) {
     }
 }
 
-// משיכת נתונים עדכניים מהשרת עבור כל המודולים (סנכרון חי)
+// משיכת נתונים עדכניים מהשרת עבור כל המודולים והדיירים (סנכרון חי)
 async function fetchHouseDataFromServer(forceReload = false) {
     const houseCode = getCurrentHouseCode();
     const serverUrl = getFlaskServerUrl();
@@ -133,17 +137,21 @@ async function fetchHouseDataFromServer(forceReload = false) {
             if (serverData) {
                 let hasChanges = false;
                 
-                // עדכון דיירים
-                if (serverData.members) {
-                    const localMembers = localStorage.getItem(`${VIDASS_STORAGE_PREFIX}${houseCode}_members`);
-                    const serverMembersStr = JSON.stringify(serverData.members);
-                    if (localMembers !== serverMembersStr) {
-                        localStorage.setItem(`${VIDASS_STORAGE_PREFIX}${houseCode}_members`, serverMembersStr);
+                // עדכון דיירים מהשרת (מיזוג חכם למניעת דריסה)
+                if (serverData.members && Array.isArray(serverData.members)) {
+                    let localMembers = getHouseMembers();
+                    
+                    // בדיקת שינויים לפי שמות הדיירים
+                    const localStr = JSON.stringify(localMembers);
+                    const serverStr = JSON.stringify(serverData.members);
+                    
+                    if (localStr !== serverStr) {
+                        localStorage.setItem(`${VIDASS_STORAGE_PREFIX}${houseCode}_members`, serverStr);
                         hasChanges = true;
                     }
                 }
 
-                // עדכון כל מודולי המידע (קניות, מלאי, משימות, דמי כיס, טיולים, מזג אוויר וכו')
+                // עדכון כל מודולי המידע
                 if (serverData.data) {
                     for (const [key, val] of Object.entries(serverData.data)) {
                         const localVal = localStorage.getItem(`${VIDASS_STORAGE_PREFIX}${houseCode}_${key}`);
@@ -155,7 +163,7 @@ async function fetchHouseDataFromServer(forceReload = false) {
                     }
                 }
 
-                // רענון אוטומטי של התצוגה בדפדפן הפעיל אם התקבלו נתונים חדשים משאר בני הבית
+                // רענון אוטומטי של התצוגה בדפדפן הפעיל אם התקבלו נתונים חדשים
                 if (hasChanges || forceReload) {
                     if (typeof window.loadItems === 'function') window.loadItems();
                     if (typeof window.loadTasks === 'function') window.loadTasks();
@@ -163,11 +171,13 @@ async function fetchHouseDataFromServer(forceReload = false) {
                     if (typeof window.loadTrips === 'function') window.loadTrips();
                     if (typeof window.loadWeatherNotes === 'function') window.loadWeatherNotes();
                     if (typeof window.loadMembers === 'function') window.loadMembers();
+                    if (typeof window.loadInventory === 'function') window.loadInventory();
+                    if (typeof window.loadExpenses === 'function') window.loadExpenses();
                 }
             }
         }
     } catch (e) {
-        // שגיאת רשת שקטה
+        // שגיאת רשת שקטה במצב אופליין
     }
 }
 
@@ -176,7 +186,7 @@ window.addEventListener('DOMContentLoaded', () => {
     registerMemberToHouse(getCurrentUser());
     fetchHouseDataFromServer(true);
 
-    // מנגנון סנכרון חי (Polling) שבודק עדכונים מהשרת כל 3 שניות
+    // מנגנון סנכרון חי שבודק עדכונים מהשרת כל 3 שניות
     if (!globalSyncInterval) {
         globalSyncInterval = setInterval(() => {
             fetchHouseDataFromServer(false);

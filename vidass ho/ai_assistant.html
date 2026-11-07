@@ -114,9 +114,12 @@
             } else if (lowerQuery.includes('מלאי')) {
                 const inventory = getSharedData('inventory');
                 response = inventory.length > 0 ? `📦 במלאי הבית רשומים: ${inventory.map(i => i.name).join(', ')}` : "📦 מלאי הבית ריק כרגע.";
-            } else if (lowerQuery.includes('משימות')) {
+            } else if (lowerQuery.includes('משימות') || lowerQuery.includes('מה צריך לעשות')) {
                 const tasks = getSharedData('tasks');
-                response = tasks.length > 0 ? `📌 משימות פתוחות: ${tasks.map(t => t.text || t.name).join(' | ')}` : "📌 אין משימות פתוחות כרגע.";
+                response = tasks.length > 0 ? `📌 משימות פתוחות בבית: ${tasks.map(t => t.text || t.name).join(' | ')}` : "📌 אין משימות פתוחות כרגע.";
+            } else if (lowerQuery.includes('מתכונים') || lowerQuery.includes('אוכל')) {
+                const recipes = getSharedData('recipes');
+                response = recipes.length > 0 ? `🍲 מתכונים שמורים בבית: ${recipes.map(r => r.title).join(', ')}` : "🍲 אין מתכונים שמורים במערכת כרגע.";
             } else {
                 response = `קיבלתי את השאלה שלך: "${query}". אני סורק את כל מסדי הנתונים המשותפים של הבית ויכול לספר לך על דיירים, מלאי, קניות, משימות, מתכונים ועוד. נסי לשאול אותי "מה יש בבית בכלל?" או "מי מחובר בבית?".`;
             }

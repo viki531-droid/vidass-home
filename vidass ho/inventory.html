@@ -68,7 +68,7 @@
     };
 
     function loadInventory() {
-        // שימוש בפונקציית הסנכרון המשותפת לכל דיירי הבית
+        // שימוש בפונקציית הסנכרון המשותפת לכל דיירי הבית[cite: 8]
         const data = getSharedData('inventory');
         const container = document.getElementById('inventoryList');
         
@@ -115,7 +115,7 @@
         showToast("המוצר הוסר מהמלאי.");
     }
 
-    // הפונקציה המקשרת בין המלאי לדפדפן הקניות בצורה משותפת!
+    // הפונקציה המקשרת בין המלאי לדפדפן הקניות בצורה משותפת![cite: 8]
     function sendToShopping(productName) {
         let shoppingData = getSharedData('shopping');
         

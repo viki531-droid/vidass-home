@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIDASS Micro-App - ימי הולדת</title>
+    <title>VIDASS Micro-App - ימי הולדת וחגיגות</title>
     <!-- קישור לקובץ הסנכרון המשותף בין דיירי הבית -->
     <script src="storage-sync.js"></script>
     <style>
@@ -18,18 +18,40 @@
             --text-muted: #9ca3af;
             --success: #10b981;
             --danger: #ef4444;
+            --gold: #f59e0b;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background: var(--bg-gradient); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .app-container { width: 100%; max-width: 600px; background: var(--card-bg); backdrop-filter: blur(14px); border: 1px solid var(--card-border); border-radius: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.8); padding: 24px; }
+        .app-container { width: 100%; max-width: 650px; background: var(--card-bg); backdrop-filter: blur(14px); border: 1px solid var(--card-border); border-radius: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.8); padding: 24px; }
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 16px; }
         .header h1 { font-size: 20px; color: var(--accent); }
         .badge { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--success); padding: 4px 10px; border-radius: 8px; font-size: 11px; }
+        
         .input-group { margin-bottom: 12px; text-align: right; }
         .input-group label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
         .input-group input { width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; color: white; font-size: 13px; outline: none; text-align: right; }
-        .btn { width: 100%; padding: 11px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 5px; }
-        .item-row { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+        
+        .row-inputs { display: flex; gap: 10px; }
+        .row-inputs .input-group { flex: 1; }
+
+        .file-upload-box { background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.2); border-radius: 10px; padding: 10px; text-align: center; margin-bottom: 12px; }
+        .file-upload-box input { display: none; }
+        .file-upload-label { font-size: 12px; color: var(--accent); cursor: pointer; font-weight: bold; }
+
+        .btn { width: 100%; padding: 11px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 5px; transition: 0.2s; }
+        .btn:hover { opacity: 0.9; }
+
+        .item-row { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 14px; margin-bottom: 10px; font-size: 13px; display: flex; gap: 12px; align-items: center; }
+        .bday-avatar { width: 55px; height: 55px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent); background: rgba(255,255,255,0.1); flex-shrink: 0; }
+        
+        .party-badge { background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: var(--gold); padding: 3px 8px; border-radius: 6px; font-size: 11px; display: inline-block; margin-top: 6px; font-weight: bold; }
+        
+        .action-btns { display: flex; gap: 6px; margin-top: 8px; }
+        .action-btn { padding: 5px 10px; border-radius: 6px; text-align: center; font-size: 11px; font-weight: bold; text-decoration: none; display: inline-block; }
+        .btn-call { background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.4); }
+        .btn-whatsapp { background: rgba(37, 211, 102, 0.15); color: #25d366; border: 1px solid rgba(37, 211, 102, 0.4); }
+        .btn-delete { background: rgba(239, 68, 68, 0.15); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.4); cursor: pointer; }
+
         .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: white; padding: 10px 20px; border-radius: 10px; font-size: 13px; transition: transform 0.3s; z-index: 1000; }
         .toast.show { transform: translateX(-50%) translateY(0); }
     </style>
@@ -39,28 +61,73 @@
 <div class="app-container">
     <div class="header">
         <div>
-            <h1>🎂 דפדפן ימי הולדת</h1>
-            <p style="font-size: 11px; color: var(--text-muted);">תזכורות שמחות משותפות לכל הבית</p>
+            <h1>🎂 ימי הולדת וחגיגות עם תמונה</h1>
+            <p style="font-size: 11px; color: var(--text-muted);">תזכורות, פרטי מסיבות, טלפונים ותמונות אישיות</p>
         </div>
         <div class="badge" id="houseBadge">🟢 מחובר לבית המשותף</div>
     </div>
 
-    <div class="input-group">
-        <label>שם בני המשפחה / חבר</label>
-        <input type="text" id="bdayName" placeholder="לדוגמה: דוד, אגם, לוטם...">
+    <div class="row-inputs">
+        <div class="input-group">
+            <label>שם החוגג/ת</label>
+            <input type="text" id="bdayName" placeholder="לדוגמה: דוד, לוטם...">
+        </div>
+        <div class="input-group">
+            <label>תאריך יום הולדת</label>
+            <input type="text" id="bdayDate" placeholder="לדוגמה: 15/02">
+        </div>
     </div>
-    <div class="input-group">
-        <label>תאריך יום ההולדת (לדוגמה: 15/02)</label>
-        <input type="text" id="bdayDate" placeholder="הכנס תאריך..." onkeypress="if(event.key==='Enter') addBirthday()">
-    </div>
-    <button class="btn" onclick="addBirthday()">שמור יום הולדת 🎂</button>
 
-    <div style="margin-top: 20px; max-height: 240px; overflow-y: auto;" id="birthdaysList"></div>
+    <div class="row-inputs">
+        <div class="input-group">
+            <label>מספר טלפון</label>
+            <input type="tel" id="bdayPhone" placeholder="לדוגמה: 0501234567">
+        </div>
+        <div class="input-group">
+            <label>תמונת החוגג/ת</label>
+            <div class="file-upload-box">
+                <label class="file-upload-label">
+                    <span id="uploadText">בחר תמונה מהמכשיר 📷</span>
+                    <input type="file" id="bdayImage" accept="image/*" onchange="previewImageName(event)">
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 10px 0;">
+
+    <div class="row-inputs">
+        <div class="input-group">
+            <label>מארגן/ת המסיבה</label>
+            <input type="text" id="partyOrganizer" placeholder="מי עושה את המסיבה?">
+        </div>
+        <div class="input-group">
+            <label>מיקום המסיבה</label>
+            <input type="text" id="partyLocation" placeholder="איפה חוגגים?">
+        </div>
+    </div>
+
+    <div class="row-inputs">
+        <div class="input-group">
+            <label>שעה / מועד</label>
+            <input type="text" id="partyTime" placeholder="מתי? (לדוגמה: שישי 20:00)">
+        </div>
+        <div class="input-group">
+            <label>מתנה מומלצת</label>
+            <input type="text" id="partyGift" placeholder="איזו מתנה מביאים?" onkeypress="if(event.key==='Enter') processBirthdayInput()">
+        </div>
+    </div>
+
+    <button class="btn" onclick="processBirthdayInput()">שמור יום הולדת עם תמונה 🎂</button>
+
+    <div style="margin-top: 20px; max-height: 260px; overflow-y: auto;" id="birthdaysList"></div>
 </div>
 
 <div class="toast" id="toastMsg">הפעולה בוצעה בהצלחה!</div>
 
 <script>
+    let tempImageBase64 = "";
+
     window.onload = function() {
         const houseCode = getCurrentHouseCode();
         if(houseCode) {
@@ -69,46 +136,110 @@
         loadBirthdays();
     };
 
+    function previewImageName(event) {
+        const file = event.target.files[0];
+        if(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                tempImageBase64 = e.target.result;
+                document.getElementById('uploadText').innerText = "✔️ תמונה נטענה בהצלחה";
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
     function loadBirthdays() {
-        // שימוש בפונקציית הסנכרון המשותפת לכל דיירי הבית
         const data = getSharedData('birthdays');
         const container = document.getElementById('birthdaysList');
         
-        container.innerHTML = data.length === 0 ? '<p style="text-align:center; font-size:12px; color:var(--text-muted);">אין ימי הולדת שמורים במערכת כרגע.</p>' : '';
+        container.innerHTML = data.length === 0 ? '<p style="text-align:center; font-size:12px; color:var(--text-muted);">אין ימי הולדת או מסיבות רשומות במערכת כרגע.</p>' : '';
+        
         data.slice().reverse().forEach((item, index) => {
             const actualIndex = data.length - 1 - index;
+            
+            let cleanPhone = item.phone ? item.phone.replace(/[^0-9+]/g, '') : '';
+            if(cleanPhone.startsWith('0')) { cleanPhone = '+972' + cleanPhone.substring(1); }
+
+            let partyInfoHTML = '';
+            if(item.organizer || item.location || item.gift) {
+                partyInfoHTML = `
+                    <div class="party-badge">
+                        🎉 מסיבה מאת: ${item.organizer || 'לא צוין'} | 📍 מקום: ${item.location || 'לא צוין'} | 🕒 מתי: ${item.time || 'לא צוין'} | 🎁 מתנה: ${item.gift || 'לא צוין'}
+                    </div>
+                `;
+            }
+
+            let actionButtonsHTML = `<div class="action-btns">`;
+            if(item.phone) {
+                actionButtonsHTML += `
+                    <a href="tel:${item.phone}" class="action-btn btn-call">📞 התצלצל</a>
+                    <a href="https://wa.me/${cleanPhone}?text=${encodeURIComponent('היי ' + item.name + ', מזל טוב! 🎂')}" target="_blank" class="action-btn btn-whatsapp">💬 וואטסאפ</a>
+                `;
+            }
+            actionButtonsHTML += `<button onclick="removeBirthday(${actualIndex})" class="action-btn btn-delete">🗑️ מחק</button></div>`;
+
+            // הצגת תמונה ברירת מחדל אם לא הועלתה תמונה אישית
+            let avatarImg = item.image || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="%23ff80ab" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>';
+
             container.innerHTML += `
                 <div class="item-row">
-                    <div>
-                        <strong style="color:var(--accent);">🎂 ${item.name}</strong>
-                        <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">תאריך: ${item.bdayDate} (הוסף ע"י: ${item.addedBy || 'דייר'})</div>
+                    <img src="${avatarImg}" class="bday-avatar" alt="תמונת חוגג">
+                    <div style="flex: 1;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <div>
+                                <strong style="color:var(--accent); font-size:15px;">🎂 ${item.name}</strong>
+                                <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">תאריך: <strong>${item.bdayDate}</strong> ${item.phone ? '| 📱 ' + item.phone : ''}</div>
+                            </div>
+                        </div>
+                        ${partyInfoHTML}
+                        ${actionButtonsHTML}
                     </div>
-                    <button onclick="removeBirthday(${actualIndex})" style="background:rgba(239,68,68,0.1); color:var(--danger); border:1px solid rgba(239,68,68,0.3); padding:5px 10px; border-radius:6px; cursor:pointer; font-size:11px;">מחק</button>
                 </div>`;
         });
     }
 
-    function addBirthday() {
-        const nameInput = document.getElementById('bdayName');
-        const dateInput = document.getElementById('bdayDate');
-        const name = nameInput.value.trim();
-        const bdayDate = dateInput.value.trim();
+    function processBirthdayInput() {
+        const name = document.getElementById('bdayName').value.trim();
+        const bdayDate = document.getElementById('bdayDate').value.trim();
+        const phone = document.getElementById('bdayPhone').value.trim();
+        const organizer = document.getElementById('partyOrganizer').value.trim();
+        const location = document.getElementById('partyLocation').value.trim();
+        const time = document.getElementById('partyTime').value.trim();
+        const gift = document.getElementById('partyGift').value.trim();
 
-        if(!name || !bdayDate) { showToast("נא למלא את כל השדות", true); return; }
+        if(!name || !bdayDate) { 
+            showToast("נא למלא לפחות את שם החוגג ותאריך יום ההולדת", true); 
+            return; 
+        }
 
         let data = getSharedData('birthdays');
         data.push({ 
             name, 
             bdayDate,
+            phone,
+            image: tempImageBase64,
+            organizer,
+            location,
+            time,
+            gift,
             addedBy: getCurrentUser(),
             date: new Date().toLocaleDateString('he-IL')
         });
         saveSharedData('birthdays', data);
 
-        nameInput.value = '';
-        dateInput.value = '';
+        // איפוס שדות
+        document.getElementById('bdayName').value = '';
+        document.getElementById('bdayDate').value = '';
+        document.getElementById('bdayPhone').value = '';
+        document.getElementById('partyOrganizer').value = '';
+        document.getElementById('partyLocation').value = '';
+        document.getElementById('partyTime').value = '';
+        document.getElementById('partyGift').value = '';
+        document.getElementById('uploadText').innerText = "בחר תמונה מהמכשיר 📷";
+        tempImageBase64 = "";
+
         loadBirthdays();
-        showToast("יום ההולדת נשמר ושותף לכל דיירי הבית!");
+        showToast("יום ההולדת עם התמונה ופרטי המסיבה נשמרו בהצלחה!");
     }
 
     function removeBirthday(index) {

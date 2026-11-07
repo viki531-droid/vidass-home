@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIDASS Micro-App - מזג האוויר</title>
+    <title>VIDASS Micro-App - מזג אוויר ובריאות אלרגיות</title>
     <!-- קישור לקובץ הסנכרון המשותף בין דיירי הבית -->
     <script src="storage-sync.js"></script>
     <style>
@@ -18,24 +18,35 @@
             --text-muted: #9ca3af;
             --success: #10b981;
             --danger: #ef4444;
-            --warning: #f59e0b;
+            --gold: #f59e0b;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background: var(--bg-gradient); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .app-container { width: 100%; max-width: 600px; background: var(--card-bg); backdrop-filter: blur(14px); border: 1px solid var(--card-border); border-radius: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.8); padding: 24px; text-align: center; }
+        .app-container { width: 100%; max-width: 650px; background: var(--card-bg); backdrop-filter: blur(14px); border: 1px solid var(--card-border); border-radius: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.8); padding: 24px; text-align: center; }
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 16px; text-align: right; }
         .header h1 { font-size: 20px; color: var(--accent); }
         .badge { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--success); padding: 4px 10px; border-radius: 8px; font-size: 11px; }
         
-        .weather-display { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 20px; margin-bottom: 16px; }
-        .weather-icon { font-size: 50px; margin-bottom: 10px; }
-        .temp { font-size: 32px; font-weight: bold; color: var(--accent); margin-bottom: 5px; }
+        /* בקרת בחירת מיקום */
+        .location-bar { display: flex; gap: 8px; margin-bottom: 16px; align-items: center; }
+        .location-bar select, .location-bar input { flex: 1; padding: 9px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; color: white; font-size: 13px; outline: none; text-align: right; }
+        .location-bar option { background: #1a1622; color: white; }
+
+        .weather-display { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 18px; margin-bottom: 16px; }
+        .weather-icon { font-size: 44px; margin-bottom: 6px; }
+        .temp { font-size: 30px; font-weight: bold; color: var(--accent); margin-bottom: 4px; }
         
+        /* אזור התראות אלרגיות באוויר */
+        .allergy-alert-box { background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 14px; padding: 14px; margin-bottom: 16px; text-align: right; }
+        .allergy-alert-box h3 { color: var(--gold); font-size: 14px; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+
         .input-group { margin-bottom: 12px; text-align: right; }
         .input-group label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
         .input-group input { width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; color: white; font-size: 13px; outline: none; text-align: right; }
+        
         .btn { width: 100%; padding: 11px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 5px; }
         .item-row { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; text-align: right; }
+        
         .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: white; padding: 10px 20px; border-radius: 10px; font-size: 13px; transition: transform 0.3s; z-index: 1000; }
         .toast.show { transform: translateX(-50%) translateY(0); }
     </style>
@@ -45,24 +56,46 @@
 <div class="app-container">
     <div class="header">
         <div>
-            <h1>☀️ מזג האוויר בבית</h1>
-            <p style="font-size: 11px; color: var(--text-muted);">תחזית ועדכונים משותפים</p>
+            <h1>🌤️ מזג אוויר, בריאות ואלרגיות באוויר</h1>
+            <p style="font-size: 11px; color: var(--text-muted);">תחזית דינמית לפי מיקום והתראות רגישות</p>
         </div>
         <div class="badge" id="houseBadge">🟢 מחובר לבית המשותף</div>
     </div>
 
-    <div class="weather-display">
-        <div class="weather-icon">☀️</div>
-        <div class="temp">28°C</div>
-        <h2 style="font-size: 16px; color: var(--text-main);">אילת, שכונת שחמון</h2>
-        <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">שמים בהירים | אחוזי לחות: 35%</p>
+    <!-- בחירת מיקום דינמית -->
+    <div class="location-bar">
+        <select id="citySelector" onchange="updateWeatherByCity()">
+            <option value="אילת">📍 אילת (שחמון / מרכז)</option>
+            <option value="כפר סבא">📍 כפר סבא</option>
+            <option value="תל אביב">📍 תל אביב</option>
+            <option value="ירושלים">📍 ירושלים</option>
+            <option value="חיפה">📍 חיפה</option>
+            <option value="באר שבע">📍 באר שבע</option>
+        </select>
+    </div>
+
+    <!-- תצוגת מזג האוויר החיה -->
+    <div class="weather-display" id="weatherCard">
+        <div class="weather-icon" id="wIcon">☀️</div>
+        <div class="temp" id="wTemp">28°C</div>
+        <h2 style="font-size: 16px; color: var(--text-main);" id="wCityTitle">אילת</h2>
+        <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;" id="wDesc">שמים בהירים | לחות: 35%</p>
+    </div>
+
+    <!-- מדד אלרגיות והתראות באוויר -->
+    <div class="allergy-alert-box">
+        <h3>⚠️ מדד אלרגיות ורגישויות באוויר</h3>
+        <p style="font-size: 12px; color: var(--text-main); line-height: 1.4;" id="allergyStatus">
+            🌿 <b>אבקנים ופריחה:</b> רמה בינונית באזור. מומלץ להיזהר למי שסובל מרגישות עונתית.<br>
+            🍋 <b>רגישויות מיוחדות:</b> דווחה רגישות לפירות הדר / פריחות באזור זה.
+        </p>
     </div>
 
     <div class="input-group">
-        <label>הוסף הערה או תזכורת הקשורה למזג האוויר</label>
-        <input type="text" id="weatherNote" placeholder="לדוגמה: מחר צפוי חום כבד, להשקות עציצים..." onkeypress="if(event.key==='Enter') addWeatherNote()">
+        <label>הוסף התראת בריאות או מזג אוויר למשפחה</label>
+        <input type="text" id="weatherNote" placeholder="לדוגמה: אזהרת אבק בחוץ, להקפיד על סגירת חלונות..." onkeypress="if(event.key==='Enter') addWeatherNote()">
     </div>
-    <button class="btn" onclick="addWeatherNote()">שמור הערת מזג אוויר ☀️</button>
+    <button class="btn" onclick="addWeatherNote()">שמור התראה למערכת הביתית ⚠️</button>
 
     <div style="margin-top: 20px; max-height: 200px; overflow-y: auto;" id="weatherNotesList"></div>
 </div>
@@ -70,26 +103,47 @@
 <div class="toast" id="toastMsg">הפעולה בוצעה בהצלחה!</div>
 
 <script>
+    // נתוני תחזית ואלרגיות לדוגמה לפי ערים
+    const cityWeatherData = {
+        "אילת": { temp: "34°C", icon: "☀️", desc: "חם ויבש | לחות: 25%", allergy: "🌿 אבק מדברי בינוני | 🍋 רגישות הדרים באוויר: נמוכה" },
+        "כפר סבא": { temp: "24°C", icon: "⛅", desc: "מעונן חלקית | לחות: 55%", allergy: "🌿 פריחת אביב עונתית: גבוהה (היזהרו מאלרגיות פריחה!) | 🍋 רגישויות: פעיל" },
+        "תל אביב": { temp: "26°C", icon: "🌤️", desc: "נוח ולחות גבוהה | לחות: 70%", allergy: "🌿 אבקנים עירוניים: בינוני | 🍋 רגישות לחות ופריחות: פעיל" },
+        "ירושלים": { temp: "21°C", icon: "🌥️", desc: "קריר ונעים | לחות: 45%", allergy: "🌿 פריחת אורנים ועצי יער: גבוהה | 🍋 רגישויות: רגיל" },
+        "חיפה": { temp: "25°C", icon: "🌤️", desc: "בהיר לאורך החוף | לחות: 65%", allergy: "🌿 פריחה חופית: נמוכה | 🍋 רגישויות: רגיל" },
+        "באר שבע": { temp: "29°C", icon: "☀️", desc: "שמשי ויבש | לחות: 30%", allergy: "🌿 רוחות ואבק: בינוני | 🍋 רגישויות: רגיל" }
+    };
+
     window.onload = function() {
         const houseCode = getCurrentHouseCode();
         if(houseCode) {
             document.getElementById('houseBadge').innerText = `🟢 בית: ${houseCode}`;
         }
+        updateWeatherByCity();
         loadWeatherNotes();
     };
 
+    function updateWeatherByCity() {
+        const city = document.getElementById('citySelector').value;
+        const data = cityWeatherData[city] || cityWeatherData["אילת"];
+
+        document.getElementById('wIcon').innerText = data.icon;
+        document.getElementById('wTemp').innerText = data.temp;
+        document.getElementById('wCityTitle').innerText = `אזור: ${city}`;
+        document.getElementById('wDesc').innerText = data.desc;
+        document.getElementById('allergyStatus').innerHTML = `🌿 <b>אבקנים ופריחה:</b> ${data.allergy}`;
+    }
+
     function loadWeatherNotes() {
-        // שימוש בפונקציית הסנכרון המשותפת לכל דיירי הבית
         const data = getSharedData('weather');
         const container = document.getElementById('weatherNotesList');
         
-        container.innerHTML = data.length === 0 ? '<p style="text-align:center; font-size:12px; color:var(--text-muted);">אין הערות מזג אוויר שמורות כרגע.</p>' : '';
+        container.innerHTML = data.length === 0 ? '<p style="text-align:center; font-size:12px; color:var(--text-muted);">אין התראות מזג אוויר או בריאות פעילות כרגע.</p>' : '';
         data.slice().reverse().forEach((item, index) => {
             const actualIndex = data.length - 1 - index;
             container.innerHTML += `
                 <div class="item-row">
                     <div>
-                        <span>🌤️ ${item.text}</span>
+                        <span>⚠️ ${item.text}</span>
                         <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">הוסף ע"י: ${item.addedBy || 'דייר'} | ${item.date}</div>
                     </div>
                     <button onclick="removeWeatherNote(${actualIndex})" style="background:rgba(239,68,68,0.1); color:var(--danger); border:1px solid rgba(239,68,68,0.3); padding:4px 8px; border-radius:6px; cursor:pointer; font-size:11px;">מחק</button>
@@ -100,7 +154,7 @@
     function addWeatherNote() {
         const input = document.getElementById('weatherNote');
         const text = input.value.trim();
-        if(!text) { showToast("נא להזין תוכן הערה", true); return; }
+        if(!text) { showToast("נא להזין תוכן התראה", true); return; }
 
         let data = getSharedData('weather');
         data.push({ 
@@ -112,7 +166,7 @@
 
         input.value = '';
         loadWeatherNotes();
-        showToast("ההערה נשמרה ושותפה לכל דיירי הבית!");
+        showToast("ההתראה נשמרה ושותפה לכל דיירי הבית!");
     }
 
     function removeWeatherNote(index) {
@@ -120,7 +174,7 @@
         data.splice(index, 1);
         saveSharedData('weather', data);
         loadWeatherNotes();
-        showToast("ההערה הוסרה בהצלחה.");
+        showToast("ההתראה הוסרה בהצלחה.");
     }
 
     function showToast(msg, isError = false) {
