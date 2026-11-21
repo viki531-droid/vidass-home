@@ -1,28 +1,44 @@
 /**
  * VIDASS Storage & Sync Engine (Client-Side)
- * מנהל סנכרון Offline-First מול localStorage, שרת Flask ו-Firebase Realtime Database לפי קוד בית.
+ * סנכרון Offline-First מול localStorage, Firebase Realtime Database ושרת Flask לפי קוד בית.
  */
 
-const VIDASS_SYNC_INTERVAL_MS = 2500; // בדיקת עדכונים כל 2.5 שניות
-// החלף בכתובת ה-Realtime Database שלך ב-Firebase, למשל:
-// "https://vidass-home-default-rtdb.europe-west1.firebasedatabase.app"
-const VIDASS_FIREBASE_DB_URL = "";
+const VIDASS_SYNC_INTERVAL_MS = 2000;
+const VIDASS_FIREBASE_DB_URL = "https://vidass-home-default-rtdb.firebaseio.com";
+
+function sanitizeHouseCode(rawHouse) {
+    const cleaned = String(rawHouse || '')
+        .trim()
+        .replace(/[.#$/[\]]/g, '-')
+        .replace(/\s+/g, '-')
+        .slice(0, 40);
+
+    return cleaned.length >= 3 ? cleaned : 'EILAT-33';
+}
+
+function sanitizeModuleName(rawModule) {
+    return String(rawModule || '')
+        .trim()
+        .replace(/[.#$/[\]]/g, '_')
+        .slice(0, 40);
+}
 
 function getCurrentHouseCode() {
     const urlParams = new URLSearchParams(window.location.search);
-    let house = urlParams.get('house') ||
-                localStorage.getItem('vidass_current_house_code') ||
-                localStorage.getItem('vidass_current_house') ||
-                'EILAT-33';
+    const candidate = urlParams.get('house') ||
+                      localStorage.getItem('vidass_current_house_code') ||
+                      localStorage.getItem('vidass_current_house') ||
+                      'EILAT-33';
 
-    house = house.trim();
+    const house = sanitizeHouseCode(candidate);
     localStorage.setItem('vidass_current_house_code', house);
     localStorage.setItem('vidass_current_house', house);
     return house;
 }
 
 function getCurrentUser() {
-    return localStorage.getItem('vidass_current_user') || 'ויקי';
+    const user = (localStorage.getItem('vidass_current_user') || 'ויקי').trim();
+    return user.slice(0, 50) || 'ויקי';
 }
 
 function getPersonalizedGreeting() {
@@ -40,16 +56,20 @@ function getPersonalizedGreeting() {
 }
 
 function getSharedData(moduleName) {
+    const safeModule = sanitizeModuleName(moduleName);
+    if (!safeModule) return [];
+
     const houseCode = getCurrentHouseCode();
-    const storageKey = `vidass_${moduleName}_${houseCode}`;
+    const storageKey = `vidass_${safeModule}_${houseCode}`;
 
     try {
         const localData = localStorage.getItem(storageKey);
         if (localData) {
-            return JSON.parse(localData);
+            const parsed = JSON.parse(localData);
+            return Array.isArray(parsed) || (parsed && typeof parsed === 'object') ? parsed : [];
         }
     } catch (e) {
-        console.error(`שגיאה בקריאת נתונים מקומיים עבור ${moduleName}:`, e);
+        console.error(`שגיאה בקריאת נתונים מקומיים עבור ${safeModule}:`, e);
     }
 
     return [];
@@ -85,60 +105,56 @@ function getFirebaseBaseUrl() {
 }
 
 async function saveSharedData(moduleName, dataArray) {
+    const safeModule = sanitizeModuleName(moduleName);
+    if (!safeModule) return;
+
     const houseCode = getCurrentHouseCode();
-    const storageKey = `vidass_${moduleName}_${houseCode}`;
+    const storageKey = `vidass_${safeModule}_${houseCode}`;
+    const safePayload = Array.isArray(dataArray) || (dataArray && typeof dataArray === 'object')
+        ? dataArray
+        : [];
 
     // 1. שמירה מיידית ב-localStorage (Offline-first)
     try {
-        localStorage.setItem(storageKey, JSON.stringify(dataArray));
+        localStorage.setItem(storageKey, JSON.stringify(safePayload));
     } catch (e) {
         console.error("שגיאה בשמירה ל-localStorage:", e);
     }
 
     // עדכון מיידי של התצוגה בעמוד הנוכחי
-    notifyPageModules(moduleName);
+    notifyPageModules(safeModule);
 
     if (window.location.protocol === 'file:') {
         return;
     }
 
-    // 2. סנכרון ל-Firebase Realtime Database (עובד גם ב-GitHub Pages בין כל המכשירים)
+    // 2. סנכרון מאובטח ל-Firebase Realtime Database לפי קוד בית מבודד
     const fbBase = getFirebaseBaseUrl();
     if (fbBase) {
         try {
-            const fbUrl = `${fbBase}/houses/${encodeURIComponent(houseCode)}/${encodeURIComponent(moduleName)}.json`;
-            await fetch(fbUrl, {
+            const fbUrl = `${fbBase}/houses/${encodeURIComponent(houseCode)}/${encodeURIComponent(safeModule)}.json`;
+            const res = await fetch(fbUrl, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(dataArray)
+                body: JSON.stringify(safePayload)
             });
+
+            if (!res.ok) {
+                console.warn("Firebase דחה את הכתיבה – בדוק את חוקי האבטחה (Rules).");
+            }
         } catch (fbErr) {
             console.warn("שגיאה בסנכרון ל-Firebase:", fbErr);
         }
     }
 
-    // 3. שליחה ברקע לשרת ה-Flask המרכזי (אם קיים)
+    // 3. שליחה לשרת Flask מקומי (אם קיים)
     try {
-        const payload = {
-            data: {
-                [moduleName]: dataArray
-            }
-        };
-
-        const response = await fetch(`/api/save/${encodeURIComponent(houseCode)}`, {
+        await fetch(`/api/save/${encodeURIComponent(houseCode)}`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(payload)
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ data: { [safeModule]: safePayload } })
         });
-
-        if (!response.ok) {
-            console.warn("הנתונים נשמרו מקומית, אך השרת החזיר תשובה שגויה בשמירה לענן.");
-        }
-    } catch (_) {
-        // ב-GitHub Pages אין שרת Flask מקומי – זה תקין
-    }
+    } catch (_) {}
 }
 
 async function fetchHouseDataFromServer(updateUI = false) {
@@ -149,7 +165,6 @@ async function fetchHouseDataFromServer(updateUI = false) {
     const houseCode = getCurrentHouseCode();
     let anyModuleChanged = false;
 
-    // 1. משיכה מ-Firebase Realtime Database
     const fbBase = getFirebaseBaseUrl();
     if (fbBase) {
         try {
@@ -159,8 +174,10 @@ async function fetchHouseDataFromServer(updateUI = false) {
                 const houseTree = await fbRes.json();
                 if (houseTree && typeof houseTree === 'object') {
                     for (const [modKey, modVal] of Object.entries(houseTree)) {
-                        if (modVal === null || modVal === undefined) continue;
-                        const key = `vidass_${modKey}_${houseCode}`;
+                        const safeModKey = sanitizeModuleName(modKey);
+                        if (!safeModKey || modVal === null || modVal === undefined) continue;
+
+                        const key = `vidass_${safeModKey}_${houseCode}`;
                         const nextJson = JSON.stringify(modVal);
                         const prevJson = localStorage.getItem(key);
 
@@ -171,20 +188,19 @@ async function fetchHouseDataFromServer(updateUI = false) {
                     }
                 }
             }
-        } catch (_) {
-            // מצב לא מקוון - ממשיך לעבוד מול localStorage
-        }
+        } catch (_) {}
     }
 
-    // 2. משיכה משרת Flask (אם זמין)
     try {
         const response = await fetch(`/api/get/${encodeURIComponent(houseCode)}`);
         if (response.ok) {
             const housePackage = await response.json();
-
-            if (housePackage && housePackage.data) {
+            if (housePackage && housePackage.data && typeof housePackage.data === 'object') {
                 for (const [modKey, modVal] of Object.entries(housePackage.data)) {
-                    const key = `vidass_${modKey}_${houseCode}`;
+                    const safeModKey = sanitizeModuleName(modKey);
+                    if (!safeModKey || modVal === null || modVal === undefined) continue;
+
+                    const key = `vidass_${safeModKey}_${houseCode}`;
                     const nextJson = JSON.stringify(modVal);
                     const prevJson = localStorage.getItem(key);
 
@@ -195,16 +211,13 @@ async function fetchHouseDataFromServer(updateUI = false) {
                 }
             }
         }
-    } catch (_) {
-        // מצב לא מקוון - ממשיך לעבוד מול localStorage
-    }
+    } catch (_) {}
 
     if (updateUI && anyModuleChanged) {
         notifyPageModules('all');
     }
 }
 
-// סנכרון מיידי בין טאבים/חלונות פתוחים באותו דפדפן
 window.addEventListener("storage", (event) => {
     const houseCode = getCurrentHouseCode();
     if (!event.key || !event.key.startsWith("vidass_") || !event.key.endsWith(`_${houseCode}`)) {
@@ -218,7 +231,7 @@ document.addEventListener("DOMContentLoaded", () => {
     getCurrentHouseCode();
     setTimeout(() => {
         fetchHouseDataFromServer(true);
-    }, 300);
+    }, 250);
 
     setInterval(() => {
         fetchHouseDataFromServer(true);
