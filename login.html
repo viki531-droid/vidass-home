@@ -3,20 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIDASS - כניסה למערכת הבית</title>
+    <title>VIDASS - כניסה מאובטחת או פתיחת משתמש חדש</title>
     <script src="storage-sync.js"></script>
     <style>
         :root {
             --primary: #d84370;
-            --primary-dark: #ad1457;
+            --primary-hover: #be185d;
             --accent: #ff80ab;
             --bg-gradient: linear-gradient(135deg, #0d0d0f 0%, #1a1622 100%);
-            --card-bg: rgba(26, 23, 33, 0.96);
-            --card-border: rgba(216, 67, 112, 0.4);
+            --card-bg: rgba(26, 23, 33, 0.97);
+            --card-border: rgba(216, 67, 112, 0.45);
             --text-main: #f3f4f6;
             --text-muted: #9ca3af;
             --success: #10b981;
             --danger: #ef4444;
+            --gold: #f59e0b;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -25,291 +26,491 @@
             background: var(--bg-gradient);
             color: var(--text-main);
             min-height: 100vh;
+            padding: 20px;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 20px;
         }
 
-        .login-card {
+        .auth-box {
             width: 100%;
-            max-width: 420px;
+            max-width: 480px;
             background: var(--card-bg);
-            backdrop-filter: blur(14px);
+            backdrop-filter: blur(16px);
             border: 1px solid var(--card-border);
             border-radius: 24px;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.8);
-            padding: 32px;
-            text-align: center;
+            padding: 28px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.85);
         }
 
-        .logo-area h1 {
-            font-size: 26px;
-            color: var(--accent);
+        .brand-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 6px;
-            letter-spacing: 1px;
         }
 
-        .logo-area p {
-            font-size: 13px;
-            color: var(--text-muted);
-            margin-bottom: 24px;
-        }
-
-        .input-group {
-            margin-bottom: 16px;
-            text-align: right;
-        }
-
-        .input-group label {
-            display: block;
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-bottom: 6px;
+        h1 { font-size: 21px; color: var(--accent); }
+        .shield-badge {
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: rgba(16, 185, 129, 0.14);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: var(--success);
             font-weight: bold;
         }
 
-        .password-wrap {
+        .sub { font-size: 12px; color: var(--text-muted); margin-bottom: 18px; }
+
+        .tabs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 18px;
+        }
+
+        .tab-btn {
+            padding: 11px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text-main);
+            font-weight: bold;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: rgba(216, 67, 112, 0.25);
+            border-color: var(--primary);
+            color: var(--accent);
+        }
+
+        .field { margin-bottom: 14px; }
+        label { display: block; font-size: 12px; color: var(--gold); margin-bottom: 6px; font-weight: bold; }
+
+        .input-wrap {
             position: relative;
             display: flex;
             align-items: center;
         }
 
-        .input-group input {
+        input, select {
             width: 100%;
-            padding: 12px 16px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 12px;
-            color: white;
+            padding: 11px 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            background: rgba(0, 0, 0, 0.4);
+            color: var(--text-main);
             font-size: 14px;
             outline: none;
             transition: border-color 0.2s;
-            text-align: right;
         }
 
-        .password-wrap input {
-            padding-left: 56px;
-        }
-
-        .toggle-pass-btn {
-            position: absolute;
-            left: 10px;
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            color: var(--text-muted);
-            border-radius: 8px;
-            padding: 4px 8px;
-            font-size: 11px;
-            cursor: pointer;
-        }
-
-        .toggle-pass-btn:hover {
-            color: var(--text-main);
-        }
-
-        .input-group input:focus {
+        input:focus, select:focus {
             border-color: var(--primary);
         }
 
-        .login-btn {
+        .eye-btn {
+            position: absolute;
+            left: 10px;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 15px;
+            padding: 4px;
+        }
+
+        .eye-btn:hover { color: var(--accent); }
+
+        .house-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .gen-btn {
+            white-space: nowrap;
+            padding: 0 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            background: rgba(245, 158, 11, 0.12);
+            color: var(--gold);
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .gen-btn:hover { background: rgba(245, 158, 11, 0.22); }
+
+        .submit-btn {
             width: 100%;
-            padding: 13px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
+            padding: 12px;
             border: none;
             border-radius: 12px;
-            font-weight: bold;
+            background: var(--primary);
+            color: #fff;
             font-size: 14px;
+            font-weight: bold;
             cursor: pointer;
-            margin-top: 10px;
-            transition: opacity 0.2s;
+            margin-top: 6px;
+            transition: background 0.2s;
         }
 
-        .login-btn:hover:not(:disabled) {
-            opacity: 0.9;
-        }
+        .submit-btn:hover { background: var(--primary-hover); }
 
-        .login-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        .error-msg {
-            margin-top: 16px;
-            padding: 10px;
-            background: rgba(239, 68, 68, 0.15);
-            border: 1px solid rgba(239, 68, 68, 0.4);
-            color: var(--danger);
-            border-radius: 10px;
+        .links-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 14px;
             font-size: 12px;
-            display: none;
         }
 
-        .success-msg {
-            margin-top: 16px;
-            padding: 10px;
-            background: rgba(16, 185, 129, 0.15);
-            border: 1px solid rgba(16, 185, 129, 0.4);
-            color: var(--success);
-            border-radius: 10px;
+        .text-link {
+            background: none;
+            border: none;
+            color: var(--accent);
+            cursor: pointer;
             font-size: 12px;
+            text-decoration: underline;
+        }
+
+        .back-link {
+            color: var(--text-muted);
+            text-decoration: none;
+        }
+
+        .back-link:hover { color: var(--text-main); }
+
+        .msg {
+            font-size: 12px;
+            margin-top: 12px;
+            min-height: 18px;
+            font-weight: bold;
+        }
+
+        .msg.error { color: var(--danger); }
+        .msg.ok { color: var(--success); }
+
+        .recover-box {
             display: none;
+            margin-top: 14px;
+            padding: 14px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.12);
         }
     </style>
 </head>
 <body>
+<div class="auth-box">
+    <div class="brand-row">
+        <h1>VIDASS — כניסה למערכת</h1>
+        <span class="shield-badge">🔒 כספת מקומית מבודדת</span>
+    </div>
+    <p class="sub">בחר כניסה למשתמש קיים או פתיחת משתמש חדש תחת קוד הבית שלך</p>
 
-<div class="login-card">
-    <div class="logo-area">
-        <h1>VIDASS</h1>
-        <p>מערכת ניהול ענן משפחתית פרטית</p>
+    <div class="tabs">
+        <button type="button" class="tab-btn active" id="tabExisting" onclick="setMode('existing')">👤 משתמש קיים</button>
+        <button type="button" class="tab-btn" id="tabNew" onclick="setMode('new')">✨ משתמש חדש</button>
     </div>
 
-    <form id="loginForm" onsubmit="event.preventDefault(); handleLogin();">
-        <div class="input-group">
-            <label for="userNameInput">שם הדייר/ת</label>
-            <input type="text" id="userNameInput" placeholder="לדוגמה: ויקי" autocomplete="username">
+    <div class="field">
+        <label for="houseInput">קוד בית מבודד</label>
+        <div class="house-row">
+            <input type="text" id="houseInput" placeholder="למשל: EILAT-33">
+            <button type="button" class="gen-btn" id="genHouseBtn" style="display:none;" onclick="generateNewHouseCode()">קוד בית חדש</button>
         </div>
+    </div>
 
-        <div class="input-group">
-            <label for="houseCodeInput">קוד הבית (House Code)</label>
-            <input type="text" id="houseCodeInput" placeholder="לדוגמה: EILAT-33" value="EILAT-33" autocomplete="organization">
+    <div id="existingPanel">
+        <div class="field">
+            <label for="existingUserSelect">בחירה מרשימת משתמשי הבית</label>
+            <select id="existingUserSelect" onchange="syncUserFromSelect()"></select>
         </div>
-
-        <div class="input-group">
-            <label for="passwordInput">סיסמת הבית</label>
-            <div class="password-wrap">
-                <input type="password" id="passwordInput" placeholder="הקש סיסמת גישה לבית" autocomplete="current-password">
-                <button type="button" class="toggle-pass-btn" id="togglePassBtn" onclick="togglePasswordVisibility()">הצג</button>
+        <div class="field">
+            <label for="existingUserInput">שם משתמש</label>
+            <input type="text" id="existingUserInput" placeholder="הקלד או בחר שם משתמש">
+        </div>
+        <div class="field">
+            <label for="existingPin">קוד PIN אישי (אם הוגדר למשתמש)</label>
+            <div class="input-wrap">
+                <input type="password" id="existingPin" inputmode="numeric" placeholder="הזן קוד PIN">
+                <button type="button" class="eye-btn" onclick="toggleVisibility('existingPin', this)" title="הצג/הסתר קוד">👁️</button>
             </div>
         </div>
+        <button type="button" class="submit-btn" onclick="loginExisting()">כניסה למרכז הבקרה</button>
+    </div>
 
-        <button type="submit" class="login-btn" id="loginSubmitBtn">התחבר למרכז הניהול ➔</button>
-    </form>
+    <div id="newPanel" style="display:none;">
+        <div class="field">
+            <label for="newUserName">שם משתמש חדש</label>
+            <input type="text" id="newUserName" placeholder="למשל: ויקי או דוד">
+        </div>
+        <div class="field">
+            <label for="newUserRole">תפקיד במשפחה</label>
+            <select id="newUserRole">
+                <option value="מנהל/ת בית">מנהל/ת בית</option>
+                <option value="הורה / בן/בת זוג">הורה / בן/בת זוג</option>
+                <option value="בן/בת משפחה">בן/בת משפחה</option>
+                <option value="אורח / מטפלת">אורח / מטפלת</option>
+            </select>
+        </div>
+        <div class="field">
+            <label for="newPin">בחירת קוד PIN אישי (4 ספרות ומעלה)</label>
+            <div class="input-wrap">
+                <input type="password" id="newPin" inputmode="numeric" placeholder="למשל: 1234">
+                <button type="button" class="eye-btn" onclick="toggleVisibility('newPin', this)" title="הצג/הסתר קוד">👁️</button>
+            </div>
+        </div>
+        <div class="field">
+            <label for="secQuestion">שאלת אבטחה אישית (לשחזור קוד)</label>
+            <input type="text" id="secQuestion" placeholder="למשל: מה שם הכלבה שלנו?">
+        </div>
+        <div class="field">
+            <label for="secAnswer">תשובה לשאלת האבטחה</label>
+            <div class="input-wrap">
+                <input type="password" id="secAnswer" placeholder="התשובה האישית שלך">
+                <button type="button" class="eye-btn" onclick="toggleVisibility('secAnswer', this)" title="הצג/הסתר תשובה">👁️</button>
+            </div>
+        </div>
+        <button type="button" class="submit-btn" onclick="createNewUser()">פתיחת משתמש חדש וכניסה</button>
+    </div>
 
-    <div class="error-msg" id="errorBox"></div>
-    <div class="success-msg" id="successBox"></div>
+    <div class="recover-box" id="recoverBox">
+        <div class="field">
+            <label id="recoverQuestionLabel">שאלת אבטחה:</label>
+            <input type="text" id="recoverAnswerInput" placeholder="הקלד את התשובה שהגדרת">
+        </div>
+        <button type="button" class="submit-btn" onclick="verifyRecovery()">אמת תשובה והיכנס</button>
+    </div>
+
+    <div class="msg" id="statusMsg"></div>
+
+    <div class="links-row">
+        <button type="button" class="text-link" id="forgotBtn" onclick="openRecovery()">שכחתי קוד PIN</button>
+        <a class="back-link" href="index.html">חזרה למרכז הבקרה ↩</a>
+    </div>
 </div>
 
 <script>
-    window.onload = function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const queryUser = (urlParams.get('user') || '').trim();
-        const queryHouse = (urlParams.get('house') || '').trim().toUpperCase();
-
-        const savedUser = localStorage.getItem('vidass_current_user');
-        const savedHouse = localStorage.getItem('vidass_current_house_code') || localStorage.getItem('vidass_current_house');
-
-        if (queryUser) {
-            document.getElementById('userNameInput').value = queryUser;
-        } else if (savedUser) {
-            document.getElementById('userNameInput').value = savedUser;
-        }
-
-        if (queryHouse) {
-            document.getElementById('houseCodeInput').value = queryHouse;
-        } else if (savedHouse) {
-            document.getElementById('houseCodeInput').value = savedHouse;
-        }
-    };
-
-    function togglePasswordVisibility() {
-        const input = document.getElementById('passwordInput');
-        const btn = document.getElementById('togglePassBtn');
-        const isHidden = input.type === 'password';
-        input.type = isHidden ? 'text' : 'password';
-        btn.innerText = isHidden ? 'הסתר' : 'הצג';
+    function showMessage(text, isError) {
+        const el = document.getElementById('statusMsg');
+        el.textContent = text;
+        el.className = 'msg ' + (isError ? 'error' : 'ok');
     }
 
-    function persistSession(userName, houseCode, extra = {}) {
-        localStorage.setItem('vidass_current_user', userName);
-        localStorage.setItem('vidass_current_house_code', houseCode);
-        localStorage.setItem('vidass_current_house', houseCode);
-        if (extra.sessionMode) {
-            localStorage.setItem('vidass_session_mode', extra.sessionMode);
-        }
-        if (extra.token) {
-            localStorage.setItem('vidass_auth_token', extra.token);
+    function toggleVisibility(inputId, btn) {
+        const input = document.getElementById(inputId);
+        if (input.type === 'password') {
+            input.type = 'text';
+            btn.textContent = '🙈';
+        } else {
+            input.type = 'password';
+            btn.textContent = '👁️';
         }
     }
 
-    async function handleLogin() {
-        const userName = document.getElementById('userNameInput').value.trim();
-        const houseCode = document.getElementById('houseCodeInput').value.trim().toUpperCase();
-        const password = document.getElementById('passwordInput').value;
-        const submitBtn = document.getElementById('loginSubmitBtn');
+    function getHouse() {
+        const params = new URLSearchParams(window.location.search);
+        return (
+            document.getElementById('houseInput').value.trim() ||
+            params.get('house') ||
+            localStorage.getItem('vidass_current_house_code') ||
+            localStorage.getItem('vidass_current_house') ||
+            'EILAT-33'
+        ).trim();
+    }
 
-        const errorBox = document.getElementById('errorBox');
-        const successBox = document.getElementById('successBox');
+    function getUsersKey(house) {
+        return `vidass_users_${house}`;
+    }
 
-        errorBox.style.display = 'none';
-        successBox.style.display = 'none';
-
-        if (!userName) {
-            showError("נא להזין את שם הדייר/ת.");
-            return;
-        }
-        if (!houseCode) {
-            showError("נא להזין קוד בית תקין.");
-            return;
-        }
-        if (!password.trim()) {
-            showError("נא להזין את סיסמת הבית.");
-            return;
-        }
-
-        submitBtn.disabled = true;
-
+    function loadUsers(house) {
         try {
-            const response = await fetch('/api/auth', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ house_code: houseCode, password: password })
-            });
-
-            let result = {};
-            try {
-                result = await response.json();
-            } catch (_) {
-                result = {};
-            }
-
-            if (response.ok && result.status === 'success') {
-                persistSession(userName, houseCode, {
-                    sessionMode: 'server',
-                    token: result.token || ''
-                });
-                showSuccess("האימות הצליח! מעבר למרכז הבקרה...");
-                setTimeout(() => {
-                    window.location.href = `main_hub.html?house=${encodeURIComponent(houseCode)}`;
-                }, 600);
-            } else {
-                submitBtn.disabled = false;
-                showError(result.message || "שגיאה באימות הנתונים מול השרת.");
-            }
-        } catch (err) {
-            console.warn("שרת הענן אינו זמין, מבצע התחברות מקומית.");
-            persistSession(userName, houseCode, { sessionMode: 'local' });
-            showSuccess("התחברות מקומית הופעלה. מעבר למרכז הבקרה...");
-            setTimeout(() => {
-                window.location.href = `main_hub.html?house=${encodeURIComponent(houseCode)}`;
-            }, 400);
+            const raw = localStorage.getItem(getUsersKey(house));
+            const list = raw ? JSON.parse(raw) : [];
+            return Array.isArray(list) ? list : [];
+        } catch (_) {
+            return [];
         }
     }
 
-    function showError(msg) {
-        const box = document.getElementById('errorBox');
-        box.innerText = msg;
-        box.style.display = 'block';
+    function saveUsers(house, users) {
+        localStorage.setItem(getUsersKey(house), JSON.stringify(users));
+        if (typeof saveSharedData === 'function') {
+            try { saveSharedData('members', users); } catch (_) {}
+        }
     }
 
-    function showSuccess(msg) {
-        const box = document.getElementById('successBox');
-        box.innerText = msg;
-        box.style.display = 'block';
+    function generateNewHouseCode() {
+        const rand = Math.floor(1000 + Math.random() * 9000);
+        document.getElementById('houseInput').value = `VIDASS-${rand}`;
+        refreshUsersList();
+        showMessage('נוצר קוד בית חדש ומבודד. כעת מלא פרטי משתמש חדש.', false);
     }
+
+    function refreshUsersList() {
+        const house = getHouse();
+        const users = loadUsers(house);
+        const sel = document.getElementById('existingUserSelect');
+        sel.innerHTML = '<option value="">-- בחר משתמש מהרשימה או הקלד למטה --</option>';
+        users.forEach(u => {
+            const opt = document.createElement('option');
+            opt.value = u.name;
+            opt.textContent = u.role ? `${u.name} (${u.role})` : u.name;
+            sel.appendChild(opt);
+        });
+    }
+
+    function syncUserFromSelect() {
+        const val = document.getElementById('existingUserSelect').value;
+        if (val) {
+            document.getElementById('existingUserInput').value = val;
+            document.getElementById('recoverBox').style.display = 'none';
+            showMessage('', false);
+        }
+    }
+
+    function setMode(mode) {
+        const isNew = mode === 'new';
+        document.getElementById('tabExisting').classList.toggle('active', !isNew);
+        document.getElementById('tabNew').classList.toggle('active', isNew);
+        document.getElementById('existingPanel').style.display = isNew ? 'none' : 'block';
+        document.getElementById('newPanel').style.display = isNew ? 'block' : 'none';
+        document.getElementById('genHouseBtn').style.display = isNew ? 'inline-block' : 'none';
+        document.getElementById('forgotBtn').style.visibility = isNew ? 'hidden' : 'visible';
+        document.getElementById('recoverBox').style.display = 'none';
+        showMessage('', false);
+    }
+
+    function enterHub(house, userObj) {
+        localStorage.setItem('vidass_current_house_code', house);
+        localStorage.setItem('vidass_current_house', house);
+        localStorage.setItem('vidass_current_user', userObj.name);
+        if (userObj.role) {
+            localStorage.setItem('vidass_current_role', userObj.role);
+        }
+        if (typeof saveSharedData === 'function') {
+            try { saveSharedData('current_user', userObj.name); } catch (_) {}
+        }
+        window.location.href = `index.html?house=${encodeURIComponent(house)}`;
+    }
+
+    function loginExisting() {
+        const house = getHouse();
+        const name = document.getElementById('existingUserInput').value.trim();
+        const pin = document.getElementById('existingPin').value.trim();
+
+        if (!name) {
+            showMessage('יש לבחור או להזין שם משתמש קיים.', true);
+            return;
+        }
+
+        const users = loadUsers(house);
+        const found = users.find(u => u.name.toLowerCase() === name.toLowerCase());
+
+        if (found) {
+            if (found.pin && found.pin !== pin) {
+                showMessage('קוד ה-PIN שהוזן שגוי עבור משתמש זה.', true);
+                return;
+            }
+            enterHub(house, found);
+        } else {
+            enterHub(house, { name, role: 'דייר' });
+        }
+    }
+
+    function createNewUser() {
+        const house = getHouse();
+        const name = document.getElementById('newUserName').value.trim();
+        const role = document.getElementById('newUserRole').value;
+        const pin = document.getElementById('newPin').value.trim();
+        const question = document.getElementById('secQuestion').value.trim();
+        const answer = document.getElementById('secAnswer').value.trim();
+
+        if (!house) {
+            showMessage('יש להזין קוד בית.', true);
+            return;
+        }
+        if (!name) {
+            showMessage('יש להזין שם למשתמש החדש.', true);
+            return;
+        }
+        if (pin && pin.length < 4) {
+            showMessage('קוד ה-PIN חייב להכיל לפחות 4 תווים.', true);
+            return;
+        }
+
+        const users = loadUsers(house);
+        if (users.some(u => u.name.toLowerCase() === name.toLowerCase())) {
+            showMessage('משתמש בשם זה כבר קיים בבית הזה. עבור ללשונית "משתמש קיים".', true);
+            return;
+        }
+
+        const newUser = {
+            name,
+            role,
+            pin,
+            question,
+            answer,
+            createdAt: new Date().toISOString()
+        };
+
+        users.push(newUser);
+        saveUsers(house, users);
+        showMessage('המשתמש נוצר בהצלחה! מעביר למרכז הבקרה...', false);
+        setTimeout(() => enterHub(house, newUser), 450);
+    }
+
+    function openRecovery() {
+        const house = getHouse();
+        const name = document.getElementById('existingUserInput').value.trim();
+        if (!name) {
+            showMessage('הזן תחילה את שם המשתמש כדי לשחזר גישה.', true);
+            return;
+        }
+        const users = loadUsers(house);
+        const found = users.find(u => u.name.toLowerCase() === name.toLowerCase());
+        if (!found || !found.question) {
+            showMessage('לא הוגדרה שאלת אבטחה למשתמש זה.', true);
+            return;
+        }
+        document.getElementById('recoverQuestionLabel').textContent = `שאלת אבטחה: ${found.question}`;
+        document.getElementById('recoverBox').style.display = 'block';
+        showMessage('', false);
+    }
+
+    function verifyRecovery() {
+        const house = getHouse();
+        const name = document.getElementById('existingUserInput').value.trim();
+        const ans = document.getElementById('recoverAnswerInput').value.trim();
+        const users = loadUsers(house);
+        const found = users.find(u => u.name.toLowerCase() === name.toLowerCase());
+
+        if (found && found.answer && found.answer.toLowerCase() === ans.toLowerCase()) {
+            showMessage(`אומת בהצלחה! הקוד שלך הוא: ${found.pin || 'ללא קוד'}. נכנס...`, false);
+            setTimeout(() => enterHub(house, found), 900);
+        } else {
+            showMessage('התשובה לשאלת האבטחה אינה תואמת.', true);
+        }
+    }
+
+    window.onload = function() {
+        const params = new URLSearchParams(window.location.search);
+        const house = (
+            params.get('house') ||
+            localStorage.getItem('vidass_current_house_code') ||
+            localStorage.getItem('vidass_current_house') ||
+            'EILAT-33'
+        ).trim();
+        document.getElementById('houseInput').value = house;
+        document.getElementById('houseInput').addEventListener('input', refreshUsersList);
+        refreshUsersList();
+    };
 </script>
-
 </body>
 </html>
