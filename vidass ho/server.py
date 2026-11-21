@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 import hashlib
 import hmac
 import json
@@ -6,9 +6,11 @@ import os
 import secrets
 import threading
 
-app = Flask(__name__)
-DB_FILE = "vidass_data.json"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_FILE = os.path.join(BASE_DIR, "vidass_data.json")
 _db_lock = threading.Lock()
+
+app = Flask(__name__, static_folder=BASE_DIR, static_url_path="")
 
 DEFAULT_MODULES = {
     "shopping": [],
@@ -23,6 +25,9 @@ DEFAULT_MODULES = {
     "alerts": [],
     "iot_devices": [],
     "events": [],
+    "birthdays": [],
+    "coach": [],
+    "where_is_child": [],
 }
 
 
@@ -45,6 +50,15 @@ def verify_password(stored_value: str, candidate: str) -> bool:
         ).hex()
         return hmac.compare_digest(actual_hex, expected_hex)
     return hmac.compare_digest(stored_value, candidate)
+
+
+def make_new_house_record(password: str = "1234") -> dict:
+    effective_password = password.strip() if password and password.strip() else "1234"
+    return {
+        "password_hash": hash_password(effective_password),
+        "members": [{"name": "ויקי", "phone": "לא צוין", "role": "מנהל הבית"}],
+        "data": {k: list(v) for k, v in DEFAULT_MODULES.items()},
+    }
 
 
 def load_db():
@@ -82,6 +96,26 @@ def add_cors_headers(response):
     return response
 
 
+@app.route("/", methods=["GET"])
+def serve_root():
+    for candidate in ("index.html", "login.html"):
+        if os.path.exists(os.path.join(BASE_DIR, candidate)):
+            return send_from_directory(BASE_DIR, candidate)
+    return jsonify({"status": "online", "system": "VIDASS Private Cloud Core"})
+
+
+@app.route("/<path:filename>", methods=["GET"])
+def serve_static(filename):
+    if filename.startswith("api/"):
+        return jsonify({"status": "error", "message": "נתיב API לא נמצא"}), 404
+    safe_path = os.path.abspath(os.path.join(BASE_DIR, filename))
+    if not safe_path.startswith(BASE_DIR + os.sep) and safe_path != BASE_DIR:
+        return jsonify({"status": "error", "message": "גישה נדחתה"}), 403
+    if os.path.isfile(safe_path):
+        return send_from_directory(BASE_DIR, filename)
+    return jsonify({"status": "error", "message": "קובץ לא נמצא"}), 404
+
+
 @app.route("/api/health", methods=["GET"])
 def health_check():
     return jsonify({"status": "online", "system": "VIDASS Private Cloud Core"})
@@ -103,13 +137,7 @@ def authenticate_house():
         db = load_db()
 
         if house_code not in db:
-            effective_password = password if password.strip() else "1234"
-            modules_copy = {k: list(v) for k, v in DEFAULT_MODULES.items()}
-            db[house_code] = {
-                "password_hash": hash_password(effective_password),
-                "members": [{"name": "ויקי", "phone": "לא צוין", "role": "מנהל הבית"}],
-                "data": modules_copy,
-            }
+            db[house_code] = make_new_house_record(password)
             save_db(db)
             token = secrets.token_urlsafe(24)
             return jsonify({
@@ -163,12 +191,15 @@ def save_house_data(house_code):
         return jsonify({"status": "ok"}), 200
 
     clean_code = str(house_code or "").strip().upper()
+    if not clean_code:
+        return jsonify({"status": "error", "message": "קוד בית חסר"}), 400
+
     req_data = request.get_json(silent=True) or {}
 
     with _db_lock:
         db = load_db()
         if clean_code not in db:
-            return jsonify({"status": "error", "message": "הבית אינו קיים, נדרש אימות ראשוני"}), 404
+            db[clean_code] = make_new_house_record("1234")
 
         house_record = db[clean_code]
         house_record.setdefault("data", {})

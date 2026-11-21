@@ -18,7 +18,7 @@
             --success: #10b981;
             --danger: #ef4444;
             --gold: #f59e0b;
-        *
+        }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
 
@@ -34,7 +34,7 @@
 
         .hub-container {
             width: 100%;
-            max-width: 950px;
+            max-width: 980px;
             background: var(--card-bg);
             backdrop-filter: blur(14px);
             border: 1px solid var(--card-border);
@@ -80,6 +80,12 @@
             color: var(--accent);
         }
 
+        .badge-sync {
+            background: rgba(245, 158, 11, 0.12);
+            border: 1px solid rgba(245, 158, 11, 0.35);
+            color: var(--gold);
+        }
+
         .switch-btn {
             background: rgba(255, 255, 255, 0.06);
             border: 1px solid rgba(255, 255, 255, 0.16);
@@ -117,15 +123,36 @@
         .snap-label { font-size: 11px; color: var(--text-muted); }
         .snap-val { font-size: 15px; font-weight: bold; color: var(--gold); }
 
+        .toolbar-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+        }
+
         .section-title {
             font-size: 15px;
             color: var(--gold);
-            margin-bottom: 14px;
             font-weight: bold;
             display: flex;
             align-items: center;
             gap: 6px;
         }
+
+        .search-modules {
+            padding: 8px 14px;
+            min-width: 220px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            color: var(--text-main);
+            font-size: 12px;
+            outline: none;
+        }
+
+        .search-modules:focus { border-color: var(--primary); }
 
         .grid {
             display: grid;
@@ -219,6 +246,7 @@
         <div class="badges-bar">
             <div class="badge badge-user" id="userBadge">👤 משתמש: טוען...</div>
             <div class="badge" id="houseBadge">🟢 בית: טוען...</div>
+            <div class="badge badge-sync" id="syncBadge">⚡ מצב: מקומי</div>
             <button type="button" class="switch-btn" onclick="goToLogin()">החלפת משתמש / בית</button>
         </div>
     </div>
@@ -230,7 +258,11 @@
         <div class="snap-box"><span class="snap-label">מכשירי IoT פעילים</span><span class="snap-val" id="snapIot">0</span></div>
     </div>
 
-    <div class="section-title">📂 דפדפני הניהול והבית</div>
+    <div class="toolbar-row">
+        <div class="section-title">📂 דפדפני הניהול והבית</div>
+        <input type="text" class="search-modules" id="moduleSearchInput" placeholder="חיפוש מודול..." oninput="filterModuleCards()">
+    </div>
+
     <div class="grid" id="modulesGrid">
         <div class="card" tabindex="0" role="button" onclick="loadInternalApp('members.html', 'ניהול דיירים והרשאות')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();loadInternalApp('members.html', 'ניהול דיירים והרשאות');}">
             <div class="card-icon">👥</div>
@@ -267,6 +299,20 @@
             <div class="card-action">הכנס למערכת ↗</div>
         </div>
 
+        <div class="card" tabindex="0" role="button" onclick="loadInternalApp('pocket.html', 'דמי כיס')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();loadInternalApp('pocket.html', 'דמי כיס');}">
+            <div class="card-icon">🪙</div>
+            <div class="card-name">דמי כיס</div>
+            <div class="card-desc">מעקב הקצבות ודמי כיס למשפחה.</div>
+            <div class="card-action">הכנס למערכת ↗</div>
+        </div>
+
+        <div class="card" tabindex="0" role="button" onclick="loadInternalApp('recipes.html', 'ספר מתכונים משפחתי')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();loadInternalApp('recipes.html', 'ספר מתכונים משפחתי');}">
+            <div class="card-icon">🍲</div>
+            <div class="card-name">ספר מתכונים משפחתי</div>
+            <div class="card-desc">שמירת מתכונים והעברת מצרכים לרשימת הקניות.</div>
+            <div class="card-action">הכנס למערכת ↗</div>
+        </div>
+
         <div class="card" tabindex="0" role="button" onclick="loadInternalApp('travel.html', 'מארגן טיולים וחופשות')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();loadInternalApp('travel.html', 'מארגן טיולים וחופשות');}">
             <div class="card-icon">🚗</div>
             <div class="card-name">מארגן טיולים וחופשות</div>
@@ -278,6 +324,20 @@
             <div class="card-icon">📍</div>
             <div class="card-name">איפה הילד — שעון ומדדים</div>
             <div class="card-desc">סימון אזורים מותרים/אסורים (כולל גן), שעון, דופק ואווטאר AI.</div>
+            <div class="card-action">הכנס למערכת ↗</div>
+        </div>
+
+        <div class="card" tabindex="0" role="button" onclick="loadInternalApp('iot_device.html', 'בקרת מכשירים חכמים (IoT)')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();loadInternalApp('iot_device.html', 'בקרת מכשירים חכמים (IoT)');}">
+            <div class="card-icon">🔌</div>
+            <div class="card-name">בקרת מכשירים חכמים (IoT)</div>
+            <div class="card-desc">הפעלה, כיבוי וניהול כתובות IP ומכשירי בית חכמים.</div>
+            <div class="card-action">הכנס למערכת ↗</div>
+        </div>
+
+        <div class="card" tabindex="0" role="button" onclick="loadInternalApp('weather.html', 'מזג אוויר ובריאות אלרגיות')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();loadInternalApp('weather.html', 'מזג אוויר ובריאות אלרגיות');}">
+            <div class="card-icon">🌤️</div>
+            <div class="card-name">מזג אוויר ובריאות אלרגיות</div>
+            <div class="card-desc">תחזית לפי עיר, מדדי רגישות ואלרגיות והתראות ביתיות.</div>
             <div class="card-action">הכנס למערכת ↗</div>
         </div>
 
@@ -345,6 +405,28 @@
         }
     }
 
+    function filterModuleCards() {
+        const q = (document.getElementById('moduleSearchInput').value || '').trim().toLowerCase();
+        document.querySelectorAll('#modulesGrid .card').forEach(card => {
+            const text = (card.innerText || '').toLowerCase();
+            card.style.display = !q || text.includes(q) ? '' : 'none';
+        });
+    }
+
+    function refreshSyncBadge() {
+        const syncEl = document.getElementById('syncBadge');
+        if (!syncEl) return;
+        if (typeof getVidassSyncStatus === 'function') {
+            const st = getVidassSyncStatus();
+            const labelMap = {
+                local: 'מקומי (Offline-First)',
+                cloud: 'ענן (Firebase)',
+                server: 'שרת מקומי'
+            };
+            syncEl.innerText = `⚡ מצב: ${labelMap[st.mode] || st.mode}`;
+        }
+    }
+
     function refreshSnapshot() {
         const shopping = readModuleList('shopping');
         const inventory = readModuleList('inventory');
@@ -359,6 +441,8 @@
         document.getElementById('snapInventory').innerText = String(inventory.length);
         document.getElementById('snapExpenses').innerText = `₪${expensesSum.toLocaleString('he-IL', { minimumFractionDigits: 2 })}`;
         document.getElementById('snapIot').innerText = String(activeIot);
+
+        refreshSyncBadge();
     }
 
     window.onload = function() {
