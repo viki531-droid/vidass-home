@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIDASS - ניהול מלאי הבית</title>
+    <script src="storage-sync.js"></script>
+    <style>
+        :root {
+            --primary: #d84370;
+            --primary-dark: #ad1457;
+            --accent: #ff80ab;
+            --bg-gradient: linear-gradient(135deg, #0d0d0f 0%, #1a1622 100%);
+            --card-bg: rgba(26, 23, 33, 0.96);
+            --card-border: rgba(216, 67, 112, 0.4);
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 750px;
+            background: var(--card-bg);
+            backdrop-filter: blur(14px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.8);
+            padding: 28px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 16px;
+            margin-bottom: 18px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .header h1 { font-size: 20px; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+        .house-badge { background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: var(--success); padding: 5px 12px; border-radius: 10px; font-size: 11px; font-weight: bold; }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+            background: rgba(216, 67, 112, 0.08);
+            border: 1px solid rgba(216, 67, 112, 0.25);
+            border-radius: 14px;
+            padding: 10px 14px;
+            margin-bottom: 16px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .stats-bar strong { color: var(--accent); }
+
+        .input-section {
+            display: grid;
+            grid-template-columns: 2fr 1fr auto;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        @media (max-width: 600px) {
+            .input-section { grid-template-columns: 1fr; }
+        }
+
+        .input-section input, .input-section select, .filter-input {
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            color: white;
+            font-size: 13px;
+            outline: none;
+            text-align: right;
+        }
+
+        .filter-input {
+            width: 100%;
+            padding: 9px 14px;
+            font-size: 12px;
+            margin-bottom: 16px;
+        }
+
+        .input-section input option, .input-section select option {
+            background: #1a1622;
+            color: white;
+        }
+
+        .input-section input:focus, .input-section select:focus, .filter-input:focus {
+            border-color: var(--primary);
+        }
+
+        .add-btn {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            padding: 0 22px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 13px;
+            cursor: pointer;
+            transition: 0.2s;
+            min-height: 42px;
+        }
+
+        .add-btn:hover { opacity: 0.9; }
+
+        .inventory-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 50vh;
+            overflow-y: auto;
+            padding-left: 4px;
+        }
+
+        .inventory-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 14px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: 0.2s;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .inventory-item.low-stock {
+            border-color: rgba(245, 158, 11, 0.45);
+            background: rgba(245, 158, 11, 0.05);
+        }
+
+        .item-info {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .item-name {
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--text-main);
+        }
+
+        .item-meta {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .item-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            transition: 0.2s;
+        }
+
+        .edit-btn {
+            background: rgba(245, 158, 11, 0.14);
+            color: var(--warning);
+            border: 1px solid rgba(245, 158, 11, 0.35);
+        }
+        .edit-btn:hover { background: rgba(245, 158, 11, 0.28); }
+
+        .shop-btn {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        .shop-btn:hover { background: rgba(16, 185, 129, 0.3); }
+
+        .delete-btn {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+        .delete-btn:hover { background: rgba(239, 68, 68, 0.2); }
+
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--success);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 13px;
+            transition: transform 0.3s;
+            z-index: 1000;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="header">
+        <h1>📦 מלאי הבית ומעקב מוצרים</h1>
+        <div class="house-badge" id="houseBadgeDisplay">🟢 בית: טוען...</div>
+    </div>
+
+    <div class="stats-bar" id="inventoryStats">
+        <span>סה"כ מוצרים במלאי: <strong>0</strong></span>
+        <span>מוצרים במלאי נמוך: <strong>0</strong></span>
+    </div>
+
+    <div class="input-section">
+        <input type="text" id="itemNameInput" placeholder="שם המוצר (לדוגמה: שמן זית, חלב)..." onkeypress="if(event.key==='Enter') addItem()">
+        <input type="text" id="itemQtyInput" placeholder="כמות (לדוגמה: 2 יח', 1 ליטר)..." onkeypress="if(event.key==='Enter') addItem()">
+        <button type="button" class="add-btn" onclick="addItem()">הוסף למלאי ➕</button>
+    </div>
+
+    <input type="text" class="filter-input" id="searchInventoryInput" placeholder="חיפוש מהיר במלאי לפי שם מוצר או מעדכן..." oninput="loadInventory()">
+
+    <div class="inventory-list" id="inventoryListContainer"></div>
+</div>
+
+<div class="toast" id="toastMsg">הפעולה בוצעה בהצלחה!</div>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    let houseCode = urlParams.get('house') ||
+                    (typeof getCurrentHouseCode === 'function' ? getCurrentHouseCode() : null) ||
+                    localStorage.getItem('vidass_current_house_code') ||
+                    localStorage.getItem('vidass_current_house') ||
+                    'EILAT-33';
+
+    houseCode = String(houseCode).trim();
+    localStorage.setItem('vidass_current_house_code', houseCode);
+    localStorage.setItem('vidass_current_house', houseCode);
+
+    window.onload = function() {
+        document.getElementById('houseBadgeDisplay').innerText = `🟢 בית: ${escapeHtml(houseCode)}`;
+        loadInventory();
+    };
+
+    function isLowStockQty(qtyStr) {
+        const raw = String(qtyStr || '').trim();
+        if (!raw) return false;
+        const match = raw.match(/^\d+(?:[.,]\d+)?/);
+        if (!match) return false;
+        const num = parseFloat(match[0].replace(',', '.'));
+        return !isNaN(num) && num <= 1;
+    }
+
+    function readInventory() {
+        if (typeof getSharedData === 'function') {
+            const data = getSharedData('inventory');
+            return Array.isArray(data) ? data : [];
+        }
+        try {
+            const raw = localStorage.getItem('vidass_inventory_' + houseCode);
+            const parsed = raw ? JSON.parse(raw) : [];
+            return Array.isArray(parsed) ? parsed : [];
+        } catch (_) {
+            return [];
+        }
+    }
+
+    function loadInventory() {
+        const inventory = readInventory();
+        const container = document.getElementById('inventoryListContainer');
+        const statsEl = document.getElementById('inventoryStats');
+        const searchTerm = (document.getElementById('searchInventoryInput').value || '').trim().toLowerCase();
+
+        const lowCount = inventory.filter(i => isLowStockQty(i.quantity)).length;
+        statsEl.innerHTML = `
+            <span>סה"כ מוצרים במלאי: <strong>${inventory.length}</strong></span>
+            <span>מוצרים במלאי נמוך: <strong>${lowCount}</strong></span>
+        `;
+
+        const filteredIndices = [];
+        for (let i = inventory.length - 1; i >= 0; i--) {
+            const item = inventory[i];
+            const matches = !searchTerm ||
+                String(item.name || '').toLowerCase().includes(searchTerm) ||
+                String(item.quantity || '').toLowerCase().includes(searchTerm) ||
+                String(item.addedBy || '').toLowerCase().includes(searchTerm);
+            if (matches) {
+                filteredIndices.push(i);
+            }
+        }
+
+        if (filteredIndices.length === 0) {
+            container.innerHTML = `<div class="empty-state">${inventory.length === 0 ? 'אין פריטים רשומים במלאי כרגע. אפשר להוסיף פריטים חדשים למעלה!' : 'לא נמצאו פריטים התואמים לחיפוש.'}</div>`;
+            return;
+        }
+
+        container.innerHTML = '';
+        filteredIndices.forEach((actualIndex) => {
+            const item = inventory[actualIndex];
+            const lowStock = isLowStockQty(item.quantity);
+            container.innerHTML += `
+                <div class="inventory-item ${lowStock ? 'low-stock' : ''}">
+                    <div class="item-info">
+                        <div class="item-name">${lowStock ? '⚠️' : '📦'} ${escapeHtml(item.name)}</div>
+                        <div class="item-meta">כמות: <strong>${escapeHtml(item.quantity || '1')}</strong> | עודכן ע"י: ${escapeHtml(item.addedBy || 'דייר')} ${item.date ? '| ' + escapeHtml(item.date) : ''}</div>
+                    </div>
+                    <div class="item-actions">
+                        <button type="button" class="action-btn edit-btn" onclick="editItemQty(${actualIndex})">עדכן כמות</button>
+                        <button type="button" class="action-btn shop-btn" onclick="sendToShoppingByIndex(${actualIndex})">העבר לקניות 🛒</button>
+                        <button type="button" class="action-btn delete-btn" onclick="deleteItem(${actualIndex})">מחק 🗑️</button>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function addItem() {
+        const nameInput = document.getElementById('itemNameInput');
+        const qtyInput = document.getElementById('itemQtyInput');
+
+        const name = nameInput.value.trim();
+        const quantity = qtyInput.value.trim() || "1 יח'";
+
+        if (!name) return;
+
+        const inventory = readInventory();
+        const currentUser = (typeof getCurrentUser === 'function' ? getCurrentUser() : null) ||
+                            localStorage.getItem('vidass_current_user') ||
+                            'דייר';
+
+        inventory.push({
+            name: name,
+            quantity: quantity,
+            addedBy: currentUser,
+            date: new Date().toLocaleDateString('he-IL')
+        });
+
+        saveAndRefresh(inventory);
+        nameInput.value = '';
+        qtyInput.value = '';
+        nameInput.focus();
+        showToast(`המוצר "${name}" נוסף למלאי.`);
+    }
+
+    function editItemQty(index) {
+        const inventory = readInventory();
+        const item = inventory[index];
+        if (!item) return;
+
+        const updatedQty = prompt(`עדכן כמות עבור "${item.name}":`, item.quantity || "1 יח'");
+        if (updatedQty === null) return;
+
+        const cleanQty = updatedQty.trim();
+        if (!cleanQty) return;
+
+        const currentUser = (typeof getCurrentUser === 'function' ? getCurrentUser() : null) ||
+                            localStorage.getItem('vidass_current_user') ||
+                            'דייר';
+
+        inventory[index].quantity = cleanQty;
+        inventory[index].addedBy = currentUser;
+        inventory[index].date = new Date().toLocaleDateString('he-IL');
+        saveAndRefresh(inventory);
+        showToast(`הכמות של "${item.name}" עודכנה.`);
+    }
+
+    function deleteItem(index) {
+        const inventory = readInventory();
+        if (inventory[index] !== undefined) {
+            inventory.splice(index, 1);
+            saveAndRefresh(inventory);
+            showToast("הפריט הוסר מהמלאי.");
+        }
+    }
+
+    function sendToShoppingByIndex(index) {
+        const inventory = readInventory();
+        const item = inventory[index];
+        if (!item || !item.name) return;
+        sendToShopping(item.name);
+    }
+
+    function sendToShopping(itemName) {
+        const cleanName = String(itemName || '').trim();
+        if (!cleanName) return;
+
+        let shopping = [];
+        if (typeof getSharedData === 'function') {
+            const sData = getSharedData('shopping');
+            shopping = Array.isArray(sData) ? sData : [];
+        } else {
+            try {
+                const raw = localStorage.getItem('vidass_shopping_' + houseCode);
+                const parsed = raw ? JSON.parse(raw) : [];
+                shopping = Array.isArray(parsed) ? parsed : [];
+            } catch (_) {
+                shopping = [];
+            }
+        }
+
+        const currentUser = (typeof getCurrentUser === 'function' ? getCurrentUser() : null) ||
+                            localStorage.getItem('vidass_current_user') ||
+                            'דייר';
+
+        const normalizedTarget = cleanName.toLowerCase();
+        const exists = shopping.some(sItem =>
+            String((sItem && (sItem.text || sItem.name)) || '').trim().toLowerCase() === normalizedTarget &&
+            !(sItem && sItem.completed)
+        );
+
+        if (!exists) {
+            shopping.push({
+                text: cleanName,
+                completed: false,
+                addedBy: currentUser,
+                date: new Date().toLocaleDateString('he-IL')
+            });
+
+            if (typeof saveSharedData === 'function') {
+                saveSharedData('shopping', shopping);
+            } else {
+                localStorage.setItem('vidass_shopping_' + houseCode, JSON.stringify(shopping));
+            }
+            showToast(`המוצר "${cleanName}" הועבר לרשימת הקניות! 🛒`);
+        } else {
+            showToast(`המוצר "${cleanName}" כבר קיים ברשימת הקניות.`, true);
+        }
+    }
+
+    function saveAndRefresh(inventoryArray) {
+        if (typeof saveSharedData === 'function') {
+            saveSharedData('inventory', inventoryArray);
+        } else {
+            localStorage.setItem('vidass_inventory_' + houseCode, JSON.stringify(inventoryArray));
+        }
+        loadInventory();
+    }
+
+    function showToast(msg, isError = false) {
+        const toast = document.getElementById('toastMsg');
+        toast.innerText = msg;
+        toast.style.background = isError ? 'var(--danger)' : 'var(--success)';
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    function escapeHtml(str) {
+        return String(str || '')
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    window.addEventListener('vidass:data-updated', function(e) {
+        if (!e || !e.detail || !e.detail.module || e.detail.module === 'inventory' || e.detail.module === 'all') {
+            loadInventory();
+        }
+    });
+
+    window.addEventListener('storage', function(event) {
+        if (event.key === 'vidass_inventory_' + houseCode) {
+            loadInventory();
+        }
+    });
+</script>
+
+</body>
+</html>

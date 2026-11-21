@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIDASS - עוזר חכם משפחתי</title>
+    <script src="storage-sync.js"></script>
+    <style>
+        :root {
+            --primary: #d84370;
+            --primary-dark: #ad1457;
+            --accent: #ff80ab;
+            --bg-gradient: linear-gradient(135deg, #0d0d0f 0%, #1a1622 100%);
+            --card-bg: rgba(26, 23, 33, 0.96);
+            --card-border: rgba(216, 67, 112, 0.4);
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --success: #10b981;
+            --danger: #ef4444;
+            --gold: #f59e0b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 700px;
+            height: 90vh;
+            background: var(--card-bg);
+            backdrop-filter: blur(14px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.8);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: rgba(0,0,0,0.4);
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .chat-header h2 { font-size: 16px; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+        .house-tag { font-size: 11px; background: rgba(216, 67, 112, 0.15); border: 1px solid var(--card-border); color: var(--accent); padding: 4px 10px; border-radius: 8px; }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 14px;
+            font-size: 13px;
+            line-height: 1.5;
+            word-wrap: break-word;
+            white-space: pre-line;
+        }
+
+        .message.user {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message.ai {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        .chat-input-area {
+            padding: 15px 20px;
+            background: rgba(0,0,0,0.3);
+            border-top: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input-area input {
+            flex: 1;
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 12px;
+            color: white;
+            font-size: 13px;
+            outline: none;
+            text-align: right;
+        }
+
+        .chat-input-area input:focus {
+            border-color: var(--primary);
+        }
+
+        .send-btn {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            padding: 0 20px;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .send-btn:hover { opacity: 0.9; }
+    </style>
+</head>
+<body>
+
+<div class="chat-container">
+    <div class="chat-header">
+        <h2>🤖 עוזר חכם VIDASS</h2>
+        <div class="house-tag" id="houseBadgeDisplay">בית: טוען...</div>
+    </div>
+
+    <div class="chat-messages" id="chatMessages">
+        <div class="message ai">שלום! אני העוזר החכם של משפחתכם ב-VIDASS. אפשר לבקש ממני למשל: "קניות חלב", "התראה לבדוק דואר" או לשאול מה יש בקניות.</div>
+    </div>
+
+    <div class="chat-input-area">
+        <input type="text" id="userInput" placeholder="הקלד הודעה או שאלה לעוזר..." onkeypress="handleKeyPress(event)">
+        <button class="send-btn" onclick="sendMessage()">שלח ➔</button>
+    </div>
+</div>
+
+<script>
+    const houseCode = (typeof getCurrentHouseCode === 'function')
+        ? getCurrentHouseCode()
+        : (localStorage.getItem('vidass_current_house_code') || 'EILAT-33').trim();
+
+    const currentUser = (typeof getCurrentUser === 'function')
+        ? getCurrentUser()
+        : (localStorage.getItem('vidass_current_user') || 'דייר');
+
+    document.getElementById('houseBadgeDisplay').innerText = `בית: ${houseCode}`;
+
+    function handleKeyPress(event) {
+        if (event.key === 'Enter') {
+            sendMessage();
+        }
+    }
+
+    function buildAssistantReply(rawText) {
+        const clean = rawText.trim();
+        const lower = clean.toLowerCase();
+
+        const addShoppingMatch = clean.match(/^(?:קניות|הוסף\s+לקניות|קנה)\s+(.+)$/i);
+        if (addShoppingMatch && addShoppingMatch[1].trim()) {
+            const itemName = addShoppingMatch[1].trim();
+            const currentShopping = (typeof getSharedData === 'function') ? getSharedData('shopping') : [];
+            const exists = currentShopping.some(i => (i.text || i.name) === itemName && !i.completed);
+
+            if (!exists) {
+                currentShopping.push({
+                    text: itemName,
+                    completed: false,
+                    addedBy: currentUser,
+                    date: new Date().toLocaleDateString('he-IL')
+                });
+                if (typeof saveSharedData === 'function') {
+                    saveSharedData('shopping', currentShopping);
+                }
+            }
+            return `הוספתי את "${itemName}" לרשימת הקניות של בית ${houseCode} — שאר דיירי הבית יראו זאת מיד.`;
+        }
+
+        if (lower.includes('קניות')) {
+            const items = (typeof getSharedData === 'function') ? getSharedData('shopping') : [];
+            if (!items.length) {
+                return `רשימת הקניות של בית ${houseCode} ריקה כרגע. אפשר לכתוב למשל: "קניות לחם וגבינה".`;
+            }
+            const names = items.map(i => `• ${i.text || i.name || 'פריט'}`).join('\n');
+            return `אלה הפריטים שמופיעים כרגע ברשימת הקניות של בית ${houseCode}:\n${names}`;
+        }
+
+        const alertMatch = clean.match(/^(?:התראה|שגר\s+התראה)\s+(.+)$/i);
+        if (alertMatch && alertMatch[1].trim()) {
+            const alertText = alertMatch[1].trim();
+            const currentAlerts = (typeof getSharedData === 'function') ? getSharedData('alerts') : [];
+            currentAlerts.push({
+                text: alertText,
+                addedBy: currentUser,
+                time: new Date().toLocaleTimeString('he-IL'),
+                date: new Date().toLocaleDateString('he-IL')
+            });
+            if (typeof saveSharedData === 'function') {
+                saveSharedData('alerts', currentAlerts);
+            }
+            return `שגרתי התראה לכל דיירי בית ${houseCode}: "${alertText}".`;
+        }
+
+        if (lower.includes('שלום') || lower.includes('היי')) {
+            return `היי ${currentUser}! איזה כיף שאת/ה כאן. מה נתכנן לבית ${houseCode} עכשיו?`;
+        }
+
+        return `קיבלתי את הודעתך עבור בית ${houseCode}. אני מחובר לנתוני הבית ויכול לעזור עם קניות והתראות משותפות.`;
+    }
+
+    function sendMessage() {
+        const inputField = document.getElementById('userInput');
+        const text = inputField.value.trim();
+        if (!text) return;
+
+        appendMessage(text, 'user');
+        inputField.value = '';
+
+        setTimeout(() => {
+            const reply = buildAssistantReply(text);
+            appendMessage(reply, 'ai');
+        }, 350);
+    }
+
+    function appendMessage(text, sender) {
+        const messagesDiv = document.getElementById('chatMessages');
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `message ${sender}`;
+        msgDiv.innerText = text;
+        messagesDiv.appendChild(msgDiv);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    window.addEventListener('vidass:data-updated', function (e) {
+        const mod = e && e.detail ? e.detail.module : '';
+        if (mod === 'shopping' || mod === 'alerts' || mod === 'all') {
+            appendMessage(`🔄 עדכון חי בבית ${houseCode}: נתוני ${mod === 'all' ? 'הבית' : mod} עודכנו בזמן אמת.`, 'ai');
+        }
+    });
+</script>
+
+</body>
+</html>

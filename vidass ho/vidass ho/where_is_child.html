@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIDASS - איפה הילד, שעון ומדדים</title>
+    <script src="storage-sync.js"></script>
+    <style>
+        :root {
+            --primary: #d84370;
+            --primary-dark: #ad1457;
+            --accent: #ff80ab;
+            --bg-gradient: linear-gradient(135deg, #0d0d0f 0%, #1a1622 100%);
+            --card-bg: rgba(26, 23, 33, 0.96);
+            --card-border: rgba(216, 67, 112, 0.4);
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --success: #10b981;
+            --danger: #ef4444;
+            --gold: #f59e0b;
+            --info: #60a5fa;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 900px;
+            background: var(--card-bg);
+            backdrop-filter: blur(14px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.85);
+            padding: 26px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 14px;
+            margin-bottom: 18px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .header h1 { font-size: 21px; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+        .header p { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+        .badges-bar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .badge {
+            background: rgba(16, 185, 129, 0.14);
+            border: 1px solid rgba(16, 185, 129, 0.38);
+            color: var(--success);
+            padding: 5px 11px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        .badge-alert {
+            background: rgba(239, 68, 68, 0.16);
+            border: 1px solid rgba(239, 68, 68, 0.45);
+            color: #fca5a5;
+        }
+
+        .panel {
+            background: rgba(255, 255, 255, 0.025);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .panel-title {
+            font-size: 13px;
+            font-weight: bold;
+            color: var(--gold);
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+            gap: 14px;
+            margin-bottom: 16px;
+        }
+
+        .input-group { text-align: right; }
+        .input-group label { display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 4px; font-weight: bold; }
+        .input-group input, .input-group select, .input-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            color: white;
+            font-size: 12px;
+            outline: none;
+            text-align: right;
+        }
+        .input-group option { background: #1a1622; color: white; }
+        .input-group input:focus, .input-group select:focus, .input-group textarea:focus {
+            border-color: var(--primary);
+        }
+
+        .vitals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .vital-box {
+            background: rgba(0, 0, 0, 0.28);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 12px;
+        }
+        .vital-label { font-size: 11px; color: var(--text-muted); }
+        .vital-val { font-size: 18px; font-weight: bold; color: var(--accent); margin-top: 3px; }
+        .vital-val.warn { color: var(--danger); }
+        .vital-val.ok { color: var(--success); }
+
+        .btn-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+        .btn {
+            padding: 10px 15px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 12px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .btn:hover { opacity: 0.92; }
+
+        .btn-soft {
+            padding: 9px 13px;
+            background: rgba(255, 255, 255, 0.07);
+            color: var(--text-main);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .btn-soft:hover { border-color: var(--primary); background: rgba(216, 67, 112, 0.14); }
+        .btn-soft.active-mode { border-color: var(--success); background: rgba(16, 185, 129, 0.18); color: #a7f3d0; }
+
+        .btn-claim {
+            padding: 9px 14px;
+            background: rgba(245, 158, 11, 0.16);
+            color: var(--gold);
+            border: 1px solid rgba(245, 158, 11, 0.45);
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .map-canvas-wrap {
+            position: relative;
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid rgba(216, 67, 112, 0.35);
+            background: #10131d;
+        }
+
+        canvas#zoneMapCanvas {
+            width: 100%;
+            height: 300px;
+            display: block;
+            cursor: crosshair;
+        }
+
+        .map-legend {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 8px;
+        }
+        .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-left: 4px; }
+        .dot-allowed { background: var(--success); }
+        .dot-forbidden { background: var(--danger); }
+        .dot-child { background: var(--accent); }
+
+        .avatar-box {
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+            background: rgba(216, 67, 112, 0.08);
+            border: 1px solid rgba(216, 67, 112, 0.3);
+            border-radius: 14px;
+            padding: 14px;
+        }
+        .avatar-orb {
+            width: 54px;
+            height: 54px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #ff80ab, #ad1457);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            flex-shrink: 0;
+            box-shadow: 0 0 18px rgba(216, 67, 112, 0.5);
+        }
+        .avatar-msg { font-size: 12px; line-height: 1.55; color: var(--text-main); }
+
+        .list-box { display: flex; flex-direction: column; gap: 8px; max-height: 230px; overflow-y: auto; }
+        .row-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 11px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            font-size: 12px;
+        }
+        .pill {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 7px;
+            font-size: 10px;
+            font-weight: bold;
+            margin-right: 6px;
+        }
+        .pill-allowed { background: rgba(16, 185, 129, 0.16); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.35); }
+        .pill-forbidden { background: rgba(239, 68, 68, 0.16); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4); }
+
+        .btn-del {
+            background: rgba(239, 68, 68, 0.12);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.35);
+            padding: 5px 10px;
+            border-radius: 7px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--success);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 13px;
+            transition: transform 0.3s;
+            z-index: 1000;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="header">
+        <div>
+            <h1>📍 איפה הילד — מיקום, אזורים, שעון ומדדים</h1>
+            <p>מעקב אזורים מותרים/אסורים (כולל גן), חיבור לשעון וטלפון, דופק, תביעה/תיעוד ואווטאר AI</p>
+        </div>
+        <div class="badges-bar">
+            <div class="badge" id="houseBadge">🟢 בית: טוען...</div>
+            <div class="badge" id="safetyStatusBadge">🛡️ סטטוס: תקין</div>
+        </div>
+    </div>
+
+    <!-- הגדרת ילד, שעון וטלפון -->
+    <div class="panel">
+        <div class="panel-title">
+            <span>⌚ הגדרת הילד, השעון והטלפון</span>
+            <span style="font-size:11px; color:var(--text-muted);" id="deviceSyncLabel">שעון + טלפון מחוברים</span>
+        </div>
+
+        <div class="grid-3">
+            <div class="input-group">
+                <label for="memberSelect">בחירה מדיירי הבית</label>
+                <select id="memberSelect" onchange="onSelectMember()">
+                    <option value="">-- הזנה ידנית או בחירה --</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="childNameInput">שם הילד/ה</label>
+                <input type="text" id="childNameInput" placeholder="לדוגמה: אגם, לוטם..." oninput="saveProfileOnly()">
+            </div>
+            <div class="input-group">
+                <label for="watchIdInput">מזהה שעון חכם (Watch)</label>
+                <input type="text" id="watchIdInput" placeholder="לדוגמה: WATCH-KID-01" oninput="saveProfileOnly()">
+            </div>
+        </div>
+
+        <div class="grid-3">
+            <div class="input-group">
+                <label for="phoneRefInput">טלפון / איש קשר צמוד</label>
+                <input type="text" id="phoneRefInput" placeholder="לדוגמה: 050-0000000 / נייד ילד" oninput="saveProfileOnly()">
+            </div>
+            <div class="input-group">
+                <label for="heartRateInput">דופק נוכחי (BPM)</label>
+                <input type="number" id="heartRateInput" min="35" max="230" placeholder="88" oninput="evaluateAndRender()">
+            </div>
+            <div class="input-group">
+                <label for="batteryInput">סוללת שעון / טלפון (%)</label>
+                <input type="number" id="batteryInput" min="0" max="100" placeholder="84" oninput="evaluateAndRender()">
+            </div>
+        </div>
+
+        <div class="grid-3" style="margin-bottom:0;">
+            <div class="input-group">
+                <label for="maxHrAlertInput">סף התראת דופק גבוה (BPM)</label>
+                <input type="number" id="maxHrAlertInput" min="90" max="220" value="135" oninput="saveThresholdsAndEvaluate()">
+            </div>
+            <div class="input-group">
+                <label for="minBatAlertInput">סף התראת סוללה נמוכה (%)</label>
+                <input type="number" id="minBatAlertInput" min="5" max="50" value="15" oninput="saveThresholdsAndEvaluate()">
+            </div>
+            <div class="input-group">
+                <label for="watchConnStateInput">חיבור שעון וטלפון</label>
+                <select id="watchConnStateInput" onchange="saveProfileOnly()">
+                    <option value="מחובר (GPS + דופק)">🟢 מחובר (GPS + דופק)</option>
+                    <option value="חיבור טלפון גיבוי">🟡 חיבור טלפון גיבוי</option>
+                    <option value="ניתוק זמני">🔴 ניתוק זמני</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- מדדים חיים ואווטאר AI -->
+    <div class="grid-2">
+        <div class="panel" style="margin-bottom:0;">
+            <div class="panel-title"><span>💓 מדדי הילד ומיקום נוכחי</span></div>
+            <div class="vitals-grid">
+                <div class="vital-box">
+                    <div class="vital-label">דופק</div>
+                    <div class="vital-val ok" id="vitalHr">88 BPM</div>
+                </div>
+                <div class="vital-box">
+                    <div class="vital-label">סוללה</div>
+                    <div class="vital-val ok" id="vitalBat">84%</div>
+                </div>
+                <div class="vital-box">
+                    <div class="vital-label">אזור נוכחי</div>
+                    <div class="vital-val" id="vitalZone" style="font-size:14px;">לא מוגדר</div>
+                </div>
+            </div>
+            <div class="input-group" style="margin-bottom:10px;">
+                <label for="currentLocNameInput">מיקום / נקודה נוכחית</label>
+                <input type="text" id="currentLocNameInput" placeholder="לדוגמה: חצר הגן / פארק / אזור חיצוני" oninput="evaluateAndRender()">
+            </div>
+            <div class="btn-row">
+                <button type="button" class="btn" onclick="simulatePulseCheck()">📡 סנכרן שעון וטלפון</button>
+                <button type="button" class="btn-soft" onclick="simulateOutsideMove()">🚶 סימולציית יציאה לאזור אחר</button>
+                <button type="button" class="btn-claim" onclick="createClaimOrReport()">📄 הפק תביעה / דוח אירוע</button>
+            </div>
+        </div>
+
+        <div class="panel" style="margin-bottom:0;">
+            <div class="panel-title"><span>🤖 אווטאר בינה מלאכותית (VIDASS AI)</span></div>
+            <div class="avatar-box">
+                <div class="avatar-orb" id="avatarOrb">✨</div>
+                <div>
+                    <div style="font-weight:bold; font-size:13px; color:var(--accent); margin-bottom:4px;" id="avatarTitle">עוזר ההגנה והמעקב</div>
+                    <div class="avatar-msg" id="avatarMessage">טוען חיווי מצב...</div>
+                </div>
+            </div>
+            <div class="input-group" style="margin-top:10px;">
+                <label for="avatarAskInput">שאל את האווטאר על האזור, השעון או המדדים</label>
+                <div class="btn-row">
+                    <input type="text" id="avatarAskInput" style="flex:1;" placeholder="לדוגמה: האם הוא באזור בטוח? מה מצב הדופק?" onkeypress="if(event.key==='Enter') askAvatar()">
+                    <button type="button" class="btn-soft" onclick="askAvatar()">שאל</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- מפה לסימון אזורים מותרים ואסורים (כולל אזורי גן) -->
+    <div class="panel" style="margin-top:16px;">
+        <div class="panel-title">
+            <span>🗺️ סימון אזורים מותרים / אסורים (כולל אזורי גן)</span>
+            <span style="font-size:11px; color:var(--text-muted);" id="mapInteractionHint">לחיצה על המפה מעדכנת מיקום או אזור</span>
+        </div>
+
+        <div class="btn-row" style="margin-bottom:10px;">
+            <button type="button" class="btn-soft active-mode" id="mapModeChildBtn" onclick="setMapClickMode('child')">📍 לחיצה ממקמת ילד</button>
+            <button type="button" class="btn-soft" id="mapModeZoneBtn" onclick="setMapClickMode('zone')">🎯 לחיצה קובעת מרכז אזור (X,Y)</button>
+        </div>
+
+        <div class="grid-3">
+            <div class="input-group">
+                <label for="zoneNameInput">שם האזור</label>
+                <input type="text" id="zoneNameInput" placeholder="לדוגמה: חצר הגן, כיתה, פארק אסור...">
+            </div>
+            <div class="input-group">
+                <label for="zoneKindInput">סוג האזור</label>
+                <select id="zoneKindInput">
+                    <option value="allowed">🟢 אזור מותר / בטוח (כולל גן/בית)</option>
+                    <option value="forbidden">🔴 אזור אסור למעבר</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="zoneScopeInput">שיוך / סביבה</label>
+                <select id="zoneScopeInput">
+                    <option value="גן וחינוך">🏫 גן / מסגרת חינוכית</option>
+                    <option value="בית וסביבה">🏡 בית וסביבה קרובה</option>
+                    <option value="פארק / חוץ">🌳 פארק / שטח פתוח</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="grid-3">
+            <div class="input-group">
+                <label for="zoneXInput">מיקום אופקי במפה (X: 5–95)</label>
+                <input type="number" id="zoneXInput" min="5" max="95" value="50">
+            </div>
+            <div class="input-group">
+                <label for="zoneYInput">מיקום אנכי במפה (Y: 5–95)</label>
+                <input type="number" id="zoneYInput" min="5" max="95" value="50">
+            </div>
+            <div class="input-group">
+                <label for="zoneRadiusInput">רדיוס (מטרים)</label>
+                <input type="number" id="zoneRadiusInput" min="20" max="2000" value="150">
+            </div>
+        </div>
+
+        <div class="btn-row" style="margin-bottom:12px;">
+            <button type="button" class="btn" onclick="addZone()">שמור אזור במפה ➕</button>
+            <button type="button" class="btn-soft" onclick="setChildPositionFromInputs()">מקם ילד בנקודה זו</button>
+        </div>
+
+        <div class="map-canvas-wrap">
+            <canvas id="zoneMapCanvas" width="840" height="300" onclick="onMapClick(event)"></canvas>
+        </div>
+        <div class="map-legend">
+            <span><i class="dot dot-allowed"></i>אזור מותר</span>
+            <span><i class="dot dot-forbidden"></i>אזור אסור</span>
+            <span><i class="dot dot-child"></i>מיקום נוכחי של הילד</span>
+        </div>
+
+        <div class="list-box" id="zonesListContainer" style="margin-top:12px;"></div>
+    </div>
+
+    <!-- היסטוריית חריגות ותביעות / דוחות -->
+    <div class="panel">
+        <div class="panel-title">
+            <span>📋 יומן חריגות, התראות ותביעות / דוחות</span>
+            <button type="button" class="btn-soft" onclick="clearIncidentsLog()">נקה יומן</button>
+        </div>
+        <div class="list-box" id="incidentsListContainer"></div>
+    </div>
+</div>
+
+<div class="toast" id="toastMsg">הפעולה בוצעה בהצלחה!</div>
+
+<script>
+    let toastTimer = null;
+    let mapClickMode = 'child';
+    let lastAlertSignature = '';
+
+    let state = {
+        profile: {
+            childName: 'אגם',
+            watchId: 'WATCH-01',
+            phoneRef: 'שעון + נייד צמוד',
+            connState: 'מחובר (GPS + דופק)',
+            heartRate: 88,
+            battery: 84,
+            maxHrAlert: 135,
+            minBatAlert: 15,
+            locName: 'חצר הגן',
+            x: 35,
+            y: 45
+        },
+        zones: [
+            { id: 'z-gan', name: 'חצר וכיתת הגן', kind: 'allowed', scope: 'גן וחינוך', x: 35, y: 45, radius: 140 },
+            { id: 'z-road', name: 'כביש / אזור אסור', kind: 'forbidden', scope: 'פארק / חוץ', x: 74, y: 62, radius: 120 }
+        ],
+        incidents: []
+    };
+
+    function escapeHtml(str) {
+        return String(str || '')
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function showToast(msg, isError = false) {
+        const toast = document.getElementById('toastMsg');
+        toast.innerText = msg;
+        toast.style.background = isError ? 'var(--danger)' : 'var(--success)';
+        toast.classList.add('show');
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    function getActiveHouse() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = (
+            urlParams.get('house') ||
+            (typeof getCurrentHouseCode === 'function' ? getCurrentHouseCode() : null) ||
+            localStorage.getItem('vidass_current_house_code') ||
+            localStorage.getItem('vidass_current_house') ||
+            'EILAT-33'
+        ).trim().toUpperCase();
+        localStorage.setItem('vidass_current_house_code', code);
+        localStorage.setItem('vidass_current_house', code);
+        return code;
+    }
+
+    function getActiveUser() {
+        return (typeof getCurrentUser === 'function' ? getCurrentUser() : null) ||
+               localStorage.getItem('vidass_current_user') ||
+               'דייר';
+    }
+
+    function readModuleList(mod) {
+        const houseCode = getActiveHouse();
+        if (typeof getSharedData === 'function') {
+            const d = getSharedData(mod);
+            return Array.isArray(d) ? d : [];
+        }
+        try {
+            const raw = localStorage.getItem(`vidass_${mod}_${houseCode}`);
+            const parsed = raw ? JSON.parse(raw) : [];
+            return Array.isArray(parsed) ? parsed : [];
+        } catch (_) {
+            return [];
+        }
+    }
+
+    function writeModuleList(mod, arr) {
+        const houseCode = getActiveHouse();
+        if (typeof saveSharedData === 'function') {
+            saveSharedData(mod, arr);
+        } else {
+            localStorage.setItem(`vidass_${mod}_${houseCode}`, JSON.stringify(arr));
+        }
+    }
+
+    function loadStateFromStorage() {
+        const records = readModuleList('where_is_child');
+        if (records.length > 0 && records[records.length - 1] && typeof records[records.length - 1] === 'object') {
+            const latest = records[records.length - 1];
+            if (latest.profile) state.profile = Object.assign({}, state.profile, latest.profile);
+            if (Array.isArray(latest.zones)) state.zones = latest.zones;
+            if (Array.isArray(latest.incidents)) state.incidents = latest.incidents;
+        }
+    }
+
+    function persistState() {
+        writeModuleList('where_is_child', [{
+            profile: state.profile,
+            zones: state.zones,
+            incidents: state.incidents,
+            updatedBy: getActiveUser(),
+            updatedAt: new Date().toLocaleString('he-IL')
+        }]);
+    }
+
+    function pushHouseholdAlert(text) {
+        const alerts = readModuleList('alerts');
+        alerts.push({
+            text,
+            addedBy: `אווטאר ${state.profile.childName || 'ילד'}`,
+            date: new Date().toLocaleDateString('he-IL')
+        });
+        writeModuleList('alerts', alerts);
+    }
+
+    function populateMembersDropdown() {
+        const members = readModuleList('members');
+        const select = document.getElementById('memberSelect');
+        select.innerHTML = '<option value="">-- בחירה מדיירי הבית --</option>';
+        members.forEach((m, idx) => {
+            if (m && m.name) {
+                const opt = document.createElement('option');
+                opt.value = String(idx);
+                opt.textContent = `${m.name} (${m.role || 'דייר'})`;
+                select.appendChild(opt);
+            }
+        });
+    }
+
+    function onSelectMember() {
+        const idx = parseInt(document.getElementById('memberSelect').value, 10);
+        const members = readModuleList('members');
+        if (!isNaN(idx) && members[idx]) {
+            state.profile.childName = members[idx].name;
+            if (members[idx].phone && members[idx].phone !== 'לא צוין') {
+                state.profile.phoneRef = members[idx].phone;
+            }
+            syncInputsFromProfile();
+            persistState();
+            evaluateAndRender();
+        }
+    }
+
+    function syncInputsFromProfile() {
+        document.getElementById('childNameInput').value = state.profile.childName || '';
+        document.getElementById('watchIdInput').value = state.profile.watchId || '';
+        document.getElementById('phoneRefInput').value = state.profile.phoneRef || '';
+        document.getElementById('connStateSelect') && null;
+        document.getElementById('watchConnStateInput').value = state.profile.connState || 'מחובר (GPS + דופק)';
+        document.getElementById('heartRateInput').value = state.profile.heartRate ?? 88;
+        document.getElementById('batteryInput').value = state.profile.battery ?? 84;
+        document.getElementById('maxHrAlertInput').value = state.profile.maxHrAlert ?? 135;
+        document.getElementById('minBatAlertInput').value = state.profile.minBatAlert ?? 15;
+        document.getElementById('currentLocNameInput').value = state.profile.locName || '';
+        document.getElementById('zoneXInput').value = Math.round(state.profile.x ?? 50);
+        document.getElementById('zoneYInput').value = Math.round(state.profile.y ?? 50);
+    }
+
+    function readProfileFromInputs() {
+        state.profile.childName = document.getElementById('childNameInput').value.trim() || 'ילד/ה';
+        state.profile.watchId = document.getElementById('watchIdInput').value.trim() || 'WATCH-01';
+        state.profile.phoneRef = document.getElementById('phoneRefInput').value.trim() || 'לא הוזן';
+        state.profile.connState = document.getElementById('watchConnStateInput').value || 'מחובר (GPS + דופק)';
+
+        const hr = parseInt(document.getElementById('heartRateInput').value, 10);
+        const bat = parseInt(document.getElementById('batteryInput').value, 10);
+        const maxHr = parseInt(document.getElementById('maxHrAlertInput').value, 10);
+        const minBat = parseInt(document.getElementById('minBatAlertInput').value, 10);
+
+        state.profile.heartRate = isNaN(hr) ? 88 : Math.max(30, Math.min(240, hr));
+        state.profile.battery = isNaN(bat) ? 84 : Math.max(0, Math.min(100, bat));
+        state.profile.maxHrAlert = isNaN(maxHr) ? 135 : Math.max(80, Math.min(230, maxHr));
+        state.profile.minBatAlert = isNaN(minBat) ? 15 : Math.max(1, Math.min(80, minBat));
+        state.profile.locName = document.getElementById('currentLocNameInput').value.trim() || 'מיקום במפה';
+
+        document.getElementById('deviceSyncLabel').innerText = `${state.profile.connState} | ${state.profile.watchId}`;
+    }
+
+    function saveProfileOnly() {
+        readProfileFromInputs();
+        persistState();
+        evaluateAndRender();
+    }
+
+    function saveThresholdsAndEvaluate() {
+        readProfileFromInputs();
+        persistState();
+        evaluateAndRender();
+    }
+
+    function setMapClickMode(mode) {
+        mapClickMode = mode === 'zone' ? 'zone' : 'child';
+        document.getElementById('mapModeChildBtn').classList.toggle('active-mode', mapClickMode === 'child');
+        document.getElementById('mapModeZoneBtn').classList.toggle('active-mode', mapClickMode === 'zone');
+        document.getElementById('mapInteractionHint').innerText = mapClickMode === 'zone'
+            ? 'מצב סימון אזור: לחץ על המפה לעדכון X,Y של האזור'
+            : 'מצב מיקום ילד: לחץ על המפה לעדכון מיקום הילד';
+    }
+
+    function addZone() {
+        const name = document.getElementById('zoneNameInput').value.trim();
+        const kind = document.getElementById('zoneKindInput').value;
+        const scope = document.getElementById('zoneScopeInput').value;
+        const x = Math.max(5, Math.min(95, parseFloat(document.getElementById('zoneXInput').value) || 50));
+        const y = Math.max(5, Math.min(95, parseFloat(document.getElementById('zoneYInput').value) || 50));
+        const radius = Math.max(20, Math.min(2000, parseInt(document.getElementById('zoneRadiusInput').value, 10) || 150));
+
+        if (!name) {
+            showToast('נא להזין שם לאזור (למשל: חצר הגן או אזור אסור).', true);
+            return;
+        }
+
+        state.zones.push({
+            id: 'z-' + Date.now(),
+            name,
+            kind,
+            scope,
+            x,
+            y,
+            radius
+        });
+
+        document.getElementById('zoneNameInput').value = '';
+        persistState();
+        evaluateAndRender();
+        showToast('האזור נשמר במפה!');
+    }
+
+    function deleteZone(index) {
+        if (state.zones[index] !== undefined) {
+            state.zones.splice(index, 1);
+            persistState();
+            evaluateAndRender();
+            showToast('האזור הוסר.');
+        }
+    }
+
+    function setChildPositionFromInputs() {
+        readProfileFromInputs();
+        const x = Math.max(5, Math.min(95, parseFloat(document.getElementById('zoneXInput').value) || 50));
+        const y = Math.max(5, Math.min(95, parseFloat(document.getElementById('zoneYInput').value) || 50));
+        state.profile.x = x;
+        state.profile.y = y;
+        persistState();
+        evaluateAndRender();
+    }
+
+    function onMapClick(event) {
+        const canvas = document.getElementById('zoneMapCanvas');
+        const rect = canvas.getBoundingClientRect();
+        if (!rect.width || !rect.height) return;
+
+        const px = event.clientX - rect.left;
+        const py = event.clientY - rect.top;
+        const xPct = Math.round(Math.max(5, Math.min(95, (px / rect.width) * 100)));
+        const yPct = Math.round(Math.max(5, Math.min(95, (py / rect.height) * 100)));
+
+        document.getElementById('zoneXInput').value = xPct;
+        document.getElementById('zoneYInput').value = yPct;
+
+        if (mapClickMode === 'zone') {
+            drawMap();
+            showToast(`נקודת האזור עודכנה ל-(${xPct}, ${yPct}). לחץ "שמור אזור במפה" לשמירה.`);
+            return;
+        }
+
+        readProfileFromInputs();
+        state.profile.x = xPct;
+        state.profile.y = yPct;
+        state.profile.locName = `נקודה (${xPct}, ${yPct})`;
+        document.getElementById('currentLocNameInput').value = state.profile.locName;
+
+        persistState();
+        evaluateAndRender();
+    }
+
+    function simulatePulseCheck() {
+        readProfileFromInputs();
+        const deltaHr = Math.floor(Math.random() * 7) - 3;
+        state.profile.heartRate = Math.max(62, Math.min(165, state.profile.heartRate + deltaHr));
+        state.profile.battery = Math.max(5, state.profile.battery - (Math.random() < 0.35 ? 1 : 0));
+        document.getElementById('heartRateInput').value = state.profile.heartRate;
+        document.getElementById('batteryInput').value = state.profile.battery;
+        persistState();
+        evaluateAndRender();
+        showToast('המדדים סונכרנו מהשעון והטלפון.');
+    }
+
+    function simulateOutsideMove() {
+        readProfileFromInputs();
+        state.profile.x = 78;
+        state.profile.y = 68;
+        state.profile.locName = 'אזור חיצוני / מחוץ לגבולות';
+        document.getElementById('currentLocNameInput').value = state.profile.locName;
+        document.getElementById('zoneXInput').value = 78;
+        document.getElementById('zoneYInput').value = 68;
+        persistState();
+        evaluateAndRender();
+    }
+
+    function analyzeSituation() {
+        const p = state.profile;
+        const allowedZones = state.zones.filter(z => z.kind === 'allowed');
+        const forbiddenZones = state.zones.filter(z => z.kind === 'forbidden');
+
+        function distPct(z) {
+            const dx = (p.x - z.x);
+            const dy = (p.y - z.y);
+            const distUnits = Math.sqrt(dx * dx + dy * dy);
+            const zoneVisualR = Math.max(5, Math.min(28, (z.radius || 150) / 10));
+            return { distUnits, zoneVisualR };
+        }
+
+        const hitForbidden = forbiddenZones.find(z => {
+            const { distUnits, zoneVisualR } = distPct(z);
+            return distUnits <= zoneVisualR;
+        });
+
+        const insideAllowed = allowedZones.find(z => {
+            const { distUnits, zoneVisualR } = distPct(z);
+            return distUnits <= zoneVisualR;
+        });
+
+        const outOfAllowed = allowedZones.length > 0 && !insideAllowed;
+        const highHr = p.heartRate >= (p.maxHrAlert || 135);
+        const lowBat = p.battery <= (p.minBatAlert || 15);
+        const disconnected = p.connState === 'ניתוק זמני';
+
+        const reasons = [];
+        let zoneLabel = insideAllowed ? insideAllowed.name : 'מחוץ לאזור מותר';
+
+        if (hitForbidden) {
+            zoneLabel = `אזור אסור: ${hitForbidden.name}`;
+            reasons.push(`כניסה לאזור אסור (${hitForbidden.name})`);
+        } else if (outOfAllowed) {
+            reasons.push(`יציאה מכל אזור מותר מוגדר`);
+        }
+
+        if (highHr) {
+            reasons.push(`דופק גבוה (${p.heartRate} BPM / סף ${p.maxHrAlert})`);
+        }
+        if (lowBat) {
+            reasons.push(`סוללה נמוכה (${p.battery}% / סף ${p.minBatAlert}%)`);
+        }
+        if (disconnected) {
+            reasons.push(`ניתוק זמני מהשעון/טלפון`);
+        }
+
+        return {
+            isAlert: reasons.length > 0,
+            reasons,
+            zoneLabel,
+            highHr,
+            lowBat
+        };
+    }
+
+    function createClaimOrReport() {
+        readProfileFromInputs();
+        const analysis = analyzeSituation();
+        const p = state.profile;
+        const claimCode = 'CLM-' + String(Date.now()).slice(-6);
+
+        const record = {
+            code: claimCode,
+            date: new Date().toLocaleString('he-IL'),
+            childName: p.childName,
+            watchId: p.watchId,
+            phoneRef: p.phoneRef,
+            connState: p.connState,
+            heartRate: p.heartRate,
+            battery: p.battery,
+            locName: p.locName,
+            zoneLabel: analysis.zoneLabel,
+            summary: analysis.isAlert
+                ? `אירוע חריגה / תביעה: ${analysis.reasons.join(' | ')}`
+                : `תיעוד מצב ובדיקת שעון/מיקום תקינה (${analysis.zoneLabel})`
+        };
+
+        state.incidents.unshift(record);
+        persistState();
+        renderIncidents();
+        showToast(`נוצר דוח/תביעה מספר ${claimCode}`);
+    }
+
+    function clearIncidentsLog() {
+        state.incidents = [];
+        persistState();
+        renderIncidents();
+        showToast('היומן נוקה.');
+    }
+
+    function askAvatar() {
+        const q = document.getElementById('avatarAskInput').value.trim();
+        const analysis = analyzeSituation();
+        const p = state.profile;
+        const msgEl = document.getElementById('avatarMessage');
+
+        const baseStatus = analysis.isAlert
+            ? `שים לב: עבור ${escapeHtml(p.childName)} (${escapeHtml(p.watchId)}) זוהה מצב הדורש תשומת לב — ${analysis.reasons.map(escapeHtml).join(', ')}.`
+            : `${escapeHtml(p.childName)} במצב תקין כעת (${escapeHtml(analysis.zoneLabel)}), דופק ${p.heartRate} BPM וסוללה ${p.battery}%.`;
+
+        msgEl.innerHTML = q
+            ? `<strong>לשאלתך "${escapeHtml(q)}":</strong><br>${baseStatus}`
+            : baseStatus;
+    }
+
+    function evaluateAndRender() {
+        readProfileFromInputs();
+        const p = state.profile;
+        const analysis = analyzeSituation();
+
+        const hrEl = document.getElementById('vitalHr');
+        hrEl.innerText = `${p.heartRate} BPM`;
+        hrEl.className = 'vital-val ' + (analysis.highHr ? 'warn' : 'ok');
+
+        const batEl = document.getElementById('vitalBat');
+        batEl.innerText = `${p.battery}%`;
+        batEl.className = 'vital-val ' + (analysis.lowBat ? 'warn' : 'ok');
+
+        const zoneEl = document.getElementById('vitalZone');
+        zoneEl.innerText = analysis.zoneLabel;
+        zoneEl.className = 'vital-val ' + (analysis.isAlert ? 'warn' : 'ok');
+
+        const statusBadge = document.getElementById('safetyStatusBadge');
+        const orb = document.getElementById('avatarOrb');
+        const avatarTitle = document.getElementById('avatarTitle');
+
+        if (analysis.isAlert) {
+            statusBadge.innerText = '🚨 התראה פעילה!';
+            statusBadge.className = 'badge badge-alert';
+            orb.innerText = '🚨';
+            avatarTitle.innerText = 'אווטאר התראה והגנה (מצב דורש בדיקה)';
+
+            const sig = `${p.childName}|${analysis.reasons.join(';')}`;
+            if (sig !== lastAlertSignature) {
+                lastAlertSignature = sig;
+                const alertText = `התראת "איפה הילד" עבור ${p.childName}: ${analysis.reasons.join(' | ')} (${p.locName})`;
+                state.incidents.unshift({
+                    code: 'ALT-' + String(Date.now()).slice(-6),
+                    date: new Date().toLocaleString('he-IL'),
+                    childName: p.childName,
+                    watchId: p.watchId,
+                    phoneRef: p.phoneRef,
+                    connState: p.connState,
+                    heartRate: p.heartRate,
+                    battery: p.battery,
+                    locName: p.locName,
+                    zoneLabel: analysis.zoneLabel,
+                    summary: alertText
+                });
+                pushHouseholdAlert(alertText);
+                persistState();
+                renderIncidents();
+                showToast(alertText, true);
+            }
+        } else {
+            lastAlertSignature = '';
+            statusBadge.innerText = '🛡️ סטטוס: תקין';
+            statusBadge.className = 'badge';
+            orb.innerText = '✨';
+            avatarTitle.innerText = 'אווטאר ההגנה והמעקב (תקין)';
+        }
+
+        askAvatar();
+        drawMap();
+        renderZones();
+    }
+
+    function drawMap() {
+        const canvas = document.getElementById('zoneMapCanvas');
+        const ctx = canvas.getContext('2d');
+        const w = canvas.width;
+        const h = canvas.height;
+
+        ctx.clearRect(0, 0, w, h);
+
+        ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+        ctx.lineWidth = 1;
+        for (let gx = 0; gx <= w; gx += 60) {
+            ctx.beginPath();
+            ctx.moveTo(gx, 0);
+            ctx.lineTo(gx, h);
+            ctx.stroke();
+        }
+        for (let gy = 0; gy <= h; gy += 60) {
+            ctx.beginPath();
+            ctx.moveTo(0, gy);
+            ctx.lineTo(w, gy);
+            ctx.stroke();
+        }
+
+        state.zones.forEach(z => {
+            const cx = (z.x / 100) * w;
+            const cy = (z.y / 100) * h;
+            const r = Math.max(16, Math.min(85, ((z.radius || 150) / 10) * (Math.min(w, h) / 100)));
+            const isForbidden = z.kind === 'forbidden';
+
+            ctx.beginPath();
+            ctx.arc(cx, cy, r, 0, Math.PI * 2);
+            ctx.fillStyle = isForbidden ? 'rgba(239, 68, 68, 0.18)' : 'rgba(16, 185, 129, 0.16)';
+            ctx.fill();
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = isForbidden ? '#ef4444' : '#10b981';
+            ctx.stroke();
+
+            ctx.fillStyle = '#f3f4f6';
+            ctx.font = 'bold 12px Segoe UI, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(`${isForbidden ? '⛔' : '✅'} ${z.name}`, cx, cy - r - 6);
+        });
+
+        const childX = ((state.profile.x ?? 50) / 100) * w;
+        const childY = ((state.profile.y ?? 50) / 100) * h;
+
+        ctx.beginPath();
+        ctx.arc(childX, childY, 10, 0, Math.PI * 2);
+        ctx.fillStyle = '#ff80ab';
+        ctx.fill();
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#ffffff';
+        ctx.stroke();
+
+        ctx.fillStyle = '#ff80ab';
+        ctx.font = 'bold 12px Segoe UI, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(`📍 ${state.profile.childName || 'ילד'}`, childX, childY + 22);
+    }
+
+    function renderZones() {
+        const container = document.getElementById('zonesListContainer');
+        if (!state.zones.length) {
+            container.innerHTML = '<div style="font-size:12px; color:var(--text-muted); text-align:center; padding:8px;">לא הוגדרו אזורים עדיין.</div>';
+            return;
+        }
+
+        container.innerHTML = '';
+        state.zones.forEach((z, idx) => {
+            const isForbidden = z.kind === 'forbidden';
+            container.innerHTML += `
+                <div class="row-card">
+                    <div>
+                        <strong>${escapeHtml(z.name)}</strong>
+                        <span class="pill ${isForbidden ? 'pill-forbidden' : 'pill-allowed'}">${isForbidden ? 'אזור אסור' : 'אזור מותר'}</span>
+                        <div style="font-size:11px; color:var(--text-muted); margin-top:3px;">
+                            סביבה: ${escapeHtml(z.scope || 'כללי')} | מיקום: (${Math.round(z.x)}, ${Math.round(z.y)}) | רדיוס: ${escapeHtml(z.radius)} מ'
+                        </div>
+                    </div>
+                    <button type="button" class="btn-del" onclick="deleteZone(${idx})">מחק</button>
+                </div>
+            `;
+        });
+    }
+
+    function renderIncidents() {
+        const container = document.getElementById('incidentsListContainer');
+        if (!state.incidents.length) {
+            container.innerHTML = '<div style="font-size:12px; color:var(--text-muted); text-align:center; padding:8px;">אין חריגות או דוחות/תביעות מתועדים עדיין.</div>';
+            return;
+        }
+
+        container.innerHTML = '';
+        state.incidents.slice(0, 25).forEach(rec => {
+            container.innerHTML += `
+                <div class="row-card">
+                    <div>
+                        <strong style="color:var(--gold);">${escapeHtml(rec.code)}</strong> — <strong>${escapeHtml(rec.childName)}</strong> (${escapeHtml(rec.date)})
+                        <div style="font-size:12px; color:var(--text-main); margin-top:2px;">${escapeHtml(rec.summary)}</div>
+                        <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">
+                            מיקום: ${escapeHtml(rec.locName)} | דופק: ${escapeHtml(rec.heartRate)} BPM | סוללה: ${escapeHtml(rec.battery)}% | שעון: ${escapeHtml(rec.watchId)} (${escapeHtml(rec.connState || 'מחובר')})
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    window.onload = function() {
+        const houseCode = getActiveHouse();
+        document.getElementById('houseBadge').innerText = `🟢 בית: ${escapeHtml(houseCode)}`;
+        loadStateFromStorage();
+        populateMembersDropdown();
+        syncInputsFromProfile();
+        evaluateAndRender();
+        renderIncidents();
+    };
+
+    window.addEventListener('vidass:data-updated', function(e) {
+        if (!e || !e.detail || !e.detail.module || e.detail.module === 'where_is_child' || e.detail.module === 'members' || e.detail.module === 'all') {
+            loadStateFromStorage();
+            populateMembersDropdown();
+            syncInputsFromProfile();
+            evaluateAndRender();
+            renderIncidents();
+        }
+    });
+
+    window.addEventListener('storage', function(event) {
+        const houseCode = getActiveHouse();
+        if (event.key === 'vidass_where_is_child_' + houseCode || event.key === 'vidass_members_' + houseCode) {
+            loadStateFromStorage();
+            populateMembersDropdown();
+            syncInputsFromProfile();
+            evaluateAndRender();
+            renderIncidents();
+        }
+    });
+</script>
+
+</body>
+</html>

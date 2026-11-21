@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIDASS - מארגן טיולים וחופשות</title>
+    <script src="storage-sync.js"></script>
+    <style>
+        :root {
+            --primary: #d84370;
+            --primary-dark: #ad1457;
+            --accent: #ff80ab;
+            --bg-gradient: linear-gradient(135deg, #0d0d0f 0%, #1a1622 100%);
+            --card-bg: rgba(26, 23, 33, 0.96);
+            --card-border: rgba(216, 67, 112, 0.4);
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --success: #10b981;
+            --danger: #ef4444;
+            --gold: #f59e0b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 780px;
+            background: var(--card-bg);
+            backdrop-filter: blur(14px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.8);
+            padding: 28px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 16px;
+            margin-bottom: 20px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .header h1 { font-size: 20px; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+        .house-badge { background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: var(--success); padding: 5px 12px; border-radius: 10px; font-size: 11px; font-weight: bold; }
+
+        .summary-bar {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+            background: rgba(216, 67, 112, 0.08);
+            border: 1px solid rgba(216, 67, 112, 0.25);
+            border-radius: 12px;
+            padding: 10px 14px;
+            margin-bottom: 16px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        .summary-bar strong { color: var(--accent); }
+
+        .form-card {
+            background: rgba(255, 255, 255, 0.025);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 18px;
+        }
+
+        .form-top-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .form-label-title {
+            font-size: 13px;
+            font-weight: bold;
+            color: var(--gold);
+        }
+
+        .cancel-edit-btn {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-main);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            padding: 5px 11px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            display: none;
+        }
+
+        .input-section {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr 1.5fr auto;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 720px) {
+            .input-section { grid-template-columns: 1fr; }
+        }
+
+        .input-section input, .notes-input, .filter-input {
+            padding: 12px 14px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            color: white;
+            font-size: 13px;
+            outline: none;
+            text-align: right;
+        }
+
+        .notes-input {
+            width: 100%;
+            min-height: 62px;
+            resize: vertical;
+            margin-bottom: 10px;
+        }
+
+        .input-section input:focus, .notes-input:focus, .filter-input:focus {
+            border-color: var(--primary);
+        }
+
+        .voice-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            background: rgba(216, 67, 112, 0.08);
+            border: 1px solid rgba(216, 67, 112, 0.25);
+            border-radius: 12px;
+            padding: 10px 12px;
+            margin-bottom: 12px;
+        }
+
+        .voice-btn {
+            background: rgba(216, 67, 112, 0.2);
+            color: var(--accent);
+            border: 1px solid rgba(216, 67, 112, 0.45);
+            padding: 7px 13px;
+            border-radius: 9px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .voice-btn.recording {
+            background: rgba(239, 68, 68, 0.25);
+            color: #fca5a5;
+            border-color: rgba(239, 68, 68, 0.6);
+        }
+
+        .voice-status {
+            font-size: 11px;
+            color: var(--text-muted);
+            flex: 1;
+        }
+
+        .add-btn {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            padding: 0 20px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 13px;
+            cursor: pointer;
+            transition: 0.2s;
+            min-height: 42px;
+        }
+
+        .add-btn:hover { opacity: 0.9; }
+
+        .filter-input {
+            width: 100%;
+            padding: 9px 12px;
+            font-size: 12px;
+            margin-bottom: 14px;
+        }
+
+        .travel-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 52vh;
+            overflow-y: auto;
+            padding-left: 4px;
+        }
+
+        .travel-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 14px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .travel-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex: 1;
+            min-width: 220px;
+        }
+
+        .travel-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--text-main);
+        }
+
+        .travel-notes {
+            font-size: 12px;
+            color: var(--accent);
+            white-space: pre-line;
+            line-height: 1.45;
+            margin-top: 2px;
+        }
+
+        .audio-block {
+            margin-top: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .audio-block audio {
+            height: 32px;
+            max-width: 260px;
+        }
+
+        .travel-meta {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .travel-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .map-link-btn {
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: bold;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+
+        .map-link-btn:hover { background: rgba(59, 130, 246, 0.3); }
+
+        .edit-btn {
+            background: rgba(245, 158, 11, 0.14);
+            color: var(--gold);
+            border: 1px solid rgba(245, 158, 11, 0.35);
+            padding: 6px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .delete-btn {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 6px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .delete-btn:hover { background: rgba(239, 68, 68, 0.2); }
+
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--success);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 13px;
+            transition: transform 0.3s;
+            z-index: 1000;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="header">
+        <h1>🚗 מארגן טיולים וחופשות</h1>
+        <div class="house-badge" id="houseBadgeDisplay">🟢 בית: טוען...</div>
+    </div>
+
+    <div class="summary-bar" id="travelSummary">
+        <span>טיולים מתוכננים: <strong>0</strong></span>
+        <span>הקלטות שמע: <strong>0</strong></span>
+        <span>עם קישור מפה: <strong>0</strong></span>
+    </div>
+
+    <div class="form-card">
+        <div class="form-top-row">
+            <span class="form-label-title" id="travelFormTitle">➕ הוספת טיול או חופשה</span>
+            <button type="button" class="cancel-edit-btn" id="cancelTravelEditBtn" onclick="cancelTravelEdit()">ביטול עריכה</button>
+        </div>
+
+        <div class="input-section">
+            <input type="text" id="destinationInput" placeholder="יעד או שם הטיול (לדוגמה: טיול שבת)..." onkeypress="if(event.key==='Enter') addTravelItem()">
+            <input type="text" id="dateInput" placeholder="תאריך (לדוגמה: 15.06.2026)..." onkeypress="if(event.key==='Enter') addTravelItem()">
+            <input type="text" id="mapLinkInput" placeholder="קישור למפה (אופציונלי)..." onkeypress="if(event.key==='Enter') addTravelItem()">
+            <button type="button" class="add-btn" id="saveTravelBtn" onclick="addTravelItem()">הוסף טיול ➕</button>
+        </div>
+
+        <textarea class="notes-input" id="notesInput" placeholder="הערות, ציוד או מסלול..."></textarea>
+
+        <div class="voice-bar">
+            <button type="button" class="voice-btn" id="micRecordBtn" onclick="toggleAudioRecording()">🎙️ הקלטת שמע</button>
+            <button type="button" class="voice-btn" id="clearDraftAudioBtn" style="display:none;" onclick="clearDraftAudio()">נקה הקלטה</button>
+            <span class="voice-status" id="voiceStatusText">אפשר להקליט הודעת שמע לטיול ולהאזין לה ישירות מהרשימה.</span>
+            <audio id="draftAudioPreview" controls style="display:none; height:30px;"></audio>
+        </div>
+    </div>
+
+    <input type="text" class="filter-input" id="searchTravelInput" placeholder="חיפוש לפי יעד, תאריך, הערות או מוסיף..." oninput="loadTravels()">
+
+    <div class="travel-list" id="travelListContainer"></div>
+</div>
+
+<div class="toast" id="toastMsg">הפעולה בוצעה בהצלחה!</div>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    let houseCode = urlParams.get('house') ||
+                    (typeof getCurrentHouseCode === 'function' ? getCurrentHouseCode() : null) ||
+                    localStorage.getItem('vidass_current_house_code') ||
+                    localStorage.getItem('vidass_current_house') ||
+                    'EILAT-33';
+
+    houseCode = String(houseCode).trim();
+    localStorage.setItem('vidass_current_house_code', houseCode);
+    localStorage.setItem('vidass_current_house', houseCode);
+
+    let editingTravelIndex = null;
+    let draftAudioDataUrl = '';
+    let mediaRecorder = null;
+    let activeStream = null;
+    let recordedChunks = [];
+    let isRecording = false;
+    let toastTimer = null;
+
+    function escapeHtml(str) {
+        return String(str || '')
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function sanitizeHttpUrl(rawLink) {
+        const trimmed = String(rawLink || '').trim();
+        if (!trimmed) return '';
+        let candidate = trimmed;
+        if (!/^https?:\/\//i.test(candidate)) {
+            if (/^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+/.test(candidate)) {
+                candidate = 'https://' + candidate;
+            } else {
+                return '';
+            }
+        }
+        try {
+            const parsed = new URL(candidate);
+            if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+                return parsed.toString();
+            }
+            return '';
+        } catch (_) {
+            return '';
+        }
+    }
+
+    function showToast(msg, isError = false) {
+        const toast = document.getElementById('toastMsg');
+        toast.innerText = msg;
+        toast.style.background = isError ? 'var(--danger)' : 'var(--success)';
+        toast.classList.add('show');
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    function stopActiveStream() {
+        if (activeStream) {
+            activeStream.getTracks().forEach(track => track.stop());
+            activeStream = null;
+        }
+    }
+
+    function setDraftAudio(dataUrl) {
+        draftAudioDataUrl = dataUrl || '';
+        const preview = document.getElementById('draftAudioPreview');
+        const clearBtn = document.getElementById('clearDraftAudioBtn');
+        const statusEl = document.getElementById('voiceStatusText');
+
+        if (draftAudioDataUrl) {
+            preview.src = draftAudioDataUrl;
+            preview.style.display = 'inline-block';
+            clearBtn.style.display = 'inline-block';
+            statusEl.innerText = 'הקלטת שמע מוכנה לשמירה עם הטיול.';
+        } else {
+            preview.removeAttribute('src');
+            preview.style.display = 'none';
+            clearBtn.style.display = 'none';
+            statusEl.innerText = 'אפשר להקליט הודעת שמע לטיול ולהאזין לה ישירות מהרשימה.';
+        }
+    }
+
+    function clearDraftAudio() {
+        setDraftAudio('');
+    }
+
+    async function toggleAudioRecording() {
+        const btn = document.getElementById('micRecordBtn');
+        const statusEl = document.getElementById('voiceStatusText');
+
+        if (isRecording && mediaRecorder) {
+            try {
+                if (mediaRecorder.state !== 'inactive') {
+                    mediaRecorder.stop();
+                }
+            } catch (_) {
+                stopActiveStream();
+            }
+            isRecording = false;
+            btn.classList.remove('recording');
+            btn.innerText = '🎙️ הקלטת שמע';
+            return;
+        }
+
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || typeof MediaRecorder === 'undefined') {
+            showToast('הקלטת שמע אינה נתמכת בדפדפן זה.', true);
+            return;
+        }
+
+        try {
+            activeStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            recordedChunks = [];
+            mediaRecorder = new MediaRecorder(activeStream);
+
+            mediaRecorder.ondataavailable = function(e) {
+                if (e.data && e.data.size > 0) {
+                    recordedChunks.push(e.data);
+                }
+            };
+
+            mediaRecorder.onstop = function() {
+                const mimeType = (mediaRecorder && mediaRecorder.mimeType) || 'audio/webm';
+                stopActiveStream();
+                mediaRecorder = null;
+                const blob = new Blob(recordedChunks, { type: mimeType });
+                recordedChunks = [];
+                if (blob.size === 0) {
+                    statusEl.innerText = 'לא נקלט שמע.';
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onloadend = function() {
+                    setDraftAudio(String(reader.result || ''));
+                    showToast('ההקלטה נשמרה לטיוטה!');
+                };
+                reader.readAsDataURL(blob);
+            };
+
+            mediaRecorder.start();
+            isRecording = true;
+            btn.classList.add('recording');
+            btn.innerText = '⏹️ עצור הקלטה';
+            statusEl.innerText = 'מקליט שמע... לחץ שוב לעצירה.';
+        } catch (_) {
+            stopActiveStream();
+            isRecording = false;
+            btn.classList.remove('recording');
+            btn.innerText = '🎙️ הקלטת שמע';
+            showToast('לא ניתן לגשת למיקרופון.', true);
+            statusEl.innerText = 'הגישה למיקרופון נדחתה או אינה זמינה.';
+        }
+    }
+
+    function setTravelEditUI(isEditing) {
+        document.getElementById('travelFormTitle').innerText = isEditing
+            ? '✏️ עריכת טיול קיים'
+            : '➕ הוספת טיול או חופשה';
+        document.getElementById('saveTravelBtn').innerText = isEditing
+            ? 'עדכן טיול 💾'
+            : 'הוסף טיול ➕';
+        document.getElementById('cancelTravelEditBtn').style.display = isEditing ? 'inline-block' : 'none';
+    }
+
+    function resetTravelForm() {
+        if (isRecording && mediaRecorder && mediaRecorder.state !== 'inactive') {
+            try { mediaRecorder.stop(); } catch (_) {}
+        }
+        stopActiveStream();
+        isRecording = false;
+        const micBtn = document.getElementById('micRecordBtn');
+        micBtn.classList.remove('recording');
+        micBtn.innerText = '🎙️ הקלטת שמע';
+
+        editingTravelIndex = null;
+        setTravelEditUI(false);
+        document.getElementById('destinationInput').value = '';
+        document.getElementById('dateInput').value = '';
+        document.getElementById('mapLinkInput').value = '';
+        document.getElementById('notesInput').value = '';
+        setDraftAudio('');
+    }
+
+    function startEditTravel(index) {
+        const travels = readTravels();
+        const item = travels[index];
+        if (!item) return;
+
+        editingTravelIndex = index;
+        setTravelEditUI(true);
+        document.getElementById('destinationInput').value = item.destination || '';
+        document.getElementById('dateInput').value = item.date || '';
+        document.getElementById('mapLinkInput').value = item.mapLink || '';
+        document.getElementById('notesInput').value = item.notes || '';
+        setDraftAudio(item.audioData || '');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function cancelTravelEdit() {
+        resetTravelForm();
+        showToast('העריכה בוטלה.');
+    }
+
+    function updateTravelSummary(travels) {
+        const total = travels.length;
+        const audioCount = travels.filter(t => Boolean(t && t.audioData)).length;
+        const mapCount = travels.filter(t => Boolean(sanitizeHttpUrl(t && t.mapLink))).length;
+        document.getElementById('travelSummary').innerHTML = `
+            <span>טיולים מתוכננים: <strong>${total}</strong></span>
+            <span>הקלטות שמע: <strong>${audioCount}</strong></span>
+            <span>עם קישור מפה: <strong>${mapCount}</strong></span>
+        `;
+    }
+
+    window.onload = function() {
+        document.getElementById('houseBadgeDisplay').innerText = `🟢 בית: ${escapeHtml(houseCode)}`;
+        loadTravels();
+    };
+
+    window.addEventListener('beforeunload', function() {
+        stopActiveStream();
+    });
+
+    function readTravels() {
+        if (typeof getSharedData === 'function') {
+            const d = getSharedData('travel');
+            return Array.isArray(d) ? d : [];
+        }
+        try {
+            const raw = localStorage.getItem('vidass_travel_' + houseCode);
+            const parsed = raw ? JSON.parse(raw) : [];
+            return Array.isArray(parsed) ? parsed : [];
+        } catch (_) {
+            return [];
+        }
+    }
+
+    function loadTravels() {
+        const travels = readTravels();
+        updateTravelSummary(travels);
+
+        const container = document.getElementById('travelListContainer');
+        const searchTerm = (document.getElementById('searchTravelInput').value || '').trim().toLowerCase();
+
+        const matchedIndices = [];
+        for (let i = travels.length - 1; i >= 0; i--) {
+            const item = travels[i];
+            const textMatch = !searchTerm ||
+                String(item.destination || '').toLowerCase().includes(searchTerm) ||
+                String(item.date || '').toLowerCase().includes(searchTerm) ||
+                String(item.notes || '').toLowerCase().includes(searchTerm) ||
+                String(item.addedBy || '').toLowerCase().includes(searchTerm);
+            if (textMatch) {
+                matchedIndices.push(i);
+            }
+        }
+
+        if (matchedIndices.length === 0) {
+            container.innerHTML = `<div class="empty-state">${travels.length === 0 ? 'אין טיולים או חופשות מתוכננים כרגע. אפשר להוסיף יעד חדש למעלה!' : 'לא נמצאו טיולים התואמים לחיפוש.'}</div>`;
+            return;
+        }
+
+        container.innerHTML = '';
+        matchedIndices.forEach((actualIndex) => {
+            const item = travels[actualIndex];
+            const safeMapUrl = sanitizeHttpUrl(item.mapLink);
+            const mapButtonHtml = safeMapUrl
+                ? `<a href="${escapeHtml(safeMapUrl)}" target="_blank" rel="noopener noreferrer" class="map-link-btn">🗺️ פתח מפה</a>`
+                : '';
+
+            const notesHtml = item.notes
+                ? `<div class="travel-notes">${escapeHtml(item.notes)}</div>`
+                : '';
+
+            const audioHtml = item.audioData
+                ? `<div class="audio-block"><span class="travel-meta">🎙️ הקלטת שמע:</span><audio controls src="${escapeHtml(item.audioData)}"></audio></div>`
+                : '';
+
+            container.innerHTML += `
+                <div class="travel-item">
+                    <div class="travel-info">
+                        <div class="travel-title">📍 ${escapeHtml(item.destination)}</div>
+                        <div class="travel-meta">תאריך: <strong>${escapeHtml(item.date || 'לא צוין')}</strong> | נוסף ע"י: ${escapeHtml(item.addedBy || 'דייר')}</div>
+                        ${notesHtml}
+                        ${audioHtml}
+                    </div>
+                    <div class="travel-actions">
+                        ${mapButtonHtml}
+                        <button type="button" class="edit-btn" onclick="startEditTravel(${actualIndex})">ערוך</button>
+                        <button type="button" class="delete-btn" onclick="deleteTravel(${actualIndex})">מחק 🗑️</button>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function addTravelItem() {
+        const destInput = document.getElementById('destinationInput');
+        const dateInput = document.getElementById('dateInput');
+        const mapInput = document.getElementById('mapLinkInput');
+        const notesInput = document.getElementById('notesInput');
+
+        const destination = destInput.value.trim();
+        const date = dateInput.value.trim() || 'קרוב';
+        const mapLink = mapInput.value.trim();
+        const notes = notesInput.value.trim();
+
+        if (!destination && !draftAudioDataUrl && !notes) {
+            showToast('נא להזין יעד, הערה או להקליט שמע.', true);
+            return;
+        }
+
+        const travels = readTravels();
+        const currentUser = (typeof getCurrentUser === 'function' ? getCurrentUser() : null) ||
+                            localStorage.getItem('vidass_current_user') ||
+                            'דייר';
+
+        const isEditing = editingTravelIndex !== null && travels[editingTravelIndex];
+        const entry = {
+            destination: destination || 'הערת טיול קולית',
+            date,
+            mapLink,
+            notes,
+            audioData: draftAudioDataUrl || '',
+            addedBy: isEditing ? (travels[editingTravelIndex].addedBy || currentUser) : currentUser
+        };
+
+        if (isEditing) {
+            travels[editingTravelIndex] = entry;
+        } else {
+            travels.push(entry);
+        }
+
+        saveAndRefresh(travels);
+        resetTravelForm();
+        destInput.focus();
+        showToast(isEditing ? 'הטיול עודכן בהצלחה!' : 'הטיול נשמר בהצלחה!');
+    }
+
+    function deleteTravel(index) {
+        const travels = readTravels();
+        if (travels[index] !== undefined) {
+            travels.splice(index, 1);
+            if (editingTravelIndex === index) {
+                resetTravelForm();
+            }
+            saveAndRefresh(travels);
+            showToast('הטיול הוסר.');
+        }
+    }
+
+    function saveAndRefresh(travelsArray) {
+        if (typeof saveSharedData === 'function') {
+            saveSharedData('travel', travelsArray);
+        } else {
+            localStorage.setItem('vidass_travel_' + houseCode, JSON.stringify(travelsArray));
+        }
+        loadTravels();
+    }
+
+    window.addEventListener('vidass:data-updated', function(e) {
+        if (!e || !e.detail || !e.detail.module || e.detail.module === 'travel' || e.detail.module === 'all') {
+            loadTravels();
+        }
+    });
+
+    window.addEventListener('storage', function(event) {
+        if (event.key === 'vidass_travel_' + houseCode) {
+            loadTravels();
+        }
+    });
+</script>
+
+</body>
+</html>

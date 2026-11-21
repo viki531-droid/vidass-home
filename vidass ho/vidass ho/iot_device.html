@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIDASS Micro-App - שליטה ובקרת מכשירים חכמים (IoT)</title>
+    <script src="storage-sync.js"></script>
+    <style>
+        :root {
+            --primary: #d84370;
+            --primary-dark: #ad1457;
+            --accent: #ff80ab;
+            --bg-gradient: linear-gradient(135deg, #0d0d0f 0%, #1a1622 100%);
+            --card-bg: rgba(26, 23, 33, 0.96);
+            --card-border: rgba(216, 67, 112, 0.4);
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --success: #10b981;
+            --danger: #ef4444;
+            --gold: #f59e0b;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: var(--bg-gradient); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .app-container { width: 100%; max-width: 650px; background: var(--card-bg); backdrop-filter: blur(14px); border: 1px solid var(--card-border); border-radius: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.8); padding: 24px; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 16px; gap: 10px; flex-wrap: wrap; }
+        .header h1 { font-size: 20px; color: var(--accent); }
+        .badge { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--success); padding: 4px 10px; border-radius: 8px; font-size: 11px; }
+
+        .setup-box { background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 14px; padding: 14px; margin-bottom: 16px; }
+        .setup-box h3 { color: var(--gold); font-size: 14px; margin-bottom: 8px; }
+
+        .input-group { margin-bottom: 10px; text-align: right; }
+        .input-group label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 3px; }
+        .input-group input, .input-group select { width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; color: white; font-size: 13px; outline: none; text-align: right; }
+        .input-group option { background: #1a1622; color: white; }
+
+        .row-inputs { display: flex; gap: 10px; flex-wrap: wrap; }
+        .row-inputs .input-group { flex: 1; min-width: 160px; }
+
+        .btn { width: 100%; padding: 11px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 5px; transition: 0.2s; }
+        .btn:hover { opacity: 0.9; }
+        .btn-connect { background: linear-gradient(135deg, #f59e0b, #d97706); }
+
+        .device-row { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; gap: 10px; flex-wrap: wrap; }
+        .device-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+
+        .btn-action { padding: 6px 10px; border-radius: 8px; font-size: 11px; font-weight: bold; cursor: pointer; }
+        .btn-on { background: rgba(16, 185, 129, 0.2); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.4); }
+        .btn-off { background: rgba(239, 68, 68, 0.2); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.4); }
+        .btn-edit { background: rgba(245, 158, 11, 0.15); color: var(--gold); border: 1px solid rgba(245, 158, 11, 0.35); }
+        .btn-del { background: rgba(255,255,255,0.05); color: var(--text-muted); border: 1px solid rgba(255,255,255,0.1); }
+
+        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: white; padding: 10px 20px; border-radius: 10px; font-size: 13px; transition: transform 0.3s; z-index: 1000; }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="header">
+        <div>
+            <h1>🔌 בקרת מכשירים חכמים (IoT)</h1>
+            <p style="font-size: 11px; color: var(--text-muted);">הגדרת קישורים, כתובות IP ושליטה מרחוק</p>
+        </div>
+        <div class="badge" id="houseBadge">🟢 מחובר לבית המשותף</div>
+    </div>
+
+    <div class="setup-box">
+        <h3>🔗 הוספה והתחברות למכשיר חכם חדש</h3>
+        <div class="row-inputs">
+            <div class="input-group">
+                <label>שם המכשיר</label>
+                <input type="text" id="devName" placeholder="לדוגמה: דוד חשמל, מזגן סלון...">
+            </div>
+            <div class="input-group">
+                <label>סוג פרוטוקול / מערכת</label>
+                <select id="devType">
+                    <option value="Tuya / Smart Life API">Tuya / Smart Life API</option>
+                    <option value="כתובת IP מקומית (Local IP)">כתובת IP מקומית (Local IP)</option>
+                    <option value="מתג חכם רשתי (Smart Relay)">מתג חכם רשתי (Smart Relay)</option>
+                </select>
+            </div>
+        </div>
+        <div class="input-group">
+            <label>קוד קישור / כתובת IP / מזהה API (Token / IP)</label>
+            <input type="text" id="devToken" placeholder="הדבק כאן את כתובת ה-IP או מזהה הקישור (לדוגמה: 192.168.1.50 או API_KEY)..." onkeypress="if(event.key==='Enter') addAndConnectDevice()">
+        </div>
+        <button type="button" class="btn btn-connect" onclick="addAndConnectDevice()">חבר והגדר מכשיר חדש 🔗</button>
+    </div>
+
+    <h3 style="font-size: 14px; color: var(--accent); margin-bottom: 8px; text-align: right;">מכשירים חכמים מחוברים בבית:</h3>
+    <div style="max-height: 240px; overflow-y: auto;" id="devicesList"></div>
+</div>
+
+<div class="toast" id="toastMsg">הפעולה בוצעה בהצלחה!</div>
+
+<script>
+    function escapeHtml(str) {
+        return String(str || '')
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function getActiveHouse() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = (
+            urlParams.get('house') ||
+            (typeof getCurrentHouseCode === 'function' ? getCurrentHouseCode() : null) ||
+            localStorage.getItem('vidass_current_house_code') ||
+            localStorage.getItem('vidass_current_house') ||
+            'EILAT-33'
+        ).trim();
+        localStorage.setItem('vidass_current_house_code', code);
+        localStorage.setItem('vidass_current_house', code);
+        return code;
+    }
+
+    function getActiveUser() {
+        return (typeof getCurrentUser === 'function' ? getCurrentUser() : null) ||
+               localStorage.getItem('vidass_current_user') ||
+               'דייר';
+    }
+
+    function readModuleData(mod) {
+        const houseCode = getActiveHouse();
+        if (typeof getSharedData === 'function') {
+            const d = getSharedData(mod);
+            return Array.isArray(d) ? d : [];
+        }
+        try {
+            const raw = localStorage.getItem(`vidass_${mod}_${houseCode}`);
+            const parsed = raw ? JSON.parse(raw) : [];
+            return Array.isArray(parsed) ? parsed : [];
+        } catch (_) {
+            return [];
+        }
+    }
+
+    function writeModuleData(mod, arr) {
+        const houseCode = getActiveHouse();
+        if (typeof saveSharedData === 'function') {
+            saveSharedData(mod, arr);
+        } else {
+            localStorage.setItem(`vidass_${mod}_${houseCode}`, JSON.stringify(arr));
+        }
+    }
+
+    window.onload = function() {
+        const houseCode = getActiveHouse();
+        document.getElementById('houseBadge').innerText = `🟢 בית: ${escapeHtml(houseCode)}`;
+        loadDevices();
+    };
+
+    function loadDevices() {
+        const data = readModuleData('iot_devices');
+        const container = document.getElementById('devicesList');
+
+        if (data.length === 0) {
+            container.innerHTML = '<p style="text-align:center; font-size:12px; color:var(--text-muted);">אין מכשירים חכמים מוגדרים במערכת כרגע.</p>';
+            return;
+        }
+
+        container.innerHTML = '';
+        data.slice().reverse().forEach((item, index) => {
+            const actualIndex = data.length - 1 - index;
+            const statusText = item.status || 'כבוי';
+            const statusColor = statusText === 'מופעל' ? 'var(--success)' : 'var(--text-muted)';
+
+            container.innerHTML += `
+                <div class="device-row">
+                    <div style="text-align: right;">
+                        <strong style="color:var(--accent); font-size:14px;">⚡ ${escapeHtml(item.name)}</strong>
+                        <div style="font-size:11px; color:var(--text-muted);">קישור: ${escapeHtml(item.token)} (${escapeHtml(item.type)})</div>
+                        <div style="font-size:11px; margin-top:2px;">סטטוס: <span style="color:${statusColor}; font-weight:bold;">${escapeHtml(statusText)}</span> ${item.lastAction ? '| ' + escapeHtml(item.lastAction) : ''}</div>
+                    </div>
+                    <div class="device-actions">
+                        <button type="button" class="btn-action btn-on" onclick="toggleDevice(${actualIndex}, 'מופעל')">הפעל 🟢</button>
+                        <button type="button" class="btn-action btn-off" onclick="toggleDevice(${actualIndex}, 'כבוי')">כבה 🔴</button>
+                        <button type="button" class="btn-action btn-edit" onclick="editDevice(${actualIndex})">ערוך</button>
+                        <button type="button" class="btn-action btn-del" onclick="removeDevice(${actualIndex})">🗑️</button>
+                    </div>
+                </div>`;
+        });
+    }
+
+    function addAndConnectDevice() {
+        const name = document.getElementById('devName').value.trim();
+        const type = document.getElementById('devType').value;
+        const token = document.getElementById('devToken').value.trim();
+
+        if (!name || !token) {
+            showToast("נא למלא את שם המכשיר ואת קוד הקישור / כתובת ה-IP", true);
+            return;
+        }
+
+        const data = readModuleData('iot_devices');
+        data.push({
+            name,
+            type,
+            token,
+            status: "כבוי",
+            addedBy: getActiveUser(),
+            date: new Date().toLocaleDateString('he-IL')
+        });
+        writeModuleData('iot_devices', data);
+
+        document.getElementById('devName').value = '';
+        document.getElementById('devToken').value = '';
+
+        loadDevices();
+        showToast(`המכשיר "${name}" הוצמד וחובר בהצלחה לבית! 🔌`);
+    }
+
+    function editDevice(index) {
+        const data = readModuleData('iot_devices');
+        const item = data[index];
+        if (!item) return;
+
+        const newName = prompt("עדכן שם מכשיר:", item.name || "");
+        if (newName === null) return;
+        const cleanName = newName.trim();
+        if (!cleanName) return;
+
+        const newToken = prompt("עדכן כתובת IP או מזהה קישור:", item.token || "");
+        if (newToken === null) return;
+        const cleanToken = newToken.trim();
+        if (!cleanToken) return;
+
+        data[index].name = cleanName;
+        data[index].token = cleanToken;
+        writeModuleData('iot_devices', data);
+        loadDevices();
+        showToast(`הגדרות המכשיר "${cleanName}" עודכנו.`);
+    }
+
+    function toggleDevice(index, newStatus) {
+        const data = readModuleData('iot_devices');
+        if (!data[index]) return;
+
+        const nowTime = new Date().toLocaleTimeString('he-IL');
+        data[index].status = newStatus;
+        data[index].lastAction = nowTime;
+        writeModuleData('iot_devices', data);
+        loadDevices();
+        showToast(`הפקודה נשלחה בהצלחה למכשיר "${data[index].name}": סטטוס ${newStatus}`);
+
+        const alerts = readModuleData('alerts');
+        alerts.push({
+            text: `מכשיר חכם (${data[index].name}): שונה סטטוס ל-${newStatus}`,
+            addedBy: getActiveUser(),
+            time: nowTime,
+            date: new Date().toLocaleDateString('he-IL')
+        });
+        writeModuleData('alerts', alerts);
+    }
+
+    function removeDevice(index) {
+        const data = readModuleData('iot_devices');
+        data.splice(index, 1);
+        writeModuleData('iot_devices', data);
+        loadDevices();
+        showToast("המכשיר הוסר מרשימת הבקרה.");
+    }
+
+    function showToast(msg, isError = false) {
+        const toast = document.getElementById('toastMsg');
+        toast.innerText = msg;
+        toast.style.background = isError ? 'var(--danger)' : 'var(--success)';
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    window.addEventListener('vidass:data-updated', function(e) {
+        if (!e || !e.detail || !e.detail.module || e.detail.module === 'iot_devices' || e.detail.module === 'all') {
+            loadDevices();
+        }
+    });
+
+    window.addEventListener('storage', function(event) {
+        const houseCode = getActiveHouse();
+        if (event.key === 'vidass_iot_devices_' + houseCode) {
+            loadDevices();
+        }
+    });
+</script>
+
+</body>
+</html>
