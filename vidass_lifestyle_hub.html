@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIDASS - יומן, ימי הולדת, אירועים, קואוצ'ר ועוזר חכם</title>
+    <script src="storage-sync.js"></script>
+    <style>
+        :root {
+            --primary: #d84370;
+            --primary-dark: #ad1457;
+            --accent: #ff80ab;
+            --bg-gradient: linear-gradient(135deg, #0d0d0f 0%, #1a1622 100%);
+            --card-bg: rgba(26, 23, 33, 0.96);
+            --card-border: rgba(216, 67, 112, 0.4);
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --success: #10b981;
+            --danger: #ef4444;
+            --gold: #f59e0b;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: var(--bg-gradient); color: var(--text-main); min-height: 100vh; padding: 20px; display: flex; justify-content: center; align-items: flex-start; }
+        .shell { width: 100%; max-width: 980px; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.8); padding: 24px; }
+        .top { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 14px; margin-bottom: 18px; }
+        .top h1 { font-size: 20px; color: var(--accent); }
+        .top p { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+        .badges { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+        .badge { background: rgba(16,185,129,0.14); border: 1px solid rgba(16,185,129,0.35); color: var(--success); padding: 5px 11px; border-radius: 9px; font-size: 11px; font-weight: bold; }
+        .badge-user { background: rgba(216,67,112,0.15); border-color: var(--card-border); color: var(--accent); }
+        .badge-sync { background: rgba(245,158,11,0.14); border-color: rgba(245,158,11,0.35); color: var(--gold); }
+        .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+        .tab-btn { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12); color: var(--text-main); padding: 9px 14px; border-radius: 12px; font-size: 13px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .tab-btn.active { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); border-color: var(--accent); color: #fff; }
+        .panel { display: none; }
+        .panel.active { display: block; }
+        .form-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+        .form-row input, .form-row textarea, .form-row select { flex: 1; min-width: 150px; padding: 10px 13px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); border-radius: 11px; color: #fff; font-size: 13px; outline: none; text-align: right; }
+        .form-row select option { background: #1a1622; color: #fff; }
+        .form-row textarea { min-height: 58px; resize: vertical; }
+        .btn { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: #fff; border: none; padding: 10px 18px; border-radius: 11px; font-size: 13px; font-weight: bold; cursor: pointer; }
+        .btn-gold { background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; }
+        .btn-mini { padding: 5px 10px; border-radius: 8px; font-size: 11px; font-weight: bold; cursor: pointer; border: 1px solid rgba(255,255,255,0.16); background: rgba(255,255,255,0.06); color: var(--text-main); text-decoration: none; display: inline-block; }
+        .btn-red { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.4); color: var(--danger); }
+        .btn-green { background: rgba(16,185,129,0.15); border-color: rgba(16,185,129,0.4); color: var(--success); }
+        .list-box { display: flex; flex-direction: column; gap: 9px; }
+        .item-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 13px; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .item-title { font-size: 14px; font-weight: bold; color: var(--accent); }
+        .item-title.done { text-decoration: line-through; color: var(--text-muted); }
+        .item-sub { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+        .actions { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+        .quote-box { background: rgba(245,158,11,0.09); border: 1px solid rgba(245,158,11,0.3); border-radius: 14px; padding: 14px; margin-bottom: 14px; color: var(--gold); font-size: 13px; text-align: center; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .chat-box { display: flex; flex-direction: column; gap: 8px; max-height: 280px; overflow-y: auto; margin-bottom: 12px; }
+        .msg { padding: 10px 14px; border-radius: 12px; font-size: 13px; max-width: 85%; white-space: pre-line; }
+        .msg.user { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: #fff; align-self: flex-start; }
+        .msg.ai { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); align-self: flex-end; }
+        .quick-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: #fff; padding: 10px 20px; border-radius: 10px; font-size: 13px; font-weight: bold; transition: transform 0.25s; z-index: 2000; }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+    </style>
+</head>
+<body>
+
+<div class="shell">
+    <div class="top">
+        <div>
+            <h1>VIDASS - יומן, ימי הולדת, אירועים, קואוצ'ר ועוזר חכם</h1>
+            <p>כל מודולי הפנאי, התכנון והעוזר החכם מסונכרנים לפי קוד הבית</p>
+        </div>
+        <div class="badges">
+            <span class="badge badge-user" id="userBadge">👤 משתמש</span>
+            <span class="badge" id="houseBadge">🏠 בית</span>
+            <span class="badge badge-sync" id="syncBadge" onclick="forceSyncNow()" style="cursor:pointer;">🔄 סנכרון</span>
+        </div>
+    </div>
+
+    <div class="tabs">
+        <button type="button" class="tab-btn active" data-tab="calendar" onclick="switchTab('calendar')">📅 יומן</button>
+        <button type="button" class="tab-btn" data-tab="birthdays" onclick="switchTab('birthdays')">🎂 ימי הולדת</button>
+        <button type="button" class="tab-btn" data-tab="events" onclick="switchTab('events')">🎪 אירועים</button>
+        <button type="button" class="tab-btn" data-tab="coach" onclick="switchTab('coach')">🧘‍♀️ קואוצ'ר</button>
+        <button type="button" class="tab-btn" data-tab="ai" onclick="switchTab('ai')">🤖 עוזר חכם</button>
+    </div>
+
+    <!-- יומן -->
+    <section class="panel active" id="panel-calendar">
+        <div class="form-row">
+            <textarea id="smsPaste" placeholder="הדבק הודעת תור/SMS לפענוח אוטומטי..."></textarea>
+            <button type="button" class="btn btn-gold" onclick="parseSmsToCalendar()">⚡ פענח ליומן</button>
+        </div>
+        <div class="form-row">
+            <input type="text" id="calTitle" placeholder="כותרת פגישה / תור...">
+            <input type="text" id="calTime" placeholder="תאריך ושעה...">
+            <button type="button" class="btn" onclick="addCalEvent()">+ הוסף ליומן</button>
+        </div>
+        <div class="list-box" id="calList"></div>
+    </section>
+
+    <!-- ימי הולדת -->
+    <section class="panel" id="panel-birthdays">
+        <div class="form-row">
+            <input type="text" id="bdayName" placeholder="שם החוגג/ת...">
+            <input type="text" id="bdayDate" placeholder="תאריך (לדוגמה: 15/02)...">
+            <input type="tel" id="bdayPhone" placeholder="טלפון...">
+            <input type="text" id="bdayParty" placeholder="מיקום / מתנה...">
+            <button type="button" class="btn" onclick="addBirthday()">+ שמור יום הולדת</button>
+        </div>
+        <div class="list-box" id="bdayList"></div>
+    </section>
+
+    <!-- אירועים -->
+    <section class="panel" id="panel-events">
+        <div class="form-row">
+            <input type="text" id="evTitle" placeholder="שם האירוע...">
+            <input type="text" id="evWhen" placeholder="תאריך ושעה...">
+            <input type="text" id="evLoc" placeholder="מיקום...">
+            <input type="number" id="evBudget" min="0" placeholder="תקציב (₪)" style="max-width:130px;">
+            <button type="button" class="btn" onclick="addEventItem()">+ שמור אירוע</button>
+        </div>
+        <div class="form-row">
+            <input type="text" id="evNotes" placeholder="הערות, ספקים או משימות קצרות...">
+        </div>
+        <div class="list-box" id="evList"></div>
+    </section>
+
+    <!-- קואוצ'ר -->
+    <section class="panel" id="panel-coach">
+        <div class="quote-box">
+            <span id="dailyQuote">"הצלחה בניהול הבית והחיים מתחילה בסדר פנימי ובשאיפה מתמדת להתקדם קדימה."</span>
+            <button type="button" class="btn-mini btn-gold" onclick="nextQuote()">משפט השראה</button>
+        </div>
+        <div class="form-row">
+            <input type="text" id="goalInput" placeholder="הוסף מטרה אישית או יעד..." onkeydown="if(event.key==='Enter') addGoalItem()">
+            <button type="button" class="btn" onclick="addGoalItem()">+ הוסף מטרה</button>
+        </div>
+        <div class="list-box" id="goalList"></div>
+    </section>
+
+    <!-- עוזר חכם -->
+    <section class="panel" id="panel-ai">
+        <div class="quick-chips">
+            <button type="button" class="btn-mini" onclick="quickAi('מה יש בקניות')">מה יש בקניות</button>
+            <button type="button" class="btn-mini" onclick="quickAi('התראה לבדוק דואר')">התראה לבדוק דואר</button>
+            <button type="button" class="btn-mini" onclick="quickAi('הצג אירועים')">הצג אירועים</button>
+        </div>
+        <div class="chat-box" id="aiChatBox">
+            <div class="msg ai">אפשר לבקש: "קניות חלב", "התראה לבדוק דואר", "אירוע יום שישי" או לשאול "מה יש בקניות".</div>
+        </div>
+        <div class="form-row">
+            <input type="text" id="aiInput" placeholder="כתוב בקשה לעוזר..." onkeydown="if(event.key==='Enter') sendAiMsg()">
+            <button type="button" class="btn" onclick="sendAiMsg()">שלח</button>
+        </div>
+    </section>
+</div>
+
+<div class="toast" id="toastEl">נשמר!</div>
+
+<script>
+    const QUOTES = [
+        '"הצלחה בניהול הבית והחיים מתחילה בסדר פנימי ובשאיפה מתמדת להתקדם קדימה."',
+        '"צעד קטן עקבי בכל יום מייצר שקט, בהירות והתקדמות אמיתית."',
+        '"כשיש סדר במרחב ובזמן, נשאר יותר מקום לרוגע, ליצירה ולמשפחה."',
+        '"תכנון מוקדם הופך עומס יומיומי לבהירות ושליטה."'
+    ];
+    let quoteIdx = 0;
+
+    function esc(v) {
+        return String(v || '').replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+    }
+    function toast(msg, err = false) {
+        const el = document.getElementById('toastEl');
+        el.innerText = msg;
+        el.style.background = err ? 'var(--danger)' : 'var(--success)';
+        el.classList.add('show');
+        setTimeout(() => el.classList.remove('show'), 2500);
+    }
+    function houseCode() {
+        const u = new URLSearchParams(window.location.search);
+        return (u.get('house') || (typeof getCurrentHouseCode === 'function' ? getCurrentHouseCode() : null) || localStorage.getItem('vidass_current_house_code') || 'EILAT-33').trim().toUpperCase();
+    }
+    function userName() {
+        return ((typeof getCurrentUser === 'function' ? getCurrentUser() : null) || localStorage.getItem('vidass_current_user') || 'ויקי').trim();
+    }
+    function readMod(mod) {
+        if (typeof getSharedData === 'function') {
+            const d = getSharedData(mod);
+            return Array.isArray(d) ? d : [];
+        }
+        try { return JSON.parse(localStorage.getItem(`vidass_${mod}_${houseCode()}`) || '[]'); } catch (_) { return []; }
+    }
+    function writeMod(mod, arr) {
+        if (typeof saveSharedData === 'function') saveSharedData(mod, arr);
+        else localStorage.setItem(`vidass_${mod}_${houseCode()}`, JSON.stringify(arr));
+        renderAll();
+    }
+    function switchTab(name) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+        document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === `panel-${name}`));
+    }
+    function nextQuote() {
+        quoteIdx = (quoteIdx + 1) % QUOTES.length;
+        document.getElementById('dailyQuote').innerText = QUOTES[quoteIdx];
+    }
+    function updateSyncBadge() {
+        const el = document.getElementById('syncBadge');
+        if (!el) return;
+        if (typeof getVidassSyncStatus === 'function') {
+            const st = getVidassSyncStatus();
+            const map = { cloud: '☁️ ענן', server: '🖥️ שרת', local: '💾 מקומי' };
+            el.innerText = map[st.mode] || '🔄 סנכרון';
+        }
+    }
+    function forceSyncNow() {
+        if (typeof fetchHouseDataFromServer === 'function') {
+            fetchHouseDataFromServer(true);
+            toast("מסנכרן נתוני בית...");
+        }
+        updateSyncBadge();
+    }
+
+    // יומן
+    function addCalEvent() {
+        const title = document.getElementById('calTitle').value.trim();
+        const time = document.getElementById('calTime').value.trim();
+        if (!title || !time) return toast("נא להזין כותרת ותאריך/שעה", true);
+        const arr = readMod('calendar');
+        arr.push({ title, time, addedBy: userName(), date: new Date().toLocaleDateString('he-IL') });
+        writeMod('calendar', arr);
+        document.getElementById('calTitle').value = '';
+        document.getElementById('calTime').value = '';
+        toast("נוסף ליומן");
+    }
+    function parseSmsToCalendar() {
+        const raw = document.getElementById('smsPaste').value.trim();
+        if (!raw) return toast("נא להדביק הודעה", true);
+        const tMatch = raw.match(/([0-2]?[0-9]:[0-5][0-9])/);
+        const dMatch = raw.match(/([0-3]?[0-9]\/[0-1]?[0-9](?:\/[0-9]{2,4})?)/);
+        const time = (dMatch ? dMatch[1] : '') + (tMatch ? (dMatch ? ' ' : '') + tMatch[1] : '') || 'לפי הודעה';
+        const title = raw.slice(0, 36) + (raw.length > 36 ? '...' : '');
+        const arr = readMod('calendar');
+        arr.push({ title, time, addedBy: userName(), date: new Date().toLocaleDateString('he-IL') });
+        writeMod('calendar', arr);
+        document.getElementById('smsPaste').value = '';
+        toast("פוענח ונוסף ליומן");
+    }
+    function delCal(i) { const a = readMod('calendar'); a.splice(i, 1); writeMod('calendar', a); }
+
+    // ימי הולדת
+    function addBirthday() {
+        const name = document.getElementById('bdayName').value.trim();
+        const bdayDate = document.getElementById('bdayDate').value.trim();
+        const phone = document.getElementById('bdayPhone').value.trim();
+        const party = document.getElementById('bdayParty').value.trim();
+        if (!name || !bdayDate) return toast("נא להזין שם ותאריך", true);
+        const arr = readMod('birthdays');
+        arr.push({ name, bdayDate, phone, party, addedBy: userName() });
+        writeMod('birthdays', arr);
+        ['bdayName','bdayDate','bdayPhone','bdayParty'].forEach(id => document.getElementById(id).value = '');
+        toast("יום ההולדת נשמר");
+    }
+    function delBday(i) { const a = readMod('birthdays'); a.splice(i, 1); writeMod('birthdays', a); }
+
+    // אירועים
+    function addEventItem() {
+        const title = document.getElementById('evTitle').value.trim();
+        const when = document.getElementById('evWhen').value.trim();
+        const location = document.getElementById('evLoc').value.trim();
+        const budget = document.getElementById('evBudget').value.trim();
+        const notes = document.getElementById('evNotes').value.trim();
+        if (!title || !when) return toast("נא להזין שם אירוע ומועד", true);
+        const arr = readMod('events');
+        arr.push({ title, when, location, budget, notes, addedBy: userName(), date: new Date().toLocaleDateString('he-IL') });
+        writeMod('events', arr);
+        ['evTitle','evWhen','evLoc','evBudget','evNotes'].forEach(id => document.getElementById(id).value = '');
+        toast("האירוע נשמר");
+    }
+    function delEvent(i) { const a = readMod('events'); a.splice(i, 1); writeMod('events', a); }
+
+    // קואוצ'ר
+    function addGoalItem() {
+        const inp = document.getElementById('goalInput');
+        const text = inp.value.trim();
+        if (!text) return toast("נא להזין מטרה", true);
+        const arr = readMod('coach');
+        arr.push({ text, done: false, addedBy: userName(), date: new Date().toLocaleDateString('he-IL') });
+        writeMod('coach', arr);
+        inp.value = '';
+        toast("המטרה נוספה");
+    }
+    function toggleGoal(i) {
+        const a = readMod('coach');
+        if (!a[i]) return;
+        a[i].done = !a[i].done;
+        writeMod('coach', a);
+    }
+    function delGoal(i) { const a = readMod('coach'); a.splice(i, 1); writeMod('coach', a); }
+
+    // עוזר חכם
+    function appendAi(text, who) {
+        const box = document.getElementById('aiChatBox');
+        const d = document.createElement('div');
+        d.className = `msg ${who}`;
+        d.innerText = text;
+        box.appendChild(d);
+        box.scrollTop = box.scrollHeight;
+    }
+    function quickAi(presetText) {
+        document.getElementById('aiInput').value = presetText;
+        sendAiMsg();
+    }
+    function sendAiMsg() {
+        const inp = document.getElementById('aiInput');
+        const txt = inp.value.trim();
+        if (!txt) return;
+        appendAi(txt, 'user');
+        inp.value = '';
+
+        const shopMatch = txt.match(/^(?:קניות|הוסף\s+לקניות|קנה)\s+(.+)$/i);
+        if (shopMatch && shopMatch[1].trim()) {
+            const item = shopMatch[1].trim();
+            const s = readMod('shopping');
+            s.push({ name: item, qty: 1, completed: false, addedBy: userName(), date: new Date().toLocaleDateString('he-IL') });
+            writeMod('shopping', s);
+            return appendAi(`הוספתי "${item}" לקניות של בית ${houseCode()}.`, 'ai');
+        }
+        const alertMatch = txt.match(/^(?:התראה|שגר\s+התראה)\s+(.+)$/i);
+        if (alertMatch && alertMatch[1].trim()) {
+            const alText = alertMatch[1].trim();
+            const al = readMod('alerts');
+            al.push({ text: alText, addedBy: userName(), time: new Date().toLocaleTimeString('he-IL'), date: new Date().toLocaleDateString('he-IL') });
+            writeMod('alerts', al);
+            return appendAi(`שגרתי התראה לבית ${houseCode()}: "${alText}".`, 'ai');
+        }
+        if (txt.includes('קניות')) {
+            const s = readMod('shopping');
+            return appendAi(s.length ? s.map(x => `• ${x.name || x.text || 'פריט'}${x.completed ? ' (נקנה)' : ''}`).join('\n') : 'רשימת הקניות ריקה.', 'ai');
+        }
+        if (txt.includes('אירוע')) {
+            const e = readMod('events');
+            return appendAi(e.length ? e.map(x => `• ${x.title} — ${x.when || ''}`).join('\n') : 'אין אירועים שמורים.', 'ai');
+        }
+        appendAi(`קיבלתי (${houseCode()}). אפשר לכתוב "קניות <פריט>" או "התראה <תוכן>".`, 'ai');
+    }
+
+    function renderAll() {
+        updateSyncBadge();
+
+        const cal = readMod('calendar');
+        document.getElementById('calList').innerHTML = cal.length ? cal.slice().reverse().map((x, r) => {
+            const idx = cal.length - 1 - r;
+            return `<div class="item-card"><div><div class="item-title">📅 ${esc(x.title)}</div><div class="item-sub">${esc(x.time)} | ${esc(x.addedBy || '')}</div></div><button type="button" class="btn-mini btn-red" onclick="delCal(${idx})">מחק</button></div>`;
+        }).join('') : '<div class="item-sub" style="text-align:center;">אין אירועים ביומן.</div>';
+
+        const bdays = readMod('birthdays');
+        document.getElementById('bdayList').innerHTML = bdays.length ? bdays.slice().reverse().map((x, r) => {
+            const idx = bdays.length - 1 - r;
+            const phoneClean = (x.phone || '').replace(/[^0-9+]/g, '').replace(/^0/, '+972');
+            return `<div class="item-card"><div><div class="item-title">🎂 ${esc(x.name)} (${esc(x.bdayDate)})</div><div class="item-sub">${x.phone ? '📞 ' + esc(x.phone) : ''} ${x.party ? '| 🎉 ' + esc(x.party) : ''}</div></div><div class="actions">${x.phone ? `<a class="btn-mini btn-green" href="tel:${esc(x.phone)}">חייג</a><a class="btn-mini btn-green" target="_blank" href="https://wa.me/${encodeURIComponent(phoneClean)}?text=${encodeURIComponent('מזל טוב ' + (x.name || '') + '! 🎂')}">וואטסאפ</a>` : ''}<button type="button" class="btn-mini btn-red" onclick="delBday(${idx})">מחק</button></div></div>`;
+        }).join('') : '<div class="item-sub" style="text-align:center;">אין ימי הולדת רשומים.</div>';
+
+        const evs = readMod('events');
+        document.getElementById('evList').innerHTML = evs.length ? evs.slice().reverse().map((x, r) => {
+            const idx = evs.length - 1 - r;
+            return `<div class="item-card"><div><div class="item-title">🎪 ${esc(x.title)}</div><div class="item-sub">${esc(x.when)} ${x.location ? '| 📍 ' + esc(x.location) : ''} ${x.budget ? '| 💰 ' + esc(x.budget) + ' ₪' : ''}${x.notes ? '<br>' + esc(x.notes) : ''}</div></div><button type="button" class="btn-mini btn-red" onclick="delEvent(${idx})">מחק</button></div>`;
+        }).join('') : '<div class="item-sub" style="text-align:center;">אין אירועים שמורים.</div>';
+
+        const goals = readMod('coach');
+        document.getElementById('goalList').innerHTML = goals.length ? goals.slice().reverse().map((x, r) => {
+            const idx = goals.length - 1 - r;
+            return `<div class="item-card"><div><div class="item-title ${x.done ? 'done' : ''}">🎯 ${esc(x.text)}</div><div class="item-sub">${esc(x.addedBy || '')} | ${esc(x.date || '')}</div></div><div class="actions"><button type="button" class="btn-mini btn-green" onclick="toggleGoal(${idx})">${x.done ? 'החזר' : 'סמן שהושג'}</button><button type="button" class="btn-mini btn-red" onclick="delGoal(${idx})">מחק</button></div></div>`;
+        }).join('') : '<div class="item-sub" style="text-align:center;">אין מטרות רשומות.</div>';
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('houseBadge').innerText = `🏠 בית: ${houseCode()}`;
+        document.getElementById('userBadge').innerText = `👤 ${userName()}`;
+        renderAll();
+    });
+    window.addEventListener('vidass:data-updated', renderAll);
+    window.addEventListener('storage', renderAll);
+</script>
+
+</body>
+</html>
