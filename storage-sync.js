@@ -1,9 +1,12 @@
 /**
  * VIDASS Storage & Sync Engine (Client-Side)
- * מנהל את הסנכרון בין ה-localStorage, הדפדפנים השונים ושרת ה-Flask המרכזי.
+ * מנהל סנכרון Offline-First מול localStorage, שרת Flask ו-Firebase Realtime Database לפי קוד בית.
  */
 
-const VIDASS_SYNC_INTERVAL_MS = 4000; // בדיקת עדכונים מהשרת כל 4 שניות
+const VIDASS_SYNC_INTERVAL_MS = 2500; // בדיקת עדכונים כל 2.5 שניות
+// החלף בכתובת ה-Realtime Database שלך ב-Firebase, למשל:
+// "https://vidass-home-default-rtdb.europe-west1.firebasedatabase.app"
+const VIDASS_FIREBASE_DB_URL = "";
 
 function getCurrentHouseCode() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -75,6 +78,12 @@ function notifyPageModules(moduleName) {
     });
 }
 
+function getFirebaseBaseUrl() {
+    return (VIDASS_FIREBASE_DB_URL || localStorage.getItem('vidass_firebase_db_url') || '')
+        .trim()
+        .replace(/\/+$/, '');
+}
+
 async function saveSharedData(moduleName, dataArray) {
     const houseCode = getCurrentHouseCode();
     const storageKey = `vidass_${moduleName}_${houseCode}`;
@@ -89,11 +98,26 @@ async function saveSharedData(moduleName, dataArray) {
     // עדכון מיידי של התצוגה בעמוד הנוכחי
     notifyPageModules(moduleName);
 
-    // 2. שליחה ברקע לשרת ה-Flask המרכזי (רק אם רצים דרך HTTP/HTTPS)
     if (window.location.protocol === 'file:') {
         return;
     }
 
+    // 2. סנכרון ל-Firebase Realtime Database (עובד גם ב-GitHub Pages בין כל המכשירים)
+    const fbBase = getFirebaseBaseUrl();
+    if (fbBase) {
+        try {
+            const fbUrl = `${fbBase}/houses/${encodeURIComponent(houseCode)}/${encodeURIComponent(moduleName)}.json`;
+            await fetch(fbUrl, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dataArray)
+            });
+        } catch (fbErr) {
+            console.warn("שגיאה בסנכרון ל-Firebase:", fbErr);
+        }
+    }
+
+    // 3. שליחה ברקע לשרת ה-Flask המרכזי (אם קיים)
     try {
         const payload = {
             data: {
@@ -112,8 +136,8 @@ async function saveSharedData(moduleName, dataArray) {
         if (!response.ok) {
             console.warn("הנתונים נשמרו מקומית, אך השרת החזיר תשובה שגויה בשמירה לענן.");
         }
-    } catch (err) {
-        console.log("שרת הענן אינו זמין כרגע – הנתונים נשמרו ויעבדו בצורה מקומית בדפדפן.");
+    } catch (_) {
+        // ב-GitHub Pages אין שרת Flask מקומי – זה תקין
     }
 }
 
@@ -125,6 +149,34 @@ async function fetchHouseDataFromServer(updateUI = false) {
     const houseCode = getCurrentHouseCode();
     let anyModuleChanged = false;
 
+    // 1. משיכה מ-Firebase Realtime Database
+    const fbBase = getFirebaseBaseUrl();
+    if (fbBase) {
+        try {
+            const fbUrl = `${fbBase}/houses/${encodeURIComponent(houseCode)}.json`;
+            const fbRes = await fetch(fbUrl);
+            if (fbRes.ok) {
+                const houseTree = await fbRes.json();
+                if (houseTree && typeof houseTree === 'object') {
+                    for (const [modKey, modVal] of Object.entries(houseTree)) {
+                        if (modVal === null || modVal === undefined) continue;
+                        const key = `vidass_${modKey}_${houseCode}`;
+                        const nextJson = JSON.stringify(modVal);
+                        const prevJson = localStorage.getItem(key);
+
+                        if (prevJson !== nextJson) {
+                            localStorage.setItem(key, nextJson);
+                            anyModuleChanged = true;
+                        }
+                    }
+                }
+            }
+        } catch (_) {
+            // מצב לא מקוון - ממשיך לעבוד מול localStorage
+        }
+    }
+
+    // 2. משיכה משרת Flask (אם זמין)
     try {
         const response = await fetch(`/api/get/${encodeURIComponent(houseCode)}`);
         if (response.ok) {
@@ -142,13 +194,13 @@ async function fetchHouseDataFromServer(updateUI = false) {
                     }
                 }
             }
-
-            if (updateUI && anyModuleChanged) {
-                notifyPageModules('all');
-            }
         }
-    } catch (e) {
+    } catch (_) {
         // מצב לא מקוון - ממשיך לעבוד מול localStorage
+    }
+
+    if (updateUI && anyModuleChanged) {
+        notifyPageModules('all');
     }
 }
 
