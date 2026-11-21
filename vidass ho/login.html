@@ -69,6 +69,12 @@
             font-weight: bold;
         }
 
+        .password-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
         .input-group input {
             width: 100%;
             padding: 12px 16px;
@@ -80,6 +86,26 @@
             outline: none;
             transition: border-color 0.2s;
             text-align: right;
+        }
+
+        .password-wrap input {
+            padding-left: 56px;
+        }
+
+        .toggle-pass-btn {
+            position: absolute;
+            left: 10px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: var(--text-muted);
+            border-radius: 8px;
+            padding: 4px 8px;
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        .toggle-pass-btn:hover {
+            color: var(--text-main);
         }
 
         .input-group input:focus {
@@ -100,8 +126,13 @@
             transition: opacity 0.2s;
         }
 
-        .login-btn:hover {
+        .login-btn:hover:not(:disabled) {
             opacity: 0.9;
+        }
+
+        .login-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
 
         .error-msg {
@@ -135,94 +166,135 @@
         <p>מערכת ניהול ענן משפחתית פרטית</p>
     </div>
 
-    <div class="input-group">
-        <label>שם הדייר/ת</label>
-        <input type="text" id="userNameInput" placeholder="לדוגמה: ויקי">
-    </div>
+    <form id="loginForm" onsubmit="event.preventDefault(); handleLogin();">
+        <div class="input-group">
+            <label for="userNameInput">שם הדייר/ת</label>
+            <input type="text" id="userNameInput" placeholder="לדוגמה: ויקי" autocomplete="username">
+        </div>
 
-    <div class="input-group">
-        <label>קוד הבית (House Code)</label>
-        <input type="text" id="houseCodeInput" placeholder="לדוגמה: EILAT-33" value="EILAT-33">
-    </div>
+        <div class="input-group">
+            <label for="houseCodeInput">קוד הבית (House Code)</label>
+            <input type="text" id="houseCodeInput" placeholder="לדוגמה: EILAT-33" value="EILAT-33" autocomplete="organization">
+        </div>
 
-    <div class="input-group">
-        <label>סיסמת הבית</label>
-        <input type="password" id="passwordInput" placeholder="הקש סיסמת גישה לבית">
-    </div>
+        <div class="input-group">
+            <label for="passwordInput">סיסמת הבית</label>
+            <div class="password-wrap">
+                <input type="password" id="passwordInput" placeholder="הקש סיסמת גישה לבית" autocomplete="current-password">
+                <button type="button" class="toggle-pass-btn" id="togglePassBtn" onclick="togglePasswordVisibility()">הצג</button>
+            </div>
+        </div>
 
-    <button class="login-btn" onclick="handleLogin()">התחבר למרכז הניהול ➔</button>
+        <button type="submit" class="login-btn" id="loginSubmitBtn">התחבר למרכז הניהול ➔</button>
+    </form>
 
     <div class="error-msg" id="errorBox"></div>
     <div class="success-msg" id="successBox"></div>
 </div>
 
 <script>
-    // טעינת ערכים קודמים אם היו ב-localStorage
     window.onload = function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const queryUser = (urlParams.get('user') || '').trim();
+        const queryHouse = (urlParams.get('house') || '').trim().toUpperCase();
+
         const savedUser = localStorage.getItem('vidass_current_user');
         const savedHouse = localStorage.getItem('vidass_current_house_code') || localStorage.getItem('vidass_current_house');
-        
-        if(savedUser) document.getElementById('userNameInput').value = savedUser;
-        if(savedHouse) document.getElementById('houseCodeInput').value = savedHouse;
+
+        if (queryUser) {
+            document.getElementById('userNameInput').value = queryUser;
+        } else if (savedUser) {
+            document.getElementById('userNameInput').value = savedUser;
+        }
+
+        if (queryHouse) {
+            document.getElementById('houseCodeInput').value = queryHouse;
+        } else if (savedHouse) {
+            document.getElementById('houseCodeInput').value = savedHouse;
+        }
     };
+
+    function togglePasswordVisibility() {
+        const input = document.getElementById('passwordInput');
+        const btn = document.getElementById('togglePassBtn');
+        const isHidden = input.type === 'password';
+        input.type = isHidden ? 'text' : 'password';
+        btn.innerText = isHidden ? 'הסתר' : 'הצג';
+    }
+
+    function persistSession(userName, houseCode, extra = {}) {
+        localStorage.setItem('vidass_current_user', userName);
+        localStorage.setItem('vidass_current_house_code', houseCode);
+        localStorage.setItem('vidass_current_house', houseCode);
+        if (extra.sessionMode) {
+            localStorage.setItem('vidass_session_mode', extra.sessionMode);
+        }
+        if (extra.token) {
+            localStorage.setItem('vidass_auth_token', extra.token);
+        }
+    }
 
     async function handleLogin() {
         const userName = document.getElementById('userNameInput').value.trim();
         const houseCode = document.getElementById('houseCodeInput').value.trim().toUpperCase();
-        const password = document.getElementById('passwordInput').value.trim();
-        
+        const password = document.getElementById('passwordInput').value;
+        const submitBtn = document.getElementById('loginSubmitBtn');
+
         const errorBox = document.getElementById('errorBox');
         const successBox = document.getElementById('successBox');
-        
+
         errorBox.style.display = 'none';
         successBox.style.display = 'none';
 
-        if(!userName) {
+        if (!userName) {
             showError("נא להזין את שם הדייר/ת.");
             return;
         }
-        if(!houseCode) {
+        if (!houseCode) {
             showError("נא להזין קוד בית תקין.");
             return;
         }
-        if(!password) {
+        if (!password.trim()) {
             showError("נא להזין את סיסמת הבית.");
             return;
         }
 
+        submitBtn.disabled = true;
+
         try {
-            // שליחת בקשת אימות לשרת ה-Flask
             const response = await fetch('/api/auth', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ house_code: houseCode, password: password })
             });
 
-            const result = await response.json();
+            let result = {};
+            try {
+                result = await response.json();
+            } catch (_) {
+                result = {};
+            }
 
-            if(response.ok && result.status === 'success') {
-                // שמירת הפרטים בזיכרון המקומי
-                localStorage.setItem('vidass_current_user', userName);
-                localStorage.setItem('vidass_current_house_code', houseCode);
-                localStorage.setItem('vidass_current_house', houseCode);
-
+            if (response.ok && result.status === 'success') {
+                persistSession(userName, houseCode, {
+                    sessionMode: 'server',
+                    token: result.token || ''
+                });
                 showSuccess("האימות הצליח! מעבר למרכז הבקרה...");
-                
-                // מעבר אוטומטי למרכז השליטה אחרי חצי שנייה
                 setTimeout(() => {
                     window.location.href = `main_hub.html?house=${encodeURIComponent(houseCode)}`;
                 }, 600);
             } else {
+                submitBtn.disabled = false;
                 showError(result.message || "שגיאה באימות הנתונים מול השרת.");
             }
         } catch (err) {
-            // אם השרת המקומי אינו פעיל כרגע, מאפשרים כניסה במצב מקומי (Offline Mode) לגיבוי
             console.warn("שרת הענן אינו זמין, מבצע התחברות מקומית.");
-            localStorage.setItem('vidass_current_user', userName);
-            localStorage.setItem('vidass_current_house_code', houseCode);
-            localStorage.setItem('vidass_current_house', houseCode);
-            
-            window.location.href = `main_hub.html?house=${encodeURIComponent(houseCode)}`;
+            persistSession(userName, houseCode, { sessionMode: 'local' });
+            showSuccess("התחברות מקומית הופעלה. מעבר למרכז הבקרה...");
+            setTimeout(() => {
+                window.location.href = `main_hub.html?house=${encodeURIComponent(houseCode)}`;
+            }, 400);
         }
     }
 

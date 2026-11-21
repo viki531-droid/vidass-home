@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VIDASS Micro-App - יומן ולוח זמנים חכם</title>
-    <!-- קישור לקובץ הסנכרון המשותף בין דיירי הבית -->
     <script src="storage-sync.js"></script>
     <style>
         :root {
@@ -21,18 +20,18 @@
             --gold: #f59e0b;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        
-        body { 
-            background: var(--bg-gradient); 
+
+        body {
+            background: var(--bg-gradient);
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
-            color: var(--text-main); 
-            min-height: 100vh; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            padding: 20px; 
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
             transition: background 0.5s ease;
         }
 
@@ -40,20 +39,20 @@
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 16px; }
         .header h1 { font-size: 20px; color: var(--accent); }
         .badge { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--success); padding: 4px 10px; border-radius: 8px; font-size: 11px; }
-        
-        .bg-settings-box { background: rgba(216, 67, 112, 0.08); border: 1px solid rgba(216, 67, 112, 0.3); border-radius: 14px; padding: 12px; margin-bottom: 16px; font-size: 12px; display: flex; justify-content: space-between; align-items: center; }
+
+        .bg-settings-box { background: rgba(216, 67, 112, 0.08); border: 1px solid rgba(216, 67, 112, 0.3); border-radius: 14px; padding: 12px; margin-bottom: 16px; font-size: 12px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
         .bg-settings-box input[type="file"] { display: none; }
         .upload-lbl { background: var(--primary); color: white; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; }
         .upload-lbl:hover { background: var(--primary-dark); }
 
         .smart-box { background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 14px; padding: 14px; margin-bottom: 16px; }
         .smart-box h3 { color: var(--gold); font-size: 14px; margin-bottom: 6px; }
-        
+
         .input-group { margin-bottom: 12px; text-align: right; }
         .input-group label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
         .input-group input, .input-group textarea { width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; color: white; font-size: 13px; outline: none; text-align: right; }
         .input-group textarea { resize: none; height: 60px; }
-        
+
         .row-inputs { display: flex; gap: 10px; }
         .row-inputs .input-group { flex: 1; }
 
@@ -61,7 +60,7 @@
         .btn:hover { opacity: 0.9; }
         .btn-smart { background: linear-gradient(135deg, #f59e0b, #d97706); margin-top: 6px; }
 
-        .item-row { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+        .item-row { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; gap: 10px; }
         .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: white; padding: 10px 20px; border-radius: 10px; font-size: 13px; transition: transform 0.3s; z-index: 1000; }
         .toast.show { transform: translateX(-50%) translateY(0); }
     </style>
@@ -77,7 +76,6 @@
         <div class="badge" id="houseBadge">🟢 מחובר לבית המשותף</div>
     </div>
 
-    <!-- הגדרת תמונת רקע אישית ליומן -->
     <div class="bg-settings-box">
         <div>
             <strong>🖼️ תמונת רקע ליומן</strong>
@@ -92,7 +90,6 @@
         </div>
     </div>
 
-    <!-- אזור קליטה אוטומטית הודעות תורים -->
     <div class="smart-box">
         <h3>🤖 קליטה אוטומטית מהודעת תור / SMS / וואטסאפ</h3>
         <div class="input-group" style="margin-bottom: 6px;">
@@ -119,70 +116,112 @@
 <div class="toast" id="toastMsg">הפעולה בוצעה בהצלחה!</div>
 
 <script>
+    function escapeHtml(str) {
+        return String(str || '')
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function getActiveHouse() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = (
+            urlParams.get('house') ||
+            (typeof getCurrentHouseCode === 'function' ? getCurrentHouseCode() : null) ||
+            localStorage.getItem('vidass_current_house_code') ||
+            localStorage.getItem('vidass_current_house') ||
+            'EILAT-33'
+        ).trim();
+        localStorage.setItem('vidass_current_house_code', code);
+        localStorage.setItem('vidass_current_house', code);
+        return code;
+    }
+
     window.onload = function() {
-        const houseCode = getCurrentHouseCode();
-        if(houseCode) {
-            document.getElementById('houseBadge').innerText = `🟢 בית: ${houseCode}`;
-        }
+        const houseCode = getActiveHouse();
+        document.getElementById('houseBadge').innerText = `🟢 בית: ${escapeHtml(houseCode)}`;
         loadBackground();
         loadCalendarEvents();
     };
 
-    // טעינת תמונת הרקע האישית שנשמרה
     function loadBackground() {
-        const houseCode = getCurrentHouseCode();
+        const houseCode = getActiveHouse();
         const savedBg = localStorage.getItem(`vidass_calendar_bg_${houseCode}`);
-        if(savedBg) {
+        if (savedBg && savedBg.startsWith('data:image/')) {
             document.body.style.backgroundImage = `linear-gradient(rgba(13, 13, 15, 0.85), rgba(26, 22, 34, 0.85)), url(${savedBg})`;
+        } else {
+            document.body.style.backgroundImage = '';
         }
     }
 
-    // העלאת תמונה והגדרתה כרקע
     function handleBgUpload(event) {
         const file = event.target.files[0];
-        if(file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const base64Image = e.target.result;
-                const houseCode = getCurrentHouseCode();
-                localStorage.setItem(`vidass_calendar_bg_${houseCode}`, base64Image);
-                loadBackground();
-                showToast("🖼️ תמונת הרקע של היומן עודכנה בהצלחה!");
+        if (!file) return;
+
+        const img = new Image();
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+            img.onload = function() {
+                const maxDim = 900;
+                const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+                const canvas = document.createElement('canvas');
+                canvas.width = Math.max(1, Math.round(img.width * scale));
+                canvas.height = Math.max(1, Math.round(img.height * scale));
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                const compressedBase64 = canvas.toDataURL('image/jpeg', 0.72);
+
+                const houseCode = getActiveHouse();
+                try {
+                    localStorage.setItem(`vidass_calendar_bg_${houseCode}`, compressedBase64);
+                    loadBackground();
+                    showToast("🖼️ תמונת הרקע של היומן עודכנה בהצלחה!");
+                } catch (_) {
+                    showToast("התמונה גדולה מדי לאחסון מקומי.", true);
+                }
             };
-            reader.readAsDataURL(file);
-        }
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
     }
 
-    // איפוס תמונת הרקע לברירת המחדל
     function resetBackground() {
-        const houseCode = getCurrentHouseCode();
+        const houseCode = getActiveHouse();
         localStorage.removeItem(`vidass_calendar_bg_${houseCode}`);
+        document.getElementById('bgImageLoader').value = '';
         document.body.style.backgroundImage = '';
         showToast("תמונת הרקע אופסה לברירת המחדל.");
     }
 
     function loadCalendarEvents() {
-        const data = getSharedData('calendar');
+        const data = (typeof getSharedData === 'function') ? getSharedData('calendar') : [];
         const container = document.getElementById('calendarList');
-        
-        container.innerHTML = data.length === 0 ? '<p style="text-align:center; font-size:12px; color:var(--text-muted);">אין פגישות או אירועים ביומן כרגע.</p>' : '';
+
+        if (!Array.isArray(data) || data.length === 0) {
+            container.innerHTML = '<p style="text-align:center; font-size:12px; color:var(--text-muted);">אין פגישות או אירועים ביומן כרגע.</p>';
+            return;
+        }
+
+        container.innerHTML = '';
         data.slice().reverse().forEach((item, index) => {
             const actualIndex = data.length - 1 - index;
             container.innerHTML += `
                 <div class="item-row">
                     <div>
-                        <strong style="color:var(--accent);">📅 ${item.title}</strong>
-                        <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">🕒 ${item.time} (הוסף ע"י: ${item.addedBy || 'דייר'})</div>
+                        <strong style="color:var(--accent);">📅 ${escapeHtml(item.title)}</strong>
+                        <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">🕒 ${escapeHtml(item.time)} (הוסף ע"י: ${escapeHtml(item.addedBy || 'דייר')})</div>
                     </div>
-                    <button onclick="removeCalendarEvent(${actualIndex})" style="background:rgba(239,68,68,0.1); color:var(--danger); border:1px solid rgba(239,68,68,0.3); padding:5px 10px; border-radius:6px; cursor:pointer; font-size:11px;">מחק</button>
+                    <button onclick="removeCalendarEvent(${actualIndex})" style="background:rgba(239,68,68,0.1); color:var(--danger); border:1px solid rgba(239,68,68,0.3); padding:5px 10px; border-radius:6px; cursor:pointer; font-size:11px; flex-shrink:0;">מחק</button>
                 </div>`;
         });
     }
 
-    // פענוח הודעות תורים אוטומטיות
     function parseAndAddSmsEvent() {
         const text = document.getElementById('rawSmsInput').value.trim();
-        if(!text) {
+        if (!text) {
             showToast("נא להדביק הודעת טקסט לפענוח", true);
             return;
         }
@@ -191,28 +230,38 @@
         let extractedTime = "נקבע בהודעה";
 
         const timeMatch = text.match(/([0-2]?[0-9]:[0-5][0-9])/);
-        if(timeMatch) { extractedTime = timeMatch[1]; }
+        if (timeMatch) { extractedTime = timeMatch[1]; }
 
         const dateMatch = text.match(/([0-3]?[0-9]\/[0-1]?[0-9])/);
-        if(dateMatch) { extractedTime = dateMatch[1] + (timeMatch ? " בשעה " + timeMatch[1] : ""); }
+        if (dateMatch) { extractedTime = dateMatch[1] + (timeMatch ? " בשעה " + timeMatch[1] : ""); }
 
-        if(text.includes("ד\"ר") || text.includes("דר'")) {
-            const parts = text.split(/ד\"ר|דר'/);
-            if(parts[1]) { extractedTitle = "תור אצל ד\"ר " + parts[1].trim().split(" ")[0]; }
-        } else if(text.includes("תור")) {
+        if (text.includes('ד"ר') || text.includes("דר'")) {
+            const parts = text.split(/ד"ר|דר'/);
+            if (parts[1]) { extractedTitle = 'תור אצל ד"ר ' + parts[1].trim().split(" ")[0]; }
+        } else if (text.includes("תור")) {
             extractedTitle = "תור משוריין חדש";
         } else {
             extractedTitle = text.substring(0, 25) + "...";
         }
 
-        let data = getSharedData('calendar');
-        data.push({ 
-            title: extractedTitle, 
+        const houseCode = getActiveHouse();
+        const currentUser = (typeof getCurrentUser === 'function' ? getCurrentUser() : null) ||
+                            localStorage.getItem('vidass_current_user') ||
+                            'דייר';
+
+        let data = (typeof getSharedData === 'function') ? getSharedData('calendar') : [];
+        data.push({
+            title: extractedTitle,
             time: extractedTime + " (" + text.substring(0, 30) + "...)",
-            addedBy: getCurrentUser(),
+            addedBy: currentUser,
             date: new Date().toLocaleDateString('he-IL')
         });
-        saveSharedData('calendar', data);
+
+        if (typeof saveSharedData === 'function') {
+            saveSharedData('calendar', data);
+        } else {
+            localStorage.setItem('vidass_calendar_' + houseCode, JSON.stringify(data));
+        }
 
         document.getElementById('rawSmsInput').value = '';
         loadCalendarEvents();
@@ -225,16 +274,26 @@
         const title = titleInput.value.trim();
         const time = timeInput.value.trim();
 
-        if(!title || !time) { showToast("נא למלא את כל השדות", true); return; }
+        if (!title || !time) { showToast("נא למלא את כל השדות", true); return; }
 
-        let data = getSharedData('calendar');
-        data.push({ 
-            title, 
+        const houseCode = getActiveHouse();
+        const currentUser = (typeof getCurrentUser === 'function' ? getCurrentUser() : null) ||
+                            localStorage.getItem('vidass_current_user') ||
+                            'דייר';
+
+        let data = (typeof getSharedData === 'function') ? getSharedData('calendar') : [];
+        data.push({
+            title,
             time,
-            addedBy: getCurrentUser(),
+            addedBy: currentUser,
             date: new Date().toLocaleDateString('he-IL')
         });
-        saveSharedData('calendar', data);
+
+        if (typeof saveSharedData === 'function') {
+            saveSharedData('calendar', data);
+        } else {
+            localStorage.setItem('vidass_calendar_' + houseCode, JSON.stringify(data));
+        }
 
         titleInput.value = '';
         timeInput.value = '';
@@ -243,9 +302,16 @@
     }
 
     function removeCalendarEvent(index) {
-        let data = getSharedData('calendar');
+        const houseCode = getActiveHouse();
+        let data = (typeof getSharedData === 'function') ? getSharedData('calendar') : [];
         data.splice(index, 1);
-        saveSharedData('calendar', data);
+
+        if (typeof saveSharedData === 'function') {
+            saveSharedData('calendar', data);
+        } else {
+            localStorage.setItem('vidass_calendar_' + houseCode, JSON.stringify(data));
+        }
+
         loadCalendarEvents();
         showToast("האירוע הוסר מהיומן.");
     }
@@ -257,6 +323,21 @@
         toast.classList.add('show');
         setTimeout(() => toast.classList.remove('show'), 3000);
     }
+
+    window.addEventListener('vidass:data-updated', function(e) {
+        if (!e || !e.detail || !e.detail.module || e.detail.module === 'calendar' || e.detail.module === 'all') {
+            loadCalendarEvents();
+        }
+    });
+
+    window.addEventListener('storage', function(event) {
+        const houseCode = getActiveHouse();
+        if (event.key === 'vidass_calendar_' + houseCode) {
+            loadCalendarEvents();
+        } else if (event.key === `vidass_calendar_bg_${houseCode}`) {
+            loadBackground();
+        }
+    });
 </script>
 
 </body>

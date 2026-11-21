@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VIDASS Micro-App - מזג אוויר ובריאות אלרגיות</title>
-    <!-- קישור לקובץ הסנכרון המשותף בין דיירי הבית -->
     <script src="storage-sync.js"></script>
     <style>
         :root {
@@ -22,31 +21,48 @@
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background: var(--bg-gradient); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .app-container { width: 100%; max-width: 650px; background: var(--card-bg); backdrop-filter: blur(14px); border: 1px solid var(--card-border); border-radius: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.8); padding: 24px; text-align: center; }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 16px; text-align: right; }
+        .app-container { width: 100%; max-width: 680px; background: var(--card-bg); backdrop-filter: blur(14px); border: 1px solid var(--card-border); border-radius: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.8); padding: 24px; text-align: center; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 16px; text-align: right; gap: 10px; flex-wrap: wrap; }
         .header h1 { font-size: 20px; color: var(--accent); }
         .badge { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--success); padding: 4px 10px; border-radius: 8px; font-size: 11px; }
-        
-        /* בקרת בחירת מיקום */
-        .location-bar { display: flex; gap: 8px; margin-bottom: 16px; align-items: center; }
-        .location-bar select, .location-bar input { flex: 1; padding: 9px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; color: white; font-size: 13px; outline: none; text-align: right; }
+
+        .location-bar { display: flex; gap: 8px; margin-bottom: 16px; align-items: center; flex-wrap: wrap; }
+        .location-bar select { flex: 1; min-width: 180px; padding: 9px 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; color: white; font-size: 13px; outline: none; text-align: right; }
         .location-bar option { background: #1a1622; color: white; }
+
+        .refresh-btn { padding: 9px 14px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.18); border-radius: 10px; color: var(--text-main); font-size: 12px; font-weight: bold; cursor: pointer; }
+        .refresh-btn:hover { border-color: var(--primary); background: rgba(216, 67, 112, 0.14); }
 
         .weather-display { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 18px; margin-bottom: 16px; }
         .weather-icon { font-size: 44px; margin-bottom: 6px; }
         .temp { font-size: 30px; font-weight: bold; color: var(--accent); margin-bottom: 4px; }
-        
-        /* אזור התראות אלרגיות באוויר */
+        .weather-submeta { font-size: 11px; color: var(--text-muted); margin-top: 6px; }
+
         .allergy-alert-box { background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 14px; padding: 14px; margin-bottom: 16px; text-align: right; }
         .allergy-alert-box h3 { color: var(--gold); font-size: 14px; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
 
+        .row-inputs { display: flex; gap: 10px; flex-wrap: wrap; }
+        .row-inputs .input-group { flex: 1; min-width: 150px; }
+
         .input-group { margin-bottom: 12px; text-align: right; }
         .input-group label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
-        .input-group input { width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; color: white; font-size: 13px; outline: none; text-align: right; }
-        
-        .btn { width: 100%; padding: 11px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 5px; }
-        .item-row { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; text-align: right; }
-        
+        .input-group input, .input-group select, .filter-input { width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; color: white; font-size: 13px; outline: none; text-align: right; }
+        .input-group option { background: #1a1622; color: white; }
+        .input-group input:focus, .input-group select:focus, .filter-input:focus { border-color: var(--primary); }
+
+        .filter-input { padding: 8px 12px; font-size: 12px; margin-bottom: 12px; }
+
+        .btn { width: 100%; padding: 11px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 4px; }
+        .btn:hover { opacity: 0.92; }
+
+        .item-row { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; text-align: right; gap: 10px; flex-wrap: wrap; }
+        .sev-pill { display: inline-block; padding: 2px 8px; border-radius: 7px; font-size: 10px; font-weight: bold; margin-right: 6px; }
+        .sev-גבוהה { background: rgba(239, 68, 68, 0.16); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.35); }
+        .sev-בינונית { background: rgba(245, 158, 11, 0.16); color: var(--gold); border: 1px solid rgba(245, 158, 11, 0.35); }
+        .sev-מידע { background: rgba(16, 185, 129, 0.14); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); }
+
+        .btn-del { background: rgba(239,68,68,0.1); color: var(--danger); border: 1px solid rgba(239,68,68,0.3); padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: bold; }
+
         .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: white; padding: 10px 20px; border-radius: 10px; font-size: 13px; transition: transform 0.3s; z-index: 1000; }
         .toast.show { transform: translateX(-50%) translateY(0); }
     </style>
@@ -62,9 +78,8 @@
         <div class="badge" id="houseBadge">🟢 מחובר לבית המשותף</div>
     </div>
 
-    <!-- בחירת מיקום דינמית -->
     <div class="location-bar">
-        <select id="citySelector" onchange="updateWeatherByCity()">
+        <select id="citySelector" onchange="onCityChanged()">
             <option value="אילת">📍 אילת (שחמון / מרכז)</option>
             <option value="כפר סבא">📍 כפר סבא</option>
             <option value="תל אביב">📍 תל אביב</option>
@@ -72,107 +87,286 @@
             <option value="חיפה">📍 חיפה</option>
             <option value="באר שבע">📍 באר שבע</option>
         </select>
+        <button type="button" class="refresh-btn" id="refreshWeatherBtn" onclick="fetchLiveWeatherForCurrentCity()">🔄 רענן תחזית</button>
     </div>
 
-    <!-- תצוגת מזג האוויר החיה -->
     <div class="weather-display" id="weatherCard">
         <div class="weather-icon" id="wIcon">☀️</div>
         <div class="temp" id="wTemp">28°C</div>
         <h2 style="font-size: 16px; color: var(--text-main);" id="wCityTitle">אילת</h2>
         <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;" id="wDesc">שמים בהירים | לחות: 35%</p>
+        <div class="weather-submeta" id="wSourceMeta">מצב התחזית נטען...</div>
     </div>
 
-    <!-- מדד אלרגיות והתראות באוויר -->
     <div class="allergy-alert-box">
         <h3>⚠️ מדד אלרגיות ורגישויות באוויר</h3>
-        <p style="font-size: 12px; color: var(--text-main); line-height: 1.4;" id="allergyStatus">
-            🌿 <b>אבקנים ופריחה:</b> רמה בינונית באזור. מומלץ להיזהר למי שסובל מרגישות עונתית.<br>
-            🍋 <b>רגישויות מיוחדות:</b> דווחה רגישות לפירות הדר / פריחות באזור זה.
-        </p>
+        <p style="font-size: 12px; color: var(--text-main); line-height: 1.5;" id="allergyStatus"></p>
     </div>
 
-    <div class="input-group">
-        <label>הוסף התראת בריאות או מזג אוויר למשפחה</label>
-        <input type="text" id="weatherNote" placeholder="לדוגמה: אזהרת אבק בחוץ, להקפיד על סגירת חלונות..." onkeypress="if(event.key==='Enter') addWeatherNote()">
+    <div class="row-inputs">
+        <div class="input-group">
+            <label for="weatherNote">הוסף התראת בריאות או מזג אוויר למשפחה</label>
+            <input type="text" id="weatherNote" placeholder="לדוגמה: אזהרת אבק בחוץ, להקפיד על סגירת חלונות..." onkeypress="if(event.key==='Enter') addWeatherNote()">
+        </div>
+        <div class="input-group" style="max-width: 155px;">
+            <label for="alertSeverityInput">רמת התראה</label>
+            <select id="alertSeverityInput">
+                <option value="מידע">מידע</option>
+                <option value="בינונית">בינונית</option>
+                <option value="גבוהה">גבוהה</option>
+            </select>
+        </div>
     </div>
-    <button class="btn" onclick="addWeatherNote()">שמור התראה למערכת הביתית ⚠️</button>
 
-    <div style="margin-top: 20px; max-height: 200px; overflow-y: auto;" id="weatherNotesList"></div>
+    <button type="button" class="btn" onclick="addWeatherNote()">שמור התראה למערכת הביתית ⚠️</button>
+
+    <div style="margin-top: 18px;">
+        <input type="text" class="filter-input" id="searchWeatherInput" placeholder="חיפוש בהתראות שמורות..." oninput="loadWeatherNotes()">
+        <div style="max-height: 210px; overflow-y: auto;" id="weatherNotesList"></div>
+    </div>
 </div>
 
 <div class="toast" id="toastMsg">הפעולה בוצעה בהצלחה!</div>
 
 <script>
-    // נתוני תחזית ואלרגיות לדוגמה לפי ערים
-    const cityWeatherData = {
-        "אילת": { temp: "34°C", icon: "☀️", desc: "חם ויבש | לחות: 25%", allergy: "🌿 אבק מדברי בינוני | 🍋 רגישות הדרים באוויר: נמוכה" },
-        "כפר סבא": { temp: "24°C", icon: "⛅", desc: "מעונן חלקית | לחות: 55%", allergy: "🌿 פריחת אביב עונתית: גבוהה (היזהרו מאלרגיות פריחה!) | 🍋 רגישויות: פעיל" },
-        "תל אביב": { temp: "26°C", icon: "🌤️", desc: "נוח ולחות גבוהה | לחות: 70%", allergy: "🌿 אבקנים עירוניים: בינוני | 🍋 רגישות לחות ופריחות: פעיל" },
-        "ירושלים": { temp: "21°C", icon: "🌥️", desc: "קריר ונעים | לחות: 45%", allergy: "🌿 פריחת אורנים ועצי יער: גבוהה | 🍋 רגישויות: רגיל" },
-        "חיפה": { temp: "25°C", icon: "🌤️", desc: "בהיר לאורך החוף | לחות: 65%", allergy: "🌿 פריחה חופית: נמוכה | 🍋 רגישויות: רגיל" },
-        "באר שבע": { temp: "29°C", icon: "☀️", desc: "שמשי ויבש | לחות: 30%", allergy: "🌿 רוחות ואבק: בינוני | 🍋 רגישויות: רגיל" }
+    const cityProfiles = {
+        "אילת": {
+            lat: 29.5581, lon: 34.9482,
+            temp: "34°C", icon: "☀️", desc: "חם ויבש | לחות: 25% | רוח: 14 קמ\"ש",
+            allergy: "🌿 <b>אבק מדברי ורגישות באוויר:</b> אבק מדברי בינוני; להקפיד על אוורור מבוקר והימנעות מריחות חריפים או אבק פתוח."
+        },
+        "כפר סבא": {
+            lat: 32.1780, lon: 34.9066,
+            temp: "24°C", icon: "⛅", desc: "מעונן חלקית | לחות: 55% | רוח: 12 קמ\"ש",
+            allergy: "🌿 <b>פריחה ורגישות עונתית:</b> רגישות עונתית ואבקנים באוויר; מומלץ לעקוב אחר תסמיני נשימה וגירוי בעיניים."
+        },
+        "תל אביב": {
+            lat: 32.0853, lon: 34.7818,
+            temp: "26°C", icon: "🌤️", desc: "נוח ולחות בינונית | לחות: 65% | רוח: 16 קמ\"ש",
+            allergy: "🌿 <b>אבקנים ולחות עירונית:</b> רמה בינונית באזור החוף והעיר."
+        },
+        "ירושלים": {
+            lat: 31.7683, lon: 35.2137,
+            temp: "21°C", icon: "🌥️", desc: "קריר ונעים | לחות: 45% | רוח: 13 קמ\"ש",
+            allergy: "🌿 <b>פריחה הררית:</b> רמה בינונית-גבוהה באזורים מיוערים."
+        },
+        "חיפה": {
+            lat: 32.7940, lon: 34.9896,
+            temp: "25°C", icon: "🌤️", desc: "בהיר לאורך החוף | לחות: 62% | רוח: 15 קמ\"ש",
+            allergy: "🌿 <b>פריחה ואוויר ים:</b> רמה נמוכה עד בינונית."
+        },
+        "באר שבע": {
+            lat: 31.2518, lon: 34.7913,
+            temp: "29°C", icon: "☀️", desc: "שמשי ויבש | לחות: 30% | רוח: 15 קמ\"ש",
+            allergy: "🌿 <b>אבק ורוחות:</b> רמה בינונית באזור הנגב הצפוני."
+        }
     };
 
-    window.onload = function() {
-        const houseCode = getCurrentHouseCode();
-        if(houseCode) {
-            document.getElementById('houseBadge').innerText = `🟢 בית: ${houseCode}`;
+    let toastTimer = null;
+
+    function escapeHtml(str) {
+        return String(str || '')
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function getActiveHouse() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = (
+            urlParams.get('house') ||
+            (typeof getCurrentHouseCode === 'function' ? getCurrentHouseCode() : null) ||
+            localStorage.getItem('vidass_current_house_code') ||
+            localStorage.getItem('vidass_current_house') ||
+            'EILAT-33'
+        ).trim();
+        localStorage.setItem('vidass_current_house_code', code);
+        localStorage.setItem('vidass_current_house', code);
+        return code;
+    }
+
+    function getActiveUser() {
+        return (typeof getCurrentUser === 'function' ? getCurrentUser() : null) ||
+               localStorage.getItem('vidass_current_user') ||
+               'דייר';
+    }
+
+    function getCityPrefKey() {
+        return 'vidass_weather_city_' + getActiveHouse();
+    }
+
+    function readWeatherNotes() {
+        const houseCode = getActiveHouse();
+        if (typeof getSharedData === 'function') {
+            const d = getSharedData('weather');
+            return Array.isArray(d) ? d : [];
         }
-        updateWeatherByCity();
+        try {
+            const raw = localStorage.getItem('vidass_weather_' + houseCode);
+            const parsed = raw ? JSON.parse(raw) : [];
+            return Array.isArray(parsed) ? parsed : [];
+        } catch (_) {
+            return [];
+        }
+    }
+
+    function writeWeatherNotes(arr) {
+        const houseCode = getActiveHouse();
+        if (typeof saveSharedData === 'function') {
+            saveSharedData('weather', arr);
+        } else {
+            localStorage.setItem('vidass_weather_' + houseCode, JSON.stringify(arr));
+        }
+    }
+
+    function wmoToIconAndText(code) {
+        if (code === 0) return { icon: '☀️', label: 'שמים בהירים' };
+        if ([1, 2].includes(code)) return { icon: '⛅', label: 'מעונן חלקית' };
+        if (code === 3) return { icon: '☁️', label: 'מעונן' };
+        if ([45, 48].includes(code)) return { icon: '🌫️', label: 'ערפל / אובך' };
+        if ([51, 53, 55, 61, 63, 65, 80, 81, 82].includes(code)) return { icon: '🌧️', label: 'גשם' };
+        if ([95, 96, 99].includes(code)) return { icon: '⛈️', label: 'סופת רעמים' };
+        return { icon: '🌤️', label: 'תחזית משתנה' };
+    }
+
+    function renderFallbackCity(city, sourceNote = 'נתוני תחזית מקומיים לבית') {
+        const profile = cityProfiles[city] || cityProfiles["אילת"];
+        document.getElementById('wIcon').innerText = profile.icon;
+        document.getElementById('wTemp').innerText = profile.temp;
+        document.getElementById('wCityTitle').innerText = `אזור: ${city}`;
+        document.getElementById('wDesc').innerText = profile.desc;
+        document.getElementById('wSourceMeta').innerText = sourceNote;
+        document.getElementById('allergyStatus').innerHTML = profile.allergy;
+    }
+
+    async function fetchLiveWeatherForCurrentCity() {
+        const city = document.getElementById('citySelector').value;
+        const profile = cityProfiles[city] || cityProfiles["אילת"];
+        renderFallbackCity(city, 'מעדכן תחזית חיה...');
+
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${profile.lat}&longitude=${profile.lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&timezone=auto`;
+
+        try {
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), 4500);
+            const res = await fetch(url, { signal: controller.signal });
+            clearTimeout(timer);
+
+            if (!res.ok) throw new Error('bad status');
+            const json = await res.json();
+            const cur = json && json.current;
+            if (!cur || typeof cur.temperature_2m !== 'number') throw new Error('missing current');
+
+            const mapped = wmoToIconAndText(cur.weather_code);
+            const tempStr = `${Math.round(cur.temperature_2m)}°C`;
+            const humStr = typeof cur.relative_humidity_2m === 'number' ? `לחות: ${Math.round(cur.relative_humidity_2m)}%` : '';
+            const windStr = typeof cur.wind_speed_10m === 'number' ? `רוח: ${Math.round(cur.wind_speed_10m)} קמ"ש` : '';
+            const details = [mapped.label, humStr, windStr].filter(Boolean).join(' | ');
+
+            document.getElementById('wIcon').innerText = mapped.icon;
+            document.getElementById('wTemp').innerText = tempStr;
+            document.getElementById('wCityTitle').innerText = `אזור: ${city}`;
+            document.getElementById('wDesc').innerText = details;
+            document.getElementById('wSourceMeta').innerText = `עודכן בזמן אמת (${new Date().toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })})`;
+            document.getElementById('allergyStatus').innerHTML = profile.allergy;
+        } catch (_) {
+            renderFallbackCity(city, 'מצב אופליין / גיבוי מקומי פעיל');
+        }
+    }
+
+    function onCityChanged() {
+        const city = document.getElementById('citySelector').value;
+        try {
+            localStorage.setItem(getCityPrefKey(), city);
+        } catch (_) {}
+        fetchLiveWeatherForCurrentCity();
+    }
+
+    window.onload = function() {
+        const houseCode = getActiveHouse();
+        document.getElementById('houseBadge').innerText = `🟢 בית: ${escapeHtml(houseCode)}`;
+
+        const savedCity = localStorage.getItem(getCityPrefKey());
+        if (savedCity && cityProfiles[savedCity]) {
+            document.getElementById('citySelector').value = savedCity;
+        }
+
+        fetchLiveWeatherForCurrentCity();
         loadWeatherNotes();
     };
 
-    function updateWeatherByCity() {
-        const city = document.getElementById('citySelector').value;
-        const data = cityWeatherData[city] || cityWeatherData["אילת"];
-
-        document.getElementById('wIcon').innerText = data.icon;
-        document.getElementById('wTemp').innerText = data.temp;
-        document.getElementById('wCityTitle').innerText = `אזור: ${city}`;
-        document.getElementById('wDesc').innerText = data.desc;
-        document.getElementById('allergyStatus').innerHTML = `🌿 <b>אבקנים ופריחה:</b> ${data.allergy}`;
-    }
-
     function loadWeatherNotes() {
-        const data = getSharedData('weather');
+        const data = readWeatherNotes();
         const container = document.getElementById('weatherNotesList');
-        
-        container.innerHTML = data.length === 0 ? '<p style="text-align:center; font-size:12px; color:var(--text-muted);">אין התראות מזג אוויר או בריאות פעילות כרגע.</p>' : '';
-        data.slice().reverse().forEach((item, index) => {
-            const actualIndex = data.length - 1 - index;
+        const searchTerm = (document.getElementById('searchWeatherInput').value || '').trim().toLowerCase();
+
+        const matchedIndices = [];
+        for (let i = data.length - 1; i >= 0; i--) {
+            const item = data[i];
+            const matches = !searchTerm ||
+                String(item.text || '').toLowerCase().includes(searchTerm) ||
+                String(item.severity || '').toLowerCase().includes(searchTerm) ||
+                String(item.addedBy || '').toLowerCase().includes(searchTerm);
+            if (matches) {
+                matchedIndices.push(i);
+            }
+        }
+
+        if (matchedIndices.length === 0) {
+            container.innerHTML = `<p style="text-align:center; font-size:12px; color:var(--text-muted);">${data.length === 0 ? 'אין התראות מזג אוויר או בריאות פעילות כרגע.' : 'לא נמצאו התראות התואמות לחיפוש.'}</p>`;
+            return;
+        }
+
+        container.innerHTML = '';
+        matchedIndices.forEach((actualIndex) => {
+            const item = data[actualIndex];
+            const sev = item.severity || 'מידע';
+            const sevClass = ['גבוהה', 'בינונית', 'מידע'].includes(sev) ? `sev-${sev}` : 'sev-מידע';
+
             container.innerHTML += `
                 <div class="item-row">
                     <div>
-                        <span>⚠️ ${item.text}</span>
-                        <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">הוסף ע"י: ${item.addedBy || 'דייר'} | ${item.date}</div>
+                        <span>⚠️ ${escapeHtml(item.text)}</span>
+                        <span class="sev-pill ${sevClass}">${escapeHtml(sev)}</span>
+                        <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">הוסף ע"י: ${escapeHtml(item.addedBy || 'דייר')} | ${escapeHtml(item.date || '')}</div>
                     </div>
-                    <button onclick="removeWeatherNote(${actualIndex})" style="background:rgba(239,68,68,0.1); color:var(--danger); border:1px solid rgba(239,68,68,0.3); padding:4px 8px; border-radius:6px; cursor:pointer; font-size:11px;">מחק</button>
+                    <button type="button" class="btn-del" onclick="removeWeatherNote(${actualIndex})">מחק</button>
                 </div>`;
         });
     }
 
     function addWeatherNote() {
         const input = document.getElementById('weatherNote');
+        const severityInput = document.getElementById('alertSeverityInput');
         const text = input.value.trim();
-        if(!text) { showToast("נא להזין תוכן התראה", true); return; }
+        const severity = severityInput.value;
 
-        let data = getSharedData('weather');
-        data.push({ 
-            text, 
-            addedBy: getCurrentUser(),
-            date: new Date().toLocaleDateString('he-IL') 
+        if (!text) {
+            showToast("נא להזין תוכן התראה", true);
+            return;
+        }
+
+        const data = readWeatherNotes();
+        data.push({
+            text,
+            severity,
+            addedBy: getActiveUser(),
+            date: new Date().toLocaleDateString('he-IL')
         });
-        saveSharedData('weather', data);
+        writeWeatherNotes(data);
 
         input.value = '';
+        input.focus();
         loadWeatherNotes();
         showToast("ההתראה נשמרה ושותפה לכל דיירי הבית!");
     }
 
     function removeWeatherNote(index) {
-        let data = getSharedData('weather');
+        const data = readWeatherNotes();
         data.splice(index, 1);
-        saveSharedData('weather', data);
+        writeWeatherNotes(data);
         loadWeatherNotes();
         showToast("ההתראה הוסרה בהצלחה.");
     }
@@ -182,8 +376,22 @@
         toast.innerText = msg;
         toast.style.background = isError ? 'var(--danger)' : 'var(--success)';
         toast.classList.add('show');
-        setTimeout(() => toast.classList.remove('show'), 3000);
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
     }
+
+    window.addEventListener('vidass:data-updated', function(e) {
+        if (!e || !e.detail || !e.detail.module || e.detail.module === 'weather' || e.detail.module === 'all') {
+            loadWeatherNotes();
+        }
+    });
+
+    window.addEventListener('storage', function(event) {
+        const houseCode = getActiveHouse();
+        if (event.key === 'vidass_weather_' + houseCode) {
+            loadWeatherNotes();
+        }
+    });
 </script>
 
 </body>

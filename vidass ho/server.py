@@ -1,98 +1,190 @@
 from flask import Flask, request, jsonify
+import hashlib
+import hmac
 import json
 import os
+import secrets
+import threading
 
 app = Flask(__name__)
 DB_FILE = "vidass_data.json"
+_db_lock = threading.Lock()
+
+DEFAULT_MODULES = {
+    "shopping": [],
+    "inventory": [],
+    "tasks": [],
+    "recipes": [],
+    "pocket": [],
+    "travel": [],
+    "weather": [],
+    "expenses": [],
+    "calendar": [],
+    "alerts": [],
+    "iot_devices": [],
+    "events": [],
+}
+
+
+def hash_password(password: str, salt: str | None = None) -> str:
+    salt = salt or secrets.token_hex(8)
+    digest = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt.encode("utf-8"), 100_000).hex()
+    return f"pbkdf2_sha256${salt}${digest}"
+
+
+def verify_password(stored_value: str, candidate: str) -> bool:
+    if not stored_value:
+        return candidate == ""
+    if stored_value.startswith("pbkdf2_sha256$"):
+        parts = stored_value.split("$", 2)
+        if len(parts) != 3:
+            return False
+        _, salt, expected_hex = parts
+        actual_hex = hashlib.pbkdf2_hmac(
+            "sha256", candidate.encode("utf-8"), salt.encode("utf-8"), 100_000
+        ).hex()
+        return hmac.compare_digest(actual_hex, expected_hex)
+    return hmac.compare_digest(stored_value, candidate)
+
 
 def load_db():
     if not os.path.exists(DB_FILE):
         return {}
     try:
         with open(DB_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
+            data = json.load(f)
+            return data if isinstance(data, dict) else {}
     except Exception as e:
         print(f"שגיאה בטעינת מסד הנתונים: {e}")
         return {}
 
+
 def save_db(data):
+    temp_file = f"{DB_FILE}.tmp"
     try:
-        with open(DB_FILE, "w", encoding="utf-8") as f:
+        with open(temp_file, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=4)
+        os.replace(temp_file, DB_FILE)
     except Exception as e:
         print(f"שגיאה בשמירת מסד הנתונים: {e}")
+        if os.path.exists(temp_file):
+            try:
+                os.remove(temp_file)
+            except OSError:
+                pass
 
-@app.route('/api/health', methods=['GET'])
+
+@app.after_request
+def add_cors_headers(response):
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+    return response
+
+
+@app.route("/api/health", methods=["GET"])
 def health_check():
     return jsonify({"status": "online", "system": "VIDASS Private Cloud Core"})
 
-# נקודת קצה חדשה לאימות קוד בית וסיסמה
-@app.route('/api/auth', methods=['POST'])
+
+@app.route("/api/auth", methods=["POST", "OPTIONS"])
 def authenticate_house():
-    db = load_db()
-    req_data = request.json or {}
-    house_code = req_data.get('house_code', '').strip().upper()
-    password = req_data.get('password', '').strip()
+    if request.method == "OPTIONS":
+        return jsonify({"status": "ok"}), 200
+
+    req_data = request.get_json(silent=True) or {}
+    house_code = str(req_data.get("house_code", "")).strip().upper()
+    password = str(req_data.get("password", ""))
 
     if not house_code:
         return jsonify({"status": "error", "message": "נא להזין קוד בית"}), 400
 
-    # אם הבית לא קיים עדיין, ניצור אותו אוטומטית עם סיסמת ברירת מחדל
-    if house_code not in db:
-        db[house_code] = {
-            "password": password if password else "1234",
-            "members": [{"name": "ויקי", "phone": "לא צוין", "role": "מנהל הבית"}],
-            "data": {
-                "shopping": [], "inventory": [], "tasks": [], "recipes": [], 
-                "pocket": [], "travel": [], "weather": [], "expenses": [], "calendar": [], "alerts": []
+    with _db_lock:
+        db = load_db()
+
+        if house_code not in db:
+            effective_password = password if password.strip() else "1234"
+            modules_copy = {k: list(v) for k, v in DEFAULT_MODULES.items()}
+            db[house_code] = {
+                "password_hash": hash_password(effective_password),
+                "members": [{"name": "ויקי", "phone": "לא צוין", "role": "מנהל הבית"}],
+                "data": modules_copy,
             }
-        }
-        save_db(db)
-        return jsonify({"status": "success", "message": "הבית נוצר בהצלחה והחיבור אושר!"})
+            save_db(db)
+            token = secrets.token_urlsafe(24)
+            return jsonify({
+                "status": "success",
+                "message": "הבית נוצר בהצלחה והחיבור אושר!",
+                "token": token,
+            })
 
-    # בדיקת תקינות סיסמה לבית קיים
-    stored_password = db[house_code].get("password", "1234")
-    if stored_password != password:
-        return jsonify({"status": "error", "message": "סיסמת בית שגויה!"}), 401
+        house_record = db[house_code]
+        stored_secret = house_record.get("password_hash")
+        if stored_secret is None:
+            stored_secret = house_record.get("password", "1234")
+            house_record["password_hash"] = hash_password(str(stored_secret))
+            house_record.pop("password", None)
+            save_db(db)
 
-    return jsonify({"status": "success", "message": "האימות עבר בהצלחה!"})
+        if not verify_password(str(stored_secret), password):
+            return jsonify({"status": "error", "message": "סיסמת בית שגויה!"}), 401
 
-@app.route('/api/get/<house_code>', methods=['GET'])
+        token = secrets.token_urlsafe(24)
+        return jsonify({
+            "status": "success",
+            "message": "האימות עבר בהצלחה!",
+            "token": token,
+        })
+
+
+@app.route("/api/get/<house_code>", methods=["GET"])
 def get_house_data(house_code):
-    db = load_db()
-    house_code = house_code.strip().upper()
-    
-    if house_code not in db:
+    clean_code = str(house_code or "").strip().upper()
+    with _db_lock:
+        db = load_db()
+
+    if clean_code not in db:
         return jsonify({"status": "error", "message": "הבית אינו קיים במערכת"}), 404
 
-    # מחזירים את נתוני הבית (ללא סיסמה מטעמי אבטחה)
-    house_package = {
-        "members": db[house_code].get("members", []),
-        "data": db[house_code].get("data", {})
-    }
-    return jsonify(house_package)
+    record = db[clean_code]
+    merged_data = {k: list(v) for k, v in DEFAULT_MODULES.items()}
+    if isinstance(record.get("data"), dict):
+        merged_data.update(record["data"])
 
-@app.route('/api/save/<house_code>', methods=['POST'])
+    return jsonify({
+        "members": record.get("members", []),
+        "data": merged_data,
+    })
+
+
+@app.route("/api/save/<house_code>", methods=["POST", "OPTIONS"])
 def save_house_data(house_code):
-    db = load_db()
-    house_code = house_code.strip().upper()
-    req_data = request.json or {}
-    
-    if house_code not in db:
-        return jsonify({"status": "error", "message": "הבית אינו קיים, נדרש אימות ראשוני"}), 404
+    if request.method == "OPTIONS":
+        return jsonify({"status": "ok"}), 200
 
-    # עדכון רשימת הדיירים אם קיימת בבקשה
-    if "members" in req_data:
-        db[house_code]["members"] = req_data["members"]
-        
-    # עדכון המודולים השונים בזמן אמת
-    if "data" in req_data:
-        for module_key, module_val in req_data["data"].items():
-            db[house_code]["data"][module_key] = module_val
-        
-    save_db(db)
+    clean_code = str(house_code or "").strip().upper()
+    req_data = request.get_json(silent=True) or {}
+
+    with _db_lock:
+        db = load_db()
+        if clean_code not in db:
+            return jsonify({"status": "error", "message": "הבית אינו קיים, נדרש אימות ראשוני"}), 404
+
+        house_record = db[clean_code]
+        house_record.setdefault("data", {})
+
+        if "members" in req_data and isinstance(req_data["members"], list):
+            house_record["members"] = req_data["members"]
+
+        if "data" in req_data and isinstance(req_data["data"], dict):
+            for module_key, module_val in req_data["data"].items():
+                house_record["data"][module_key] = module_val
+
+        save_db(db)
+
     return jsonify({"status": "success", "message": "הנתונים עודכנו בענן הפרטי בהצלחה!"})
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     print("🚀 שרת הענן הפרטי של VIDASS רץ כעת ומוכן עם אבטחת סיסמאות לבתים...")
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)

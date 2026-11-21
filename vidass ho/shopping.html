@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VIDASS Micro-App - רשימת קניות</title>
-    <!-- קישור לקובץ הסנכרון המשותף בין דיירי הבית -->
     <script src="storage-sync.js"></script>
     <style>
         :root {
@@ -18,18 +17,42 @@
             --text-muted: #9ca3af;
             --success: #10b981;
             --danger: #ef4444;
+            --gold: #f59e0b;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background: var(--bg-gradient); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .app-container { width: 100%; max-width: 600px; background: var(--card-bg); backdrop-filter: blur(14px); border: 1px solid var(--card-border); border-radius: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.8); padding: 24px; }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 16px; }
+        .app-container { width: 100%; max-width: 640px; background: var(--card-bg); backdrop-filter: blur(14px); border: 1px solid var(--card-border); border-radius: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.8); padding: 24px; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 16px; gap: 10px; flex-wrap: wrap; }
         .header h1 { font-size: 20px; color: var(--accent); }
         .badge { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--success); padding: 4px 10px; border-radius: 8px; font-size: 11px; }
+
+        .summary-bar { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; background: rgba(216, 67, 112, 0.08); border: 1px solid rgba(216, 67, 112, 0.25); border-radius: 12px; padding: 10px 14px; margin-bottom: 14px; font-size: 12px; color: var(--text-muted); }
+        .summary-bar strong { color: var(--accent); }
+
         .input-group { margin-bottom: 12px; text-align: right; }
         .input-group label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
         .input-group input { width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; color: white; font-size: 13px; outline: none; text-align: right; }
-        .btn { width: 100%; padding: 11px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 5px; }
-        .item-row { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+        .input-group input:focus { border-color: var(--primary); }
+
+        .filter-row { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
+        .filter-row input { flex: 1; min-width: 150px; padding: 8px 12px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; color: white; font-size: 12px; outline: none; text-align: right; }
+        .filter-btn { padding: 7px 11px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.04); color: var(--text-muted); font-size: 11px; font-weight: bold; cursor: pointer; }
+        .filter-btn.active { background: rgba(216, 67, 112, 0.2); border-color: var(--primary); color: var(--accent); }
+        .clear-done-btn { padding: 7px 11px; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.1); color: var(--danger); font-size: 11px; font-weight: bold; cursor: pointer; }
+
+        .btn { width: 100%; padding: 11px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 4px; }
+        .btn:hover { opacity: 0.92; }
+
+        .item-row { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; gap: 10px; }
+        .item-row.completed .item-title { text-decoration: line-through; color: var(--text-muted); }
+
+        .check-label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+        .check-label input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--success); cursor: pointer; }
+
+        .item-actions { display: flex; gap: 6px; flex-shrink: 0; }
+        .btn-inv { background: rgba(245, 158, 11, 0.14); color: var(--gold); border: 1px solid rgba(245, 158, 11, 0.35); padding: 4px 8px; border-radius: 6px; cursor: pointer; font-size: 11px; }
+        .btn-del { background: rgba(239,68,68,0.1); color: var(--danger); border: 1px solid rgba(239,68,68,0.3); padding: 4px 8px; border-radius: 6px; cursor: pointer; font-size: 11px; }
+
         .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: white; padding: 10px 20px; border-radius: 10px; font-size: 13px; transition: transform 0.3s; z-index: 1000; }
         .toast.show { transform: translateX(-50%) translateY(0); }
     </style>
@@ -45,40 +68,158 @@
         <div class="badge" id="houseBadge">🟢 מחובר לבית המשותף</div>
     </div>
 
+    <div class="summary-bar" id="shoppingSummary">
+        <span>נותרו לקנייה: <strong>0</strong></span>
+        <span>נקנו: <strong>0</strong></span>
+    </div>
+
     <div class="input-group">
-        <label>הוסף מוצר חדש לרשימה (לדוגמה: חלב, ביצים, ירקות)</label>
+        <label for="itemName">הוסף מוצר חדש לרשימה (לדוגמה: חלב, ביצים, ירקות)</label>
         <input type="text" id="itemName" placeholder="הכנס שם מוצר..." onkeypress="if(event.key==='Enter') addItem()">
     </div>
-    <button class="btn" onclick="addItem()">הוסף מוצר לרשימה 🛒</button>
+    <button type="button" class="btn" onclick="addItem()">הוסף מוצר לרשימה 🛒</button>
 
-    <div style="margin-top: 20px; max-height: 260px; overflow-y: auto;" id="itemsList"></div>
+    <div class="filter-row" style="margin-top: 16px;">
+        <input type="text" id="searchShoppingInput" placeholder="חיפוש מוצר..." oninput="loadItems()">
+        <button type="button" class="filter-btn active" id="filterAllBtn" onclick="setFilterMode('all')">הכל</button>
+        <button type="button" class="filter-btn" id="filterOpenBtn" onclick="setFilterMode('open')">פתוחים</button>
+        <button type="button" class="filter-btn" id="filterDoneBtn" onclick="setFilterMode('done')">נקנו</button>
+        <button type="button" class="clear-done-btn" onclick="clearCompletedItems()">נקה שנקנו</button>
+    </div>
+
+    <div style="max-height: 260px; overflow-y: auto;" id="itemsList"></div>
 </div>
 
 <div class="toast" id="toastMsg">הפעולה בוצעה בהצלחה!</div>
 
 <script>
-    window.onload = function() {
-        const houseCode = getCurrentHouseCode();
-        if(houseCode) {
-            document.getElementById('houseBadge').innerText = `🟢 בית: ${houseCode}`;
+    let currentFilterMode = 'all';
+
+    function escapeHtml(str) {
+        return String(str || '')
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function getActiveHouse() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = (
+            urlParams.get('house') ||
+            (typeof getCurrentHouseCode === 'function' ? getCurrentHouseCode() : null) ||
+            localStorage.getItem('vidass_current_house_code') ||
+            localStorage.getItem('vidass_current_house') ||
+            'EILAT-33'
+        ).trim();
+        localStorage.setItem('vidass_current_house_code', code);
+        localStorage.setItem('vidass_current_house', code);
+        return code;
+    }
+
+    function getActiveUser() {
+        return (typeof getCurrentUser === 'function' ? getCurrentUser() : null) ||
+               localStorage.getItem('vidass_current_user') ||
+               'דייר';
+    }
+
+    function readModuleList(mod) {
+        const houseCode = getActiveHouse();
+        if (typeof getSharedData === 'function') {
+            const d = getSharedData(mod);
+            return Array.isArray(d) ? d : [];
         }
+        try {
+            const raw = localStorage.getItem(`vidass_${mod}_${houseCode}`);
+            const parsed = raw ? JSON.parse(raw) : [];
+            return Array.isArray(parsed) ? parsed : [];
+        } catch (_) {
+            return [];
+        }
+    }
+
+    function writeModuleList(mod, arr) {
+        const houseCode = getActiveHouse();
+        if (typeof saveSharedData === 'function') {
+            saveSharedData(mod, arr);
+        } else {
+            localStorage.setItem(`vidass_${mod}_${houseCode}`, JSON.stringify(arr));
+        }
+    }
+
+    function getItemLabel(item) {
+        return String((item && (item.name || item.text)) || '').trim();
+    }
+
+    function setFilterMode(mode) {
+        currentFilterMode = mode;
+        document.getElementById('filterAllBtn').classList.toggle('active', mode === 'all');
+        document.getElementById('filterOpenBtn').classList.toggle('active', mode === 'open');
+        document.getElementById('filterDoneBtn').classList.toggle('active', mode === 'done');
+        loadItems();
+    }
+
+    window.onload = function() {
+        const houseCode = getActiveHouse();
+        document.getElementById('houseBadge').innerText = `🟢 בית: ${escapeHtml(houseCode)}`;
         loadItems();
     };
 
     function loadItems() {
-        const data = getSharedData('shopping');
+        const data = readModuleList('shopping');
         const container = document.getElementById('itemsList');
-        
-        container.innerHTML = data.length === 0 ? '<p style="text-align:center; font-size:12px; color:var(--text-muted);">רשימת הקניות ריקה כרגע.</p>' : '';
-        data.slice().reverse().forEach((item, index) => {
-            const actualIndex = data.length - 1 - index;
+        const summaryEl = document.getElementById('shoppingSummary');
+        const searchTerm = (document.getElementById('searchShoppingInput').value || '').trim().toLowerCase();
+
+        const openCount = data.filter(i => !(i && i.completed)).length;
+        const doneCount = data.filter(i => Boolean(i && i.completed)).length;
+        summaryEl.innerHTML = `
+            <span>נותרו לקנייה: <strong>${openCount}</strong></span>
+            <span>נקנו: <strong>${doneCount}</strong></span>
+        `;
+
+        const matchedIndices = [];
+        for (let i = data.length - 1; i >= 0; i--) {
+            const item = data[i];
+            const isDone = Boolean(item && item.completed);
+            const modeMatch = currentFilterMode === 'all' ||
+                (currentFilterMode === 'open' && !isDone) ||
+                (currentFilterMode === 'done' && isDone);
+
+            const label = getItemLabel(item).toLowerCase();
+            const adder = String((item && item.addedBy) || '').toLowerCase();
+            const textMatch = !searchTerm || label.includes(searchTerm) || adder.includes(searchTerm);
+
+            if (modeMatch && textMatch) {
+                matchedIndices.push(i);
+            }
+        }
+
+        if (matchedIndices.length === 0) {
+            container.innerHTML = `<p style="text-align:center; font-size:12px; color:var(--text-muted);">${data.length === 0 ? 'רשימת הקניות ריקה כרגע.' : 'אין מוצרים התואמים לסינון.'}</p>`;
+            return;
+        }
+
+        container.innerHTML = '';
+        matchedIndices.forEach((actualIndex) => {
+            const item = data[actualIndex];
+            const label = getItemLabel(item);
+            const isDone = Boolean(item && item.completed);
+
             container.innerHTML += `
-                <div class="item-row">
-                    <div>
-                        <span>🛒 ${item.name}</span>
-                        <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">הוסף ע"י: ${item.addedBy || 'דייר'}</div>
+                <div class="item-row ${isDone ? 'completed' : ''}">
+                    <label class="check-label">
+                        <input type="checkbox" ${isDone ? 'checked' : ''} onchange="toggleItemCompleted(${actualIndex})">
+                        <div>
+                            <span class="item-title">🛒 ${escapeHtml(label)}</span>
+                            <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">הוסף ע"י: ${escapeHtml(item.addedBy || 'דייר')} ${item.date ? '| ' + escapeHtml(item.date) : ''}</div>
+                        </div>
+                    </label>
+                    <div class="item-actions">
+                        <button type="button" class="btn-inv" onclick="moveItemToInventory(${actualIndex})">למלאי 📦</button>
+                        <button type="button" class="btn-del" onclick="removeItem(${actualIndex})">מחק</button>
                     </div>
-                    <button onclick="removeItem(${actualIndex})" style="background:rgba(239,68,68,0.1); color:var(--danger); border:1px solid rgba(239,68,68,0.3); padding:4px 8px; border-radius:6px; cursor:pointer; font-size:11px;">מחק</button>
                 </div>`;
         });
     }
@@ -86,25 +227,84 @@
     function addItem() {
         const input = document.getElementById('itemName');
         const name = input.value.trim();
-        if(!name) { showToast("נא להזין שם מוצר", true); return; }
+        if (!name) {
+            showToast("נא להזין שם מוצר", true);
+            return;
+        }
 
-        let data = getSharedData('shopping');
-        data.push({ 
-            name, 
-            addedBy: getCurrentUser(),
-            date: new Date().toLocaleDateString('he-IL') 
+        const data = readModuleList('shopping');
+        const normalized = name.toLowerCase();
+        const duplicateOpen = data.some(item =>
+            getItemLabel(item).toLowerCase() === normalized && !(item && item.completed)
+        );
+        if (duplicateOpen) {
+            showToast("המוצר כבר מופיע ברשימה הפתוחה", true);
+            return;
+        }
+
+        data.push({
+            name,
+            text: name,
+            completed: false,
+            addedBy: getActiveUser(),
+            date: new Date().toLocaleDateString('he-IL')
         });
-        saveSharedData('shopping', data);
+        writeModuleList('shopping', data);
 
         input.value = '';
+        input.focus();
         loadItems();
         showToast("המוצר נוסף ושותף לכל דיירי הבית!");
     }
 
+    function toggleItemCompleted(index) {
+        const data = readModuleList('shopping');
+        if (!data[index]) return;
+        data[index].completed = !Boolean(data[index].completed);
+        writeModuleList('shopping', data);
+        loadItems();
+    }
+
+    function moveItemToInventory(index) {
+        const shopping = readModuleList('shopping');
+        const item = shopping[index];
+        if (!item) return;
+
+        const itemName = getItemLabel(item);
+        if (!itemName) return;
+
+        const inventory = readModuleList('inventory');
+        inventory.push({
+            name: itemName,
+            quantity: "1 יח'",
+            addedBy: getActiveUser(),
+            date: new Date().toLocaleDateString('he-IL')
+        });
+        writeModuleList('inventory', inventory);
+
+        shopping.splice(index, 1);
+        writeModuleList('shopping', shopping);
+
+        loadItems();
+        showToast(`"${itemName}" הועבר למלאי הבית! 📦`);
+    }
+
+    function clearCompletedItems() {
+        const data = readModuleList('shopping');
+        const remaining = data.filter(item => !(item && item.completed));
+        if (remaining.length === data.length) {
+            showToast("אין מוצרים מסומנים שנקנו לניקוי", true);
+            return;
+        }
+        writeModuleList('shopping', remaining);
+        loadItems();
+        showToast("המוצרים שנקנו נוקו מהרשימה.");
+    }
+
     function removeItem(index) {
-        let data = getSharedData('shopping');
+        const data = readModuleList('shopping');
         data.splice(index, 1);
-        saveSharedData('shopping', data);
+        writeModuleList('shopping', data);
         loadItems();
         showToast("המוצר הוסר מהרשימה.");
     }
@@ -116,6 +316,19 @@
         toast.classList.add('show');
         setTimeout(() => toast.classList.remove('show'), 3000);
     }
+
+    window.addEventListener('vidass:data-updated', function(e) {
+        if (!e || !e.detail || !e.detail.module || e.detail.module === 'shopping' || e.detail.module === 'all') {
+            loadItems();
+        }
+    });
+
+    window.addEventListener('storage', function(event) {
+        const houseCode = getActiveHouse();
+        if (event.key === 'vidass_shopping_' + houseCode) {
+            loadItems();
+        }
+    });
 </script>
 
 </body>

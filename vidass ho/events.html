@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIDASS Micro-App - אירועים ופעילויות</title>
-    <!-- קישור לקובץ הסנכרון המשותף בין דיירי הבית -->
+    <title>VIDASS Micro-App - מתכנן ומפיק אירועים מלא</title>
     <script src="storage-sync.js"></script>
     <style>
         :root {
@@ -22,17 +21,51 @@
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background: var(--bg-gradient); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .app-container { width: 100%; max-width: 600px; background: var(--card-bg); backdrop-filter: blur(14px); border: 1px solid var(--card-border); border-radius: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.8); padding: 24px; }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 16px; }
+        .app-container { width: 100%; max-width: 780px; background: var(--card-bg); backdrop-filter: blur(14px); border: 1px solid var(--card-border); border-radius: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.8); padding: 24px; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 18px; gap: 10px; flex-wrap: wrap; }
         .header h1 { font-size: 20px; color: var(--accent); }
         .badge { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--success); padding: 4px 10px; border-radius: 8px; font-size: 11px; }
-        
+
+        .section-card { background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 16px; margin-bottom: 16px; }
+        .section-title { font-size: 14px; color: var(--gold); margin-bottom: 12px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+        .row-inputs { display: flex; gap: 10px; flex-wrap: wrap; }
+        .row-inputs .input-group { flex: 1; min-width: 170px; }
+
         .input-group { margin-bottom: 12px; text-align: right; }
         .input-group label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
-        .input-group input { width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; color: white; font-size: 13px; outline: none; text-align: right; }
-        .btn { width: 100%; padding: 11px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 5px; }
-        
-        .item-row { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+        .input-group input, .input-group select, .input-group textarea { width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; color: white; font-size: 13px; outline: none; text-align: right; }
+        .input-group option { background: #1a1622; color: white; }
+        .input-group textarea { resize: vertical; min-height: 62px; }
+
+        .btn { width: 100%; padding: 12px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 6px; font-size: 14px; }
+        .btn:hover { opacity: 0.92; }
+        .btn-small { width: auto; padding: 6px 12px; font-size: 12px; margin-top: 0; }
+        .btn-secondary { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18); color: var(--text-main); }
+
+        .sub-row { display: flex; gap: 8px; align-items: center; background: rgba(0,0,0,0.22); border: 1px solid rgba(255,255,255,0.07); border-radius: 10px; padding: 8px 10px; margin-bottom: 8px; flex-wrap: wrap; }
+        .sub-row input, .sub-row select { padding: 7px 9px; font-size: 12px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; color: white; outline: none; text-align: right; }
+        .sub-row input.grow { flex: 2; min-width: 140px; }
+        .sub-row input.num { width: 105px; }
+        .sub-row input.time-col { width: 110px; }
+        .btn-remove-mini { background: rgba(239,68,68,0.15); color: var(--danger); border: 1px solid rgba(239,68,68,0.35); border-radius: 7px; padding: 5px 8px; cursor: pointer; font-size: 11px; }
+
+        .summary-bar { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 12px; padding: 10px 14px; font-size: 12px; color: var(--gold); margin-top: 8px; }
+
+        .event-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(216, 67, 112, 0.28); border-radius: 16px; padding: 16px; margin-bottom: 14px; }
+        .event-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+        .event-meta { font-size: 12px; color: var(--text-muted); margin-top: 4px; line-height: 1.5; }
+        .pill { display: inline-block; padding: 3px 9px; border-radius: 8px; font-size: 11px; font-weight: bold; background: rgba(216, 67, 112, 0.16); color: var(--accent); border: 1px solid rgba(216, 67, 112, 0.35); margin-left: 6px; margin-bottom: 4px; }
+        .pill-gold { background: rgba(245, 158, 11, 0.16); color: var(--gold); border-color: rgba(245, 158, 11, 0.35); }
+        .pill-green { background: rgba(16, 185, 129, 0.16); color: var(--success); border-color: rgba(16, 185, 129, 0.35); }
+        .pill-red { background: rgba(239, 68, 68, 0.16); color: var(--danger); border-color: rgba(239, 68, 68, 0.35); }
+
+        .detail-block { margin-top: 10px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.08); font-size: 12px; }
+        .detail-block h4 { color: var(--accent); font-size: 12px; margin-bottom: 6px; }
+        .detail-line { display: flex; justify-content: space-between; gap: 8px; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.04); align-items: center; flex-wrap: wrap; }
+        .chk-label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+        .card-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+
         .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: white; padding: 10px 20px; border-radius: 10px; font-size: 13px; transition: transform 0.3s; z-index: 1000; }
         .toast.show { transform: translateX(-50%) translateY(0); }
     </style>
@@ -42,82 +75,534 @@
 <div class="app-container">
     <div class="header">
         <div>
-            <h1>🎉 דפדפן אירועים ופעילויות</h1>
-            <p style="font-size: 11px; color: var(--text-muted);">ניהול וריכוז אירועים משותפים לכל הבית</p>
+            <h1>🎪 מתכנן ומפיק אירועים מלא</h1>
+            <p style="font-size: 11px; color: var(--text-muted);">הפקה עצמאית מלאה — מהפרט הכי קטן ועד הלוגיסטיקה והתקציב הכי גדול</p>
         </div>
         <div class="badge" id="houseBadge">🟢 מחובר לבית המשותף</div>
     </div>
 
-    <div class="input-group">
-        <label>שם האירוע / הפעילות</label>
-        <input type="text" id="eventTitle" placeholder="לדוגמה: ארוחת ערב משפחתית, טיול בפארק...">
+    <div class="section-card">
+        <div class="section-title">
+            <span id="formModeTitle">📌 פרטי בסיס, סגנון ומיקום האירוע</span>
+            <button type="button" id="cancelEditBtn" class="btn btn-small btn-secondary" style="display:none;" onclick="cancelEditEvent()">ביטול עריכה</button>
+        </div>
+        <div class="row-inputs">
+            <div class="input-group">
+                <label>שם האירוע / הפעילות</label>
+                <input type="text" id="eventTitle" placeholder="לדוגמה: יום הולדת 50, בר מצווה, שבת חתן...">
+            </div>
+            <div class="input-group">
+                <label>סוג / קונספט האירוע</label>
+                <input type="text" id="eventType" placeholder="לדוגמה: חגיגה משפחתית, מסיבת גינה...">
+            </div>
+        </div>
+        <div class="row-inputs">
+            <div class="input-group">
+                <label>תאריך ושעה</label>
+                <input type="text" id="eventDate" placeholder="לדוגמה: 15/12/2026 בשעה 19:30">
+            </div>
+            <div class="input-group">
+                <label>מיקום / אולם / כתובת</label>
+                <input type="text" id="eventLocation" placeholder="לדוגמה: חצר הבית / אולם / פארק">
+            </div>
+            <div class="input-group">
+                <label>כמות מוזמנים משוערת</label>
+                <input type="number" id="eventGuests" min="0" placeholder="לדוגמה: 45">
+            </div>
+        </div>
+        <div class="row-inputs">
+            <div class="input-group">
+                <label>תקציב מתוכנן (₪)</label>
+                <input type="number" id="eventBudget" min="0" step="0.01" placeholder="לדוגמה: 5000">
+            </div>
+            <div class="input-group">
+                <label>אחראי הפקה ראשי</label>
+                <input type="text" id="eventLead" placeholder="מי מרכז את ההפקה?">
+            </div>
+        </div>
+        <div class="input-group">
+            <label>קונספט, קוד לבוש, נגישות והערות כלליות</label>
+            <textarea id="eventNotes" placeholder="לדוגמה: עיצוב צבעוני, תפריט ייעודי, כניסה מונגשת, חניה, גיבוי למזג אוויר..."></textarea>
+        </div>
     </div>
-    <div class="input-group">
-        <label>מועד האירוע (תאריך ושעה)</label>
-        <input type="text" id="eventDate" placeholder="לדוגמה: מוצאי שבת בשעה 20:30..." onkeypress="if(event.key==='Enter') addEvent()">
-    </div>
-    <button class="btn" onclick="addEvent()">שמור אירוע במערכת 🎉</button>
 
-    <div style="margin-top: 20px; max-height: 240px; overflow-y: auto;" id="eventsList"></div>
+    <div class="section-card">
+        <div class="section-title">
+            <span>🧩 פירוט פריטים, ציוד, אוכל ועיצוב (מהקטן לגדול)</span>
+            <button type="button" class="btn btn-small btn-secondary" onclick="addItemDraftRow()">+ הוסף פריט</button>
+        </div>
+        <div id="draftItemsContainer"></div>
+    </div>
+
+    <div class="section-card">
+        <div class="section-title">
+            <span>🤝 ספקים, שירותים ותיאומים</span>
+            <button type="button" class="btn btn-small btn-secondary" onclick="addVendorDraftRow()">+ הוסף ספק</button>
+        </div>
+        <div id="draftVendorsContainer"></div>
+    </div>
+
+    <div class="section-card">
+        <div class="section-title">
+            <span>🕒 לו"ז הפקה וציר זמן (הכנות, מהלך האירוע ופירוק)</span>
+            <button type="button" class="btn btn-small btn-secondary" onclick="addScheduleDraftRow()">+ הוסף שלב ללו"ז</button>
+        </div>
+        <div id="draftScheduleContainer"></div>
+    </div>
+
+    <div class="section-card">
+        <div class="section-title">
+            <span>✅ משימות הפקה וצ'קליסט ביצוע</span>
+            <button type="button" class="btn btn-small btn-secondary" onclick="addTaskDraftRow()">+ הוסף משימה</button>
+        </div>
+        <div id="draftTasksContainer"></div>
+        <div class="summary-bar" id="draftLiveSummary">
+            <span>עלות משוערת לפריטים וספקים: 0 ₪</span>
+            <span>פריטים: 0 | ספקים: 0 | שלבי לו"ז: 0 | משימות: 0</span>
+        </div>
+    </div>
+
+    <button type="button" id="saveEventBtn" class="btn" onclick="addEvent()">שמור הפקת אירוע מלאה במערכת 🎉</button>
+
+    <div style="margin-top: 22px;" id="eventsList"></div>
 </div>
 
 <div class="toast" id="toastMsg">הפעולה בוצעה בהצלחה!</div>
 
 <script>
-    window.onload = function() {
-        const houseCode = getCurrentHouseCode();
-        if(houseCode) {
-            document.getElementById('houseBadge').innerText = `🟢 בית: ${houseCode}`;
+    let editingEventIndex = null;
+
+    function escapeHtml(str) {
+        return String(str || '')
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function getActiveHouse() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = (
+            urlParams.get('house') ||
+            (typeof getCurrentHouseCode === 'function' ? getCurrentHouseCode() : null) ||
+            localStorage.getItem('vidass_current_house_code') ||
+            localStorage.getItem('vidass_current_house') ||
+            'EILAT-33'
+        ).trim();
+        localStorage.setItem('vidass_current_house_code', code);
+        localStorage.setItem('vidass_current_house', code);
+        return code;
+    }
+
+    function readEvents() {
+        const houseCode = getActiveHouse();
+        if (typeof getSharedData === 'function') {
+            return getSharedData('events');
         }
+        try {
+            const raw = localStorage.getItem('vidass_events_' + houseCode);
+            const parsed = raw ? JSON.parse(raw) : [];
+            return Array.isArray(parsed) ? parsed : [];
+        } catch (_) {
+            return [];
+        }
+    }
+
+    function writeEvents(eventsArray) {
+        const houseCode = getActiveHouse();
+        if (typeof saveSharedData === 'function') {
+            saveSharedData('events', eventsArray);
+        } else {
+            localStorage.setItem('vidass_events_' + houseCode, JSON.stringify(eventsArray));
+        }
+    }
+
+    function addItemDraftRow(defaults = {}) {
+        const container = document.getElementById('draftItemsContainer');
+        const row = document.createElement('div');
+        row.className = 'sub-row draft-item-row';
+        row.innerHTML = `
+            <select class="item-scale">
+                <option value="קטן" ${defaults.scale === 'קטן' ? 'selected' : ''}>קטן (מפיות, נרות, שלטים)</option>
+                <option value="בינוני" ${defaults.scale === 'בינוני' ? 'selected' : ''}>בינוני (מגשים, עיצוב שולחן, משחקים)</option>
+                <option value="גדול" ${defaults.scale === 'גדול' ? 'selected' : ''}>גדול (קייטרינג, הגברה, אוהל/תאורה)</option>
+            </select>
+            <input type="text" class="grow item-name" placeholder="שם הפריט / פירוט..." value="${escapeHtml(defaults.name || '')}" oninput="updateDraftSummary()">
+            <input type="number" class="num item-qty" min="1" placeholder="כמות" value="${escapeHtml(defaults.qty || 1)}" oninput="updateDraftSummary()">
+            <input type="number" class="num item-cost" min="0" step="0.01" placeholder="עלות (₪)" value="${escapeHtml(defaults.cost || '')}" oninput="updateDraftSummary()">
+            <button type="button" class="btn-remove-mini" onclick="this.parentElement.remove(); updateDraftSummary();">✕</button>
+        `;
+        container.appendChild(row);
+        updateDraftSummary();
+    }
+
+    function addVendorDraftRow(defaults = {}) {
+        const container = document.getElementById('draftVendorsContainer');
+        const row = document.createElement('div');
+        row.className = 'sub-row draft-vendor-row';
+        row.innerHTML = `
+            <input type="text" class="grow vendor-name" placeholder="שם הספק / תחום (למשל: צלם, DJ, קייטרינג)..." value="${escapeHtml(defaults.name || '')}">
+            <input type="text" class="num vendor-phone" placeholder="טלפון" value="${escapeHtml(defaults.phone || '')}">
+            <input type="number" class="num vendor-cost" min="0" step="0.01" placeholder="מחיר (₪)" value="${escapeHtml(defaults.cost || '')}" oninput="updateDraftSummary()">
+            <select class="vendor-status">
+                <option value="בבדיקה" ${defaults.status === 'בבדיקה' ? 'selected' : ''}>בבדיקה</option>
+                <option value="סגור" ${defaults.status === 'סגור' ? 'selected' : ''}>סגור</option>
+                <option value="שולם מקדמה" ${defaults.status === 'שולם מקדמה' ? 'selected' : ''}>שולם מקדמה</option>
+            </select>
+            <button type="button" class="btn-remove-mini" onclick="this.parentElement.remove(); updateDraftSummary();">✕</button>
+        `;
+        container.appendChild(row);
+        updateDraftSummary();
+    }
+
+    function addScheduleDraftRow(defaults = {}) {
+        const container = document.getElementById('draftScheduleContainer');
+        const row = document.createElement('div');
+        row.className = 'sub-row draft-schedule-row';
+        row.innerHTML = `
+            <input type="text" class="time-col sched-time" placeholder="שעה (18:00)" value="${escapeHtml(defaults.time || '')}">
+            <input type="text" class="grow sched-desc" placeholder="מה קורה בשלב זה? (הקמות, קבלת פנים, אוכל, תוכנית, סיום)..." value="${escapeHtml(defaults.desc || '')}" oninput="updateDraftSummary()">
+            <input type="text" class="num sched-owner" placeholder="אחראי" value="${escapeHtml(defaults.owner || '')}">
+            <button type="button" class="btn-remove-mini" onclick="this.parentElement.remove(); updateDraftSummary();">✕</button>
+        `;
+        container.appendChild(row);
+        updateDraftSummary();
+    }
+
+    function addTaskDraftRow(defaults = {}) {
+        const container = document.getElementById('draftTasksContainer');
+        const row = document.createElement('div');
+        row.className = 'sub-row draft-task-row';
+        row.innerHTML = `
+            <input type="checkbox" class="task-done" ${defaults.done ? 'checked' : ''}>
+            <input type="text" class="grow task-text" placeholder="משימה לביצוע..." value="${escapeHtml(defaults.text || '')}" oninput="updateDraftSummary()">
+            <input type="text" class="num task-owner" placeholder="אחראי" value="${escapeHtml(defaults.owner || '')}">
+            <button type="button" class="btn-remove-mini" onclick="this.parentElement.remove(); updateDraftSummary();">✕</button>
+        `;
+        container.appendChild(row);
+        updateDraftSummary();
+    }
+
+    function collectDraftDetails() {
+        const items = [];
+        document.querySelectorAll('.draft-item-row').forEach(row => {
+            const name = row.querySelector('.item-name').value.trim();
+            const scale = row.querySelector('.item-scale').value;
+            const qty = Math.max(1, parseInt(row.querySelector('.item-qty').value, 10) || 1);
+            const cost = Math.max(0, parseFloat(row.querySelector('.item-cost').value) || 0);
+            if (name) {
+                items.push({ scale, name, qty, cost });
+            }
+        });
+
+        const vendors = [];
+        document.querySelectorAll('.draft-vendor-row').forEach(row => {
+            const name = row.querySelector('.vendor-name').value.trim();
+            const phone = row.querySelector('.vendor-phone').value.trim();
+            const cost = Math.max(0, parseFloat(row.querySelector('.vendor-cost').value) || 0);
+            const status = row.querySelector('.vendor-status').value;
+            if (name) {
+                vendors.push({ name, phone, cost, status });
+            }
+        });
+
+        const schedule = [];
+        document.querySelectorAll('.draft-schedule-row').forEach(row => {
+            const time = row.querySelector('.sched-time').value.trim();
+            const desc = row.querySelector('.sched-desc').value.trim();
+            const owner = row.querySelector('.sched-owner').value.trim();
+            if (time || desc) {
+                schedule.push({ time, desc, owner });
+            }
+        });
+
+        const tasks = [];
+        document.querySelectorAll('.draft-task-row').forEach(row => {
+            const done = row.querySelector('.task-done').checked;
+            const text = row.querySelector('.task-text').value.trim();
+            const owner = row.querySelector('.task-owner').value.trim();
+            if (text) {
+                tasks.push({ done, text, owner });
+            }
+        });
+
+        const totalPlannedCost =
+            items.reduce((sum, i) => sum + (i.cost * i.qty), 0) +
+            vendors.reduce((sum, v) => sum + v.cost, 0);
+
+        return { items, vendors, schedule, tasks, totalPlannedCost };
+    }
+
+    function updateDraftSummary() {
+        const { items, vendors, schedule, tasks, totalPlannedCost } = collectDraftDetails();
+        const el = document.getElementById('draftLiveSummary');
+        if (el) {
+            el.innerHTML = `
+                <span>עלות משוערת לפריטים וספקים: <strong>${totalPlannedCost.toLocaleString('he-IL')} ₪</strong></span>
+                <span>פריטים: ${items.length} | ספקים: ${vendors.length} | שלבי לו"ז: ${schedule.length} | משימות: ${tasks.length}</span>
+            `;
+        }
+    }
+
+    function setEditModeUI(isEditing) {
+        document.getElementById('formModeTitle').innerText = isEditing
+            ? '✏️ עריכת הפקת אירוע קיימת'
+            : '📌 פרטי בסיס, סגנון ומיקום האירוע';
+        document.getElementById('saveEventBtn').innerText = isEditing
+            ? 'עדכן הפקת אירוע 💾'
+            : 'שמור הפקת אירוע מלאה במערכת 🎉';
+        document.getElementById('cancelEditBtn').style.display = isEditing ? 'inline-block' : 'none';
+    }
+
+    function resetDraftForm() {
+        editingEventIndex = null;
+        setEditModeUI(false);
+
+        document.getElementById('eventTitle').value = '';
+        document.getElementById('eventType').value = '';
+        document.getElementById('eventDate').value = '';
+        document.getElementById('eventLocation').value = '';
+        document.getElementById('eventGuests').value = '';
+        document.getElementById('eventBudget').value = '';
+        document.getElementById('eventLead').value = '';
+        document.getElementById('eventNotes').value = '';
+
+        document.getElementById('draftItemsContainer').innerHTML = '';
+        document.getElementById('draftVendorsContainer').innerHTML = '';
+        document.getElementById('draftScheduleContainer').innerHTML = '';
+        document.getElementById('draftTasksContainer').innerHTML = '';
+
+        addItemDraftRow({ scale: 'קטן' });
+        addVendorDraftRow();
+        addScheduleDraftRow();
+        addTaskDraftRow();
+        updateDraftSummary();
+    }
+
+    function startEditEvent(eventIndex) {
+        const data = readEvents();
+        const item = data[eventIndex];
+        if (!item) return;
+
+        editingEventIndex = eventIndex;
+        setEditModeUI(true);
+
+        document.getElementById('eventTitle').value = item.title || '';
+        document.getElementById('eventType').value = item.eventType || '';
+        document.getElementById('eventDate').value = item.when || '';
+        document.getElementById('eventLocation').value = item.location || '';
+        document.getElementById('eventGuests').value = item.guests || '';
+        document.getElementById('eventBudget').value = item.budget || '';
+        document.getElementById('eventLead').value = item.lead || '';
+        document.getElementById('eventNotes').value = item.notes || '';
+
+        document.getElementById('draftItemsContainer').innerHTML = '';
+        document.getElementById('draftVendorsContainer').innerHTML = '';
+        document.getElementById('draftScheduleContainer').innerHTML = '';
+        document.getElementById('draftTasksContainer').innerHTML = '';
+
+        const items = Array.isArray(item.items) && item.items.length ? item.items : [{ scale: 'קטן' }];
+        const vendors = Array.isArray(item.vendors) && item.vendors.length ? item.vendors : [{}];
+        const schedule = Array.isArray(item.schedule) && item.schedule.length ? item.schedule : [{}];
+        const tasks = Array.isArray(item.tasks) && item.tasks.length ? item.tasks : [{}];
+
+        items.forEach(r => addItemDraftRow(r));
+        vendors.forEach(r => addVendorDraftRow(r));
+        schedule.forEach(r => addScheduleDraftRow(r));
+        tasks.forEach(r => addTaskDraftRow(r));
+        updateDraftSummary();
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        showToast("מצב עריכה פעיל — ניתן לעדכן את כל פרטי האירוע.");
+    }
+
+    function cancelEditEvent() {
+        resetDraftForm();
+        showToast("העריכה בוטלה.");
+    }
+
+    window.onload = function() {
+        const houseCode = getActiveHouse();
+        document.getElementById('houseBadge').innerText = `🟢 בית: ${escapeHtml(houseCode)}`;
+        resetDraftForm();
         loadEvents();
     };
 
+    function toggleSavedTask(eventIndex, taskIndex) {
+        const data = readEvents();
+        if (!data[eventIndex] || !Array.isArray(data[eventIndex].tasks) || !data[eventIndex].tasks[taskIndex]) return;
+        data[eventIndex].tasks[taskIndex].done = !data[eventIndex].tasks[taskIndex].done;
+        writeEvents(data);
+        loadEvents();
+    }
+
     function loadEvents() {
-        // שימוש בפונקציית הסנכרון המשותפת לכל דיירי הבית
-        const data = getSharedData('events');
+        const data = readEvents();
         const container = document.getElementById('eventsList');
-        
-        container.innerHTML = data.length === 0 ? '<p style="text-align:center; font-size:12px; color:var(--text-muted);">אין אירועים או פעילויות רשומים כרגע.</p>' : '';
+
+        if (!Array.isArray(data) || data.length === 0) {
+            container.innerHTML = '<p style="text-align:center; font-size:12px; color:var(--text-muted); padding: 14px;">אין אירועים מתוכננים במערכת כרגע.</p>';
+            return;
+        }
+
+        container.innerHTML = '';
         data.slice().reverse().forEach((item, index) => {
             const actualIndex = data.length - 1 - index;
+            const items = Array.isArray(item.items) ? item.items : [];
+            const vendors = Array.isArray(item.vendors) ? item.vendors : [];
+            const schedule = Array.isArray(item.schedule) ? item.schedule : [];
+            const tasks = Array.isArray(item.tasks) ? item.tasks : [];
+
+            const calcCost = items.reduce((s, i) => s + ((parseFloat(i.cost) || 0) * (parseInt(i.qty, 10) || 1)), 0) +
+                             vendors.reduce((s, v) => s + (parseFloat(v.cost) || 0), 0);
+            const budgetNum = parseFloat(item.budget) || 0;
+            const overBudget = budgetNum > 0 && calcCost > budgetNum;
+
+            const scaleOrder = { 'קטן': 1, 'בינוני': 2, 'גדול': 3 };
+            const sortedItems = items.slice().sort((a, b) => (scaleOrder[a.scale] || 9) - (scaleOrder[b.scale] || 9));
+
+            const itemsHtml = sortedItems.length ? sortedItems.map(i => `
+                <div class="detail-line">
+                    <span>[${escapeHtml(i.scale || 'פריט')}] <strong>${escapeHtml(i.name)}</strong> × ${escapeHtml(i.qty || 1)}</span>
+                    <span>${((parseFloat(i.cost) || 0) * (parseInt(i.qty, 10) || 1)).toLocaleString('he-IL')} ₪</span>
+                </div>
+            `).join('') : '<div style="color:var(--text-muted);">לא הוזנו פריטים</div>';
+
+            const vendorsHtml = vendors.length ? vendors.map(v => `
+                <div class="detail-line">
+                    <span><strong>${escapeHtml(v.name)}</strong> ${v.phone ? '| 📞 ' + escapeHtml(v.phone) : ''} <span class="pill pill-gold">${escapeHtml(v.status || 'בבדיקה')}</span></span>
+                    <span>${(parseFloat(v.cost) || 0).toLocaleString('he-IL')} ₪</span>
+                </div>
+            `).join('') : '<div style="color:var(--text-muted);">לא הוזנו ספקים</div>';
+
+            const scheduleHtml = schedule.length ? schedule.map(s => `
+                <div class="detail-line">
+                    <span>🕒 <strong>${escapeHtml(s.time || 'ללא שעה')}</strong> — ${escapeHtml(s.desc)}</span>
+                    <span style="color:var(--text-muted);">${escapeHtml(s.owner || '')}</span>
+                </div>
+            `).join('') : '<div style="color:var(--text-muted);">לא הוזן לו"ז</div>';
+
+            const completedTasks = tasks.filter(t => t.done).length;
+            const tasksHtml = tasks.length ? tasks.map((t, tIdx) => `
+                <div class="detail-line">
+                    <label class="chk-label">
+                        <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleSavedTask(${actualIndex}, ${tIdx})">
+                        <span style="${t.done ? 'text-decoration:line-through; color:var(--text-muted);' : ''}">${escapeHtml(t.text)}</span>
+                    </label>
+                    <span style="color:var(--text-muted);">${escapeHtml(t.owner || '')}</span>
+                </div>
+            `).join('') : '<div style="color:var(--text-muted);">לא הוזנו משימות</div>';
+
             container.innerHTML += `
-                <div class="item-row">
-                    <div>
-                        <strong style="color:var(--accent);">🎉 ${item.title}</strong>
-                        <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">🕒 ${item.when} (נוסף ע"י: ${item.addedBy || 'דייר'})</div>
+                <div class="event-card">
+                    <div class="event-top">
+                        <div>
+                            <strong style="color:var(--accent); font-size:16px;">🎉 ${escapeHtml(item.title)}</strong>
+                            <div style="margin-top:5px;">
+                                ${item.eventType ? `<span class="pill">${escapeHtml(item.eventType)}</span>` : ''}
+                                ${item.guests ? `<span class="pill pill-gold">👥 ${escapeHtml(item.guests)} אורחים</span>` : ''}
+                                ${budgetNum ? `<span class="pill pill-green">תקציב: ${budgetNum.toLocaleString('he-IL')} ₪</span>` : ''}
+                                <span class="pill ${overBudget ? 'pill-red' : ''}">עלות מחושבת: ${calcCost.toLocaleString('he-IL')} ₪</span>
+                                ${tasks.length ? `<span class="pill pill-gold">משימות: ${completedTasks}/${tasks.length}</span>` : ''}
+                            </div>
+                            <div class="event-meta">
+                                🕒 מועד: <strong>${escapeHtml(item.when || '')}</strong>
+                                ${item.location ? ` | 📍 מיקום: <strong>${escapeHtml(item.location)}</strong>` : ''}
+                                ${item.lead ? ` | 🎯 מפיק/אחראי: <strong>${escapeHtml(item.lead)}</strong>` : ''}
+                                <br>נוסף ע"י: ${escapeHtml(item.addedBy || 'דייר')} (${escapeHtml(item.date || '')})
+                            </div>
+                        </div>
+                        <div class="card-actions">
+                            <button type="button" onclick="startEditEvent(${actualIndex})" style="background:rgba(245,158,11,0.14); color:var(--gold); border:1px solid rgba(245,158,11,0.35); padding:6px 12px; border-radius:8px; cursor:pointer; font-size:12px;">ערוך</button>
+                            <button type="button" onclick="removeEvent(${actualIndex})" style="background:rgba(239,68,68,0.12); color:var(--danger); border:1px solid rgba(239,68,68,0.35); padding:6px 12px; border-radius:8px; cursor:pointer; font-size:12px;">מחק אירוע</button>
+                        </div>
                     </div>
-                    <button onclick="removeEvent(${actualIndex})" style="background:rgba(239,68,68,0.1); color:var(--danger); border:1px solid rgba(239,68,68,0.3); padding:5px 10px; border-radius:6px; cursor:pointer; font-size:11px;">מחק</button>
+
+                    ${item.notes ? `<div style="font-size:12px; background:rgba(255,255,255,0.02); padding:8px 10px; border-radius:8px; margin-bottom:8px;">📝 <strong>קונספט והערות:</strong> ${escapeHtml(item.notes)}</div>` : ''}
+
+                    <div class="detail-block">
+                        <h4>🧩 פירוט פריטים (מהקטן לגדול)</h4>
+                        ${itemsHtml}
+                    </div>
+
+                    <div class="detail-block">
+                        <h4>🤝 ספקים ושירותים</h4>
+                        ${vendorsHtml}
+                    </div>
+
+                    <div class="detail-block">
+                        <h4>🕒 לו"ז הפקה</h4>
+                        ${scheduleHtml}
+                    </div>
+
+                    <div class="detail-block">
+                        <h4>✅ משימות ביצוע</h4>
+                        ${tasksHtml}
+                    </div>
                 </div>`;
         });
     }
 
     function addEvent() {
-        const titleInput = document.getElementById('eventTitle');
-        const dateInput = document.getElementById('eventDate');
-        const title = titleInput.value.trim();
-        const when = dateInput.value.trim();
+        const title = document.getElementById('eventTitle').value.trim();
+        const eventType = document.getElementById('eventType').value.trim();
+        const when = document.getElementById('eventDate').value.trim();
+        const location = document.getElementById('eventLocation').value.trim();
+        const guests = document.getElementById('eventGuests').value.trim();
+        const budget = document.getElementById('eventBudget').value.trim();
+        const lead = document.getElementById('eventLead').value.trim();
+        const notes = document.getElementById('eventNotes').value.trim();
 
-        if(!title || !when) { showToast("נא למלא את כל השדות", true); return; }
+        if (!title || !when) {
+            showToast("נא למלא לפחות שם אירוע ותאריך ושעה", true);
+            return;
+        }
 
-        let data = getSharedData('events');
-        data.push({ 
-            title, 
+        const currentUser = (typeof getCurrentUser === 'function' ? getCurrentUser() : null) ||
+                            localStorage.getItem('vidass_current_user') ||
+                            'דייר';
+
+        const details = collectDraftDetails();
+        let data = readEvents();
+        const isEditing = editingEventIndex !== null && data[editingEventIndex];
+
+        const record = {
+            title,
+            eventType,
             when,
-            addedBy: getCurrentUser(),
-            date: new Date().toLocaleDateString('he-IL')
-        });
-        saveSharedData('events', data);
+            location,
+            guests,
+            budget,
+            lead: lead || currentUser,
+            notes,
+            items: details.items,
+            vendors: details.vendors,
+            schedule: details.schedule,
+            tasks: details.tasks,
+            addedBy: isEditing ? (data[editingEventIndex].addedBy || currentUser) : currentUser,
+            date: isEditing ? (data[editingEventIndex].date || new Date().toLocaleDateString('he-IL')) : new Date().toLocaleDateString('he-IL')
+        };
 
-        titleInput.value = '';
-        dateInput.value = '';
+        if (isEditing) {
+            data[editingEventIndex] = record;
+        } else {
+            data.push(record);
+        }
+
+        writeEvents(data);
+        resetDraftForm();
         loadEvents();
-        showToast("האירוע נוסף בהצלחה ושותף לכל דיירי הבית!");
+        showToast(isEditing ? "הפקת האירוע עודכנה בהצלחה!" : "הפקת האירוע המלאה נשמרה ושותפה לכל דיירי הבית!");
     }
 
     function removeEvent(index) {
-        let data = getSharedData('events');
+        let data = readEvents();
         data.splice(index, 1);
-        saveSharedData('events', data);
+        writeEvents(data);
+        if (editingEventIndex === index) {
+            resetDraftForm();
+        }
         loadEvents();
         showToast("האירוע הוסר מהמערכת.");
     }
@@ -129,6 +614,19 @@
         toast.classList.add('show');
         setTimeout(() => toast.classList.remove('show'), 3000);
     }
+
+    window.addEventListener('vidass:data-updated', function(e) {
+        if (!e || !e.detail || !e.detail.module || e.detail.module === 'events' || e.detail.module === 'all') {
+            loadEvents();
+        }
+    });
+
+    window.addEventListener('storage', function(event) {
+        const houseCode = getActiveHouse();
+        if (event.key === 'vidass_events_' + houseCode) {
+            loadEvents();
+        }
+    });
 </script>
 
 </body>

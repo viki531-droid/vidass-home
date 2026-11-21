@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VIDASS Micro-App - הקואוצ'ר של הבית</title>
-    <!-- קישור לקובץ הסנכרון המשותף בין דיירי הבית -->
     <script src="storage-sync.js"></script>
     <style>
         :root {
@@ -26,7 +25,7 @@
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 16px; }
         .header h1 { font-size: 20px; color: var(--accent); }
         .badge { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--success); padding: 4px 10px; border-radius: 8px; font-size: 11px; }
-        
+
         .motivation-box { background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 14px; padding: 16px; margin-bottom: 16px; text-align: center; }
         .motivation-box h3 { color: var(--gold); font-size: 15px; margin-bottom: 6px; }
         .motivation-box p { font-size: 13px; color: var(--text-main); line-height: 1.5; font-style: italic; }
@@ -35,7 +34,7 @@
         .input-group label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
         .input-group input { width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; color: white; font-size: 13px; outline: none; text-align: right; }
         .btn { width: 100%; padding: 11px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 5px; }
-        .item-row { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+        .item-row { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; gap: 10px; }
         .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: white; padding: 10px 20px; border-radius: 10px; font-size: 13px; transition: transform 0.3s; z-index: 1000; }
         .toast.show { transform: translateX(-50%) translateY(0); }
     </style>
@@ -75,33 +74,80 @@
         "\"הדרך הטובה ביותר לחזות את העתיד שלך היא ליצור אותו בעצמך במו ידיך.\""
     ];
 
-    window.onload = function() {
-        const houseCode = getCurrentHouseCode();
-        if(houseCode) {
-            document.getElementById('houseBadge').innerText = `🟢 בית: ${houseCode}`;
-        }
+    function escapeHtml(str) {
+        return String(str || '')
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
 
-        // הצגת משפט השראה מתחלף אקראי
+    function getActiveHouse() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = (
+            urlParams.get('house') ||
+            (typeof getCurrentHouseCode === 'function' ? getCurrentHouseCode() : null) ||
+            localStorage.getItem('vidass_current_house_code') ||
+            localStorage.getItem('vidass_current_house') ||
+            'EILAT-33'
+        ).trim();
+        localStorage.setItem('vidass_current_house_code', code);
+        localStorage.setItem('vidass_current_house', code);
+        return code;
+    }
+
+    function readGoals() {
+        const houseCode = getActiveHouse();
+        if (typeof getSharedData === 'function') {
+            return getSharedData('coach');
+        }
+        try {
+            const raw = localStorage.getItem('vidass_coach_' + houseCode);
+            const parsed = raw ? JSON.parse(raw) : [];
+            return Array.isArray(parsed) ? parsed : [];
+        } catch (_) {
+            return [];
+        }
+    }
+
+    function writeGoals(goalsArray) {
+        const houseCode = getActiveHouse();
+        if (typeof saveSharedData === 'function') {
+            saveSharedData('coach', goalsArray);
+        } else {
+            localStorage.setItem('vidass_coach_' + houseCode, JSON.stringify(goalsArray));
+        }
+    }
+
+    window.onload = function() {
+        const houseCode = getActiveHouse();
+        document.getElementById('houseBadge').innerText = `🟢 בית: ${escapeHtml(houseCode)}`;
+
         const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
         document.getElementById('dailyQuote').innerText = randomQuote;
         loadGoals();
     };
 
     function loadGoals() {
-        // שימוש בפונקציית הסנכרון המשותפת לכל דיירי הבית
-        const data = getSharedData('coach');
+        const data = readGoals();
         const container = document.getElementById('goalsList');
-        
-        container.innerHTML = data.length === 0 ? '<p style="text-align:center; font-size:12px; color:var(--text-muted);">אין מטרות אישיות רשומות כרגע.</p>' : '';
+
+        if (!Array.isArray(data) || data.length === 0) {
+            container.innerHTML = '<p style="text-align:center; font-size:12px; color:var(--text-muted);">אין מטרות אישיות רשומות כרגע.</p>';
+            return;
+        }
+
+        container.innerHTML = '';
         data.slice().reverse().forEach((item, index) => {
             const actualIndex = data.length - 1 - index;
             container.innerHTML += `
                 <div class="item-row">
                     <div>
-                        <strong style="color:var(--accent);">🎯 ${item.text}</strong>
-                        <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">הוסף ע"י: ${item.addedBy || 'דייר'} | נוסף: ${item.date}</div>
+                        <strong style="color:var(--accent);">🎯 ${escapeHtml(item.text)}</strong>
+                        <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">הוסף ע"י: ${escapeHtml(item.addedBy || 'דייר')} | נוסף: ${escapeHtml(item.date || '')}</div>
                     </div>
-                    <button onclick="removeGoal(${actualIndex})" style="background:rgba(239,68,68,0.1); color:var(--danger); border:1px solid rgba(239,68,68,0.3); padding:5px 10px; border-radius:6px; cursor:pointer; font-size:11px;">הושג / מחיקה</button>
+                    <button onclick="removeGoal(${actualIndex})" style="background:rgba(239,68,68,0.1); color:var(--danger); border:1px solid rgba(239,68,68,0.3); padding:5px 10px; border-radius:6px; cursor:pointer; font-size:11px; flex-shrink:0;">הושג / מחיקה</button>
                 </div>`;
         });
     }
@@ -109,15 +155,19 @@
     function addGoal() {
         const input = document.getElementById('goalInput');
         const text = input.value.trim();
-        if(!text) { showToast("נא להזין תוכן מטרה", true); return; }
+        if (!text) { showToast("נא להזין תוכן מטרה", true); return; }
 
-        let data = getSharedData('coach');
-        data.push({ 
-            text, 
-            addedBy: getCurrentUser(),
-            date: new Date().toLocaleDateString('he-IL') 
+        const currentUser = (typeof getCurrentUser === 'function' ? getCurrentUser() : null) ||
+                            localStorage.getItem('vidass_current_user') ||
+                            'דייר';
+
+        let data = readGoals();
+        data.push({
+            text,
+            addedBy: currentUser,
+            date: new Date().toLocaleDateString('he-IL')
         });
-        saveSharedData('coach', data);
+        writeGoals(data);
 
         input.value = '';
         loadGoals();
@@ -125,9 +175,9 @@
     }
 
     function removeGoal(index) {
-        let data = getSharedData('coach');
+        let data = readGoals();
         data.splice(index, 1);
-        saveSharedData('coach', data);
+        writeGoals(data);
         loadGoals();
         showToast("כל הכבוד! המטרה הושלמה בהצלחה.");
     }
@@ -139,6 +189,19 @@
         toast.classList.add('show');
         setTimeout(() => toast.classList.remove('show'), 3000);
     }
+
+    window.addEventListener('vidass:data-updated', function(e) {
+        if (!e || !e.detail || !e.detail.module || e.detail.module === 'coach' || e.detail.module === 'all') {
+            loadGoals();
+        }
+    });
+
+    window.addEventListener('storage', function(event) {
+        const houseCode = getActiveHouse();
+        if (event.key === 'vidass_coach_' + houseCode) {
+            loadGoals();
+        }
+    });
 </script>
 
 </body>

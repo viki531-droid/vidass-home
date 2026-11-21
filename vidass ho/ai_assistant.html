@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VIDASS - עוזר חכם משפחתי</title>
-    <!-- קישור לקובץ הסנכרון והאחסון האחיד -->
     <script src="storage-sync.js"></script>
     <style>
         :root {
@@ -75,6 +74,7 @@
             font-size: 13px;
             line-height: 1.5;
             word-wrap: break-word;
+            white-space: pre-line;
         }
 
         .message.user {
@@ -139,7 +139,7 @@
     </div>
 
     <div class="chat-messages" id="chatMessages">
-        <div class="message ai">שלום! אני העוזר החכם של משפחתכם ב-VIDASS. איך אוכל לעזור לכם בניהול הבית היום?</div>
+        <div class="message ai">שלום! אני העוזר החכם של משפחתכם ב-VIDASS. אפשר לבקש ממני למשל: "קניות חלב", "התראה לבדוק דואר" או לשאול מה יש בקניות.</div>
     </div>
 
     <div class="chat-input-area">
@@ -149,18 +149,14 @@
 </div>
 
 <script>
-    // שדרוג אבטחה וזיהוי קוד הבית (מתחבר באופן מושלם למה שדיברנו עליו)
-    const urlParams = new URLSearchParams(window.location.search);
-    let houseCode = urlParams.get('house') || 
-                    localStorage.getItem('vidass_current_house_code') || 
-                    localStorage.getItem('vidass_current_house') || 
-                    'EILAT-33';
+    const houseCode = (typeof getCurrentHouseCode === 'function')
+        ? getCurrentHouseCode()
+        : (localStorage.getItem('vidass_current_house_code') || 'EILAT-33').trim();
 
-    houseCode = houseCode.trim();
-    localStorage.setItem('vidass_current_house_code', houseCode);
-    localStorage.setItem('vidass_current_house', houseCode);
+    const currentUser = (typeof getCurrentUser === 'function')
+        ? getCurrentUser()
+        : (localStorage.getItem('vidass_current_user') || 'דייר');
 
-    // הצגת קוד הבית תגים
     document.getElementById('houseBadgeDisplay').innerText = `בית: ${houseCode}`;
 
     function handleKeyPress(event) {
@@ -169,27 +165,74 @@
         }
     }
 
+    function buildAssistantReply(rawText) {
+        const clean = rawText.trim();
+        const lower = clean.toLowerCase();
+
+        const addShoppingMatch = clean.match(/^(?:קניות|הוסף\s+לקניות|קנה)\s+(.+)$/i);
+        if (addShoppingMatch && addShoppingMatch[1].trim()) {
+            const itemName = addShoppingMatch[1].trim();
+            const currentShopping = (typeof getSharedData === 'function') ? getSharedData('shopping') : [];
+            const exists = currentShopping.some(i => (i.text || i.name) === itemName && !i.completed);
+
+            if (!exists) {
+                currentShopping.push({
+                    text: itemName,
+                    completed: false,
+                    addedBy: currentUser,
+                    date: new Date().toLocaleDateString('he-IL')
+                });
+                if (typeof saveSharedData === 'function') {
+                    saveSharedData('shopping', currentShopping);
+                }
+            }
+            return `הוספתי את "${itemName}" לרשימת הקניות של בית ${houseCode} — שאר דיירי הבית יראו זאת מיד.`;
+        }
+
+        if (lower.includes('קניות')) {
+            const items = (typeof getSharedData === 'function') ? getSharedData('shopping') : [];
+            if (!items.length) {
+                return `רשימת הקניות של בית ${houseCode} ריקה כרגע. אפשר לכתוב למשל: "קניות לחם וגבינה".`;
+            }
+            const names = items.map(i => `• ${i.text || i.name || 'פריט'}`).join('\n');
+            return `אלה הפריטים שמופיעים כרגע ברשימת הקניות של בית ${houseCode}:\n${names}`;
+        }
+
+        const alertMatch = clean.match(/^(?:התראה|שגר\s+התראה)\s+(.+)$/i);
+        if (alertMatch && alertMatch[1].trim()) {
+            const alertText = alertMatch[1].trim();
+            const currentAlerts = (typeof getSharedData === 'function') ? getSharedData('alerts') : [];
+            currentAlerts.push({
+                text: alertText,
+                addedBy: currentUser,
+                time: new Date().toLocaleTimeString('he-IL'),
+                date: new Date().toLocaleDateString('he-IL')
+            });
+            if (typeof saveSharedData === 'function') {
+                saveSharedData('alerts', currentAlerts);
+            }
+            return `שגרתי התראה לכל דיירי בית ${houseCode}: "${alertText}".`;
+        }
+
+        if (lower.includes('שלום') || lower.includes('היי')) {
+            return `היי ${currentUser}! איזה כיף שאת/ה כאן. מה נתכנן לבית ${houseCode} עכשיו?`;
+        }
+
+        return `קיבלתי את הודעתך עבור בית ${houseCode}. אני מחובר לנתוני הבית ויכול לעזור עם קניות והתראות משותפות.`;
+    }
+
     function sendMessage() {
         const inputField = document.getElementById('userInput');
         const text = inputField.value.trim();
         if (!text) return;
 
-        // הוספת הודעת משתמש למסך
         appendMessage(text, 'user');
         inputField.value = '';
 
-        // מענה אוטומטי חכם של העוזר בהתאם לקוד הבית
         setTimeout(() => {
-            let reply = `קיבלתי את הודעתך עבור בית ${houseCode}. אני כאן לשירותך ולשירות כל בני הבית!`;
-            
-            if(text.includes('קניות')) {
-                reply = `רשמתי לעצמי! את/ה יכול/ה לבדוק גם ברשימת הקניות הראשית של בית ${houseCode}.`;
-            } else if(text.includes('שלום') || text.includes('היי')) {
-                reply = `היי ${localStorage.getItem('vidass_current_user') || ''}! איזה כיף שאת/ה כאן. מה נתכנן לבית ${houseCode} עכשיו?`;
-            }
-
+            const reply = buildAssistantReply(text);
             appendMessage(reply, 'ai');
-        }, 600);
+        }, 350);
     }
 
     function appendMessage(text, sender) {
@@ -200,6 +243,13 @@
         messagesDiv.appendChild(msgDiv);
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
     }
+
+    window.addEventListener('vidass:data-updated', function (e) {
+        const mod = e && e.detail ? e.detail.module : '';
+        if (mod === 'shopping' || mod === 'alerts' || mod === 'all') {
+            appendMessage(`🔄 עדכון חי בבית ${houseCode}: נתוני ${mod === 'all' ? 'הבית' : mod} עודכנו בזמן אמת.`, 'ai');
+        }
+    });
 </script>
 
 </body>

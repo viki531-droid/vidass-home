@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VIDASS Micro-App - ימי הולדת וחגיגות</title>
-    <!-- קישור לקובץ הסנכרון המשותף בין דיירי הבית -->
     <script src="storage-sync.js"></script>
     <style>
         :root {
@@ -26,11 +25,11 @@
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 16px; }
         .header h1 { font-size: 20px; color: var(--accent); }
         .badge { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--success); padding: 4px 10px; border-radius: 8px; font-size: 11px; }
-        
+
         .input-group { margin-bottom: 12px; text-align: right; }
         .input-group label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
         .input-group input { width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; color: white; font-size: 13px; outline: none; text-align: right; }
-        
+
         .row-inputs { display: flex; gap: 10px; }
         .row-inputs .input-group { flex: 1; }
 
@@ -43,10 +42,10 @@
 
         .item-row { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 14px; margin-bottom: 10px; font-size: 13px; display: flex; gap: 12px; align-items: center; }
         .bday-avatar { width: 55px; height: 55px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent); background: rgba(255,255,255,0.1); flex-shrink: 0; }
-        
+
         .party-badge { background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: var(--gold); padding: 3px 8px; border-radius: 6px; font-size: 11px; display: inline-block; margin-top: 6px; font-weight: bold; }
-        
-        .action-btns { display: flex; gap: 6px; margin-top: 8px; }
+
+        .action-btns { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
         .action-btn { padding: 5px 10px; border-radius: 6px; text-align: center; font-size: 11px; font-weight: bold; text-decoration: none; display: inline-block; }
         .btn-call { background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.4); }
         .btn-whatsapp { background: rgba(37, 211, 102, 0.15); color: #25d366; border: 1px solid rgba(37, 211, 102, 0.4); }
@@ -127,68 +126,109 @@
 
 <script>
     let tempImageBase64 = "";
+    const DEFAULT_AVATAR = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="%23ff80ab" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>';
+
+    function escapeHtml(str) {
+        return String(str || '')
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function getActiveHouse() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = (
+            urlParams.get('house') ||
+            (typeof getCurrentHouseCode === 'function' ? getCurrentHouseCode() : null) ||
+            localStorage.getItem('vidass_current_house_code') ||
+            localStorage.getItem('vidass_current_house') ||
+            'EILAT-33'
+        ).trim();
+        localStorage.setItem('vidass_current_house_code', code);
+        localStorage.setItem('vidass_current_house', code);
+        return code;
+    }
 
     window.onload = function() {
-        const houseCode = getCurrentHouseCode();
-        if(houseCode) {
-            document.getElementById('houseBadge').innerText = `🟢 בית: ${houseCode}`;
-        }
+        const houseCode = getActiveHouse();
+        document.getElementById('houseBadge').innerText = `🟢 בית: ${escapeHtml(houseCode)}`;
         loadBirthdays();
     };
 
     function previewImageName(event) {
         const file = event.target.files[0];
-        if(file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                tempImageBase64 = e.target.result;
+        if (!file) return;
+
+        const img = new Image();
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+            img.onload = function() {
+                const maxDim = 220;
+                const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+                const canvas = document.createElement('canvas');
+                canvas.width = Math.max(1, Math.round(img.width * scale));
+                canvas.height = Math.max(1, Math.round(img.height * scale));
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                tempImageBase64 = canvas.toDataURL('image/jpeg', 0.72);
                 document.getElementById('uploadText').innerText = "✔️ תמונה נטענה בהצלחה";
             };
-            reader.readAsDataURL(file);
-        }
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
     }
 
     function loadBirthdays() {
-        const data = getSharedData('birthdays');
+        const data = (typeof getSharedData === 'function') ? getSharedData('birthdays') : [];
         const container = document.getElementById('birthdaysList');
-        
-        container.innerHTML = data.length === 0 ? '<p style="text-align:center; font-size:12px; color:var(--text-muted);">אין ימי הולדת או מסיבות רשומות במערכת כרגע.</p>' : '';
-        
+
+        if (!Array.isArray(data) || data.length === 0) {
+            container.innerHTML = '<p style="text-align:center; font-size:12px; color:var(--text-muted);">אין ימי הולדת או מסיבות רשומות במערכת כרגע.</p>';
+            return;
+        }
+
+        container.innerHTML = '';
         data.slice().reverse().forEach((item, index) => {
             const actualIndex = data.length - 1 - index;
-            
-            let cleanPhone = item.phone ? item.phone.replace(/[^0-9+]/g, '') : '';
-            if(cleanPhone.startsWith('0')) { cleanPhone = '+972' + cleanPhone.substring(1); }
+
+            let cleanPhone = item.phone ? String(item.phone).replace(/[^0-9+]/g, '') : '';
+            if (cleanPhone.startsWith('0')) {
+                cleanPhone = '+972' + cleanPhone.substring(1);
+            }
 
             let partyInfoHTML = '';
-            if(item.organizer || item.location || item.gift) {
+            if (item.organizer || item.location || item.time || item.gift) {
                 partyInfoHTML = `
                     <div class="party-badge">
-                        🎉 מסיבה מאת: ${item.organizer || 'לא צוין'} | 📍 מקום: ${item.location || 'לא צוין'} | 🕒 מתי: ${item.time || 'לא צוין'} | 🎁 מתנה: ${item.gift || 'לא צוין'}
+                        🎉 מסיבה מאת: ${escapeHtml(item.organizer || 'לא צוין')} | 📍 מקום: ${escapeHtml(item.location || 'לא צוין')} | 🕒 מתי: ${escapeHtml(item.time || 'לא צוין')} | 🎁 מתנה: ${escapeHtml(item.gift || 'לא צוין')}
                     </div>
                 `;
             }
 
             let actionButtonsHTML = `<div class="action-btns">`;
-            if(item.phone) {
+            if (item.phone) {
                 actionButtonsHTML += `
-                    <a href="tel:${item.phone}" class="action-btn btn-call">📞 התצלצל</a>
-                    <a href="https://wa.me/${cleanPhone}?text=${encodeURIComponent('היי ' + item.name + ', מזל טוב! 🎂')}" target="_blank" class="action-btn btn-whatsapp">💬 וואטסאפ</a>
+                    <a href="tel:${escapeHtml(item.phone)}" class="action-btn btn-call">📞 התקשר</a>
+                    <a href="https://wa.me/${encodeURIComponent(cleanPhone)}?text=${encodeURIComponent('היי ' + (item.name || '') + ', מזל טוב! 🎂')}" target="_blank" class="action-btn btn-whatsapp">💬 וואטסאפ</a>
                 `;
             }
             actionButtonsHTML += `<button onclick="removeBirthday(${actualIndex})" class="action-btn btn-delete">🗑️ מחק</button></div>`;
 
-            // הצגת תמונה ברירת מחדל אם לא הועלתה תמונה אישית
-            let avatarImg = item.image || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="%23ff80ab" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>';
+            const safeSrc = (item.image && String(item.image).startsWith('data:image/'))
+                ? escapeHtml(item.image)
+                : DEFAULT_AVATAR;
 
             container.innerHTML += `
                 <div class="item-row">
-                    <img src="${avatarImg}" class="bday-avatar" alt="תמונת חוגג">
+                    <img src="${safeSrc}" class="bday-avatar" alt="תמונת חוגג">
                     <div style="flex: 1;">
                         <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                             <div>
-                                <strong style="color:var(--accent); font-size:15px;">🎂 ${item.name}</strong>
-                                <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">תאריך: <strong>${item.bdayDate}</strong> ${item.phone ? '| 📱 ' + item.phone : ''}</div>
+                                <strong style="color:var(--accent); font-size:15px;">🎂 ${escapeHtml(item.name)}</strong>
+                                <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">תאריך: <strong>${escapeHtml(item.bdayDate)}</strong> ${item.phone ? '| 📱 ' + escapeHtml(item.phone) : ''}</div>
                             </div>
                         </div>
                         ${partyInfoHTML}
@@ -207,14 +247,19 @@
         const time = document.getElementById('partyTime').value.trim();
         const gift = document.getElementById('partyGift').value.trim();
 
-        if(!name || !bdayDate) { 
-            showToast("נא למלא לפחות את שם החוגג ותאריך יום ההולדת", true); 
-            return; 
+        if (!name || !bdayDate) {
+            showToast("נא למלא לפחות את שם החוגג ותאריך יום ההולדת", true);
+            return;
         }
 
-        let data = getSharedData('birthdays');
-        data.push({ 
-            name, 
+        const houseCode = getActiveHouse();
+        const currentUser = (typeof getCurrentUser === 'function' ? getCurrentUser() : null) ||
+                            localStorage.getItem('vidass_current_user') ||
+                            'דייר';
+
+        let data = (typeof getSharedData === 'function') ? getSharedData('birthdays') : [];
+        data.push({
+            name,
             bdayDate,
             phone,
             image: tempImageBase64,
@@ -222,12 +267,16 @@
             location,
             time,
             gift,
-            addedBy: getCurrentUser(),
+            addedBy: currentUser,
             date: new Date().toLocaleDateString('he-IL')
         });
-        saveSharedData('birthdays', data);
 
-        // איפוס שדות
+        if (typeof saveSharedData === 'function') {
+            saveSharedData('birthdays', data);
+        } else {
+            localStorage.setItem('vidass_birthdays_' + houseCode, JSON.stringify(data));
+        }
+
         document.getElementById('bdayName').value = '';
         document.getElementById('bdayDate').value = '';
         document.getElementById('bdayPhone').value = '';
@@ -235,6 +284,7 @@
         document.getElementById('partyLocation').value = '';
         document.getElementById('partyTime').value = '';
         document.getElementById('partyGift').value = '';
+        document.getElementById('bdayImage').value = '';
         document.getElementById('uploadText').innerText = "בחר תמונה מהמכשיר 📷";
         tempImageBase64 = "";
 
@@ -243,9 +293,16 @@
     }
 
     function removeBirthday(index) {
-        let data = getSharedData('birthdays');
+        const houseCode = getActiveHouse();
+        let data = (typeof getSharedData === 'function') ? getSharedData('birthdays') : [];
         data.splice(index, 1);
-        saveSharedData('birthdays', data);
+
+        if (typeof saveSharedData === 'function') {
+            saveSharedData('birthdays', data);
+        } else {
+            localStorage.setItem('vidass_birthdays_' + houseCode, JSON.stringify(data));
+        }
+
         loadBirthdays();
         showToast("הרישום הוסר בהצלחה.");
     }
@@ -257,6 +314,19 @@
         toast.classList.add('show');
         setTimeout(() => toast.classList.remove('show'), 3000);
     }
+
+    window.addEventListener('vidass:data-updated', function(e) {
+        if (!e || !e.detail || !e.detail.module || e.detail.module === 'birthdays' || e.detail.module === 'all') {
+            loadBirthdays();
+        }
+    });
+
+    window.addEventListener('storage', function(event) {
+        const houseCode = getActiveHouse();
+        if (event.key === 'vidass_birthdays_' + houseCode) {
+            loadBirthdays();
+        }
+    });
 </script>
 
 </body>

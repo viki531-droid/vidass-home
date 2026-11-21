@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VIDASS - ניהול הוצאות ותקציב הבית</title>
-    <!-- קישור לקובץ הסנכרון והאחסון האחיד -->
     <script src="storage-sync.js"></script>
     <style>
         :root {
@@ -51,6 +50,8 @@
             border-bottom: 1px solid rgba(255,255,255,0.1);
             padding-bottom: 16px;
             margin-bottom: 20px;
+            gap: 10px;
+            flex-wrap: wrap;
         }
 
         .header h1 { font-size: 20px; color: var(--accent); display: flex; align-items: center; gap: 8px; }
@@ -62,17 +63,59 @@
             border-radius: 16px;
             padding: 18px;
             text-align: center;
-            margin-bottom: 24px;
+            margin-bottom: 16px;
         }
 
         .summary-title { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
         .summary-amount { font-size: 26px; font-weight: bold; color: var(--accent); }
 
+        .category-breakdown {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 12px;
+        }
+
+        .cat-pill {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 999px;
+            padding: 4px 10px;
+            font-size: 11px;
+            color: var(--text-main);
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .filter-bar select, .filter-bar input {
+            flex: 1;
+            min-width: 160px;
+            padding: 9px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            color: white;
+            font-size: 12px;
+            outline: none;
+            text-align: right;
+        }
+
+        .filter-bar option {
+            background: #1a1622;
+            color: white;
+        }
+
         .input-section {
             display: grid;
             grid-template-columns: 2fr 1fr 1.2fr auto;
             gap: 10px;
-            margin-bottom: 24px;
+            margin-bottom: 18px;
         }
 
         @media (max-width: 650px) {
@@ -109,6 +152,7 @@
             font-size: 13px;
             cursor: pointer;
             transition: 0.2s;
+            min-height: 42px;
         }
 
         .add-btn:hover { opacity: 0.9; }
@@ -130,6 +174,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 10px;
         }
 
         .expense-info {
@@ -153,6 +198,7 @@
             display: flex;
             align-items: center;
             gap: 14px;
+            flex-shrink: 0;
         }
 
         .expense-amount {
@@ -192,13 +238,14 @@
     </div>
 
     <div class="summary-card">
-        <div class="summary-title">סך כל ההוצאות הרשומות לבית</div>
+        <div class="summary-title" id="summaryLabel">סך כל ההוצאות הרשומות לבית</div>
         <div class="summary-amount" id="totalExpensesAmount">₪0.00</div>
+        <div class="category-breakdown" id="categoryBreakdown"></div>
     </div>
 
     <div class="input-section">
         <input type="text" id="expenseDescInput" placeholder="תיאור ההוצאה (לדוגמה: קניות בסופר)..." onkeypress="if(event.key==='Enter') addExpense()">
-        <input type="number" id="expenseAmountInput" placeholder="סכום בשקלים (₪)..." onkeypress="if(event.key==='Enter') addExpense()">
+        <input type="number" id="expenseAmountInput" min="0.01" step="0.01" placeholder="סכום בשקלים (₪)..." onkeydown="if(['e','E','+','-'].includes(event.key)) event.preventDefault()" onkeypress="if(event.key==='Enter') addExpense()">
         <select id="expenseCategoryInput">
             <option value="מזון וסופר">🛒 מזון וסופר</option>
             <option value="חשבונות ובית">💡 חשבונות ובית</option>
@@ -206,85 +253,144 @@
             <option value="תחבורה ורכב">🚗 תחבורה ורכב</option>
             <option value="שונות">📌 שונות</option>
         </select>
-        <button class="add-btn" onclick="addExpense()">הוסף הוצאה ➕</button>
+        <button type="button" class="add-btn" onclick="addExpense()">הוסף הוצאה ➕</button>
     </div>
 
-    <div class="expenses-list" id="expensesListContainer">
-        <!-- ההוצאות יטענו לכאן דינמית -->
+    <div class="filter-bar">
+        <select id="filterCategorySelect" onchange="loadExpenses()">
+            <option value="הכל">כל הקטגוריות</option>
+            <option value="מזון וסופר">🛒 מזון וסופר</option>
+            <option value="חשבונות ובית">💡 חשבונות ובית</option>
+            <option value="ילדים וחינוך">🧸 ילדים וחינוך</option>
+            <option value="תחבורה ורכב">🚗 תחבורה ורכב</option>
+            <option value="שונות">📌 שונות</option>
+        </select>
+        <input type="text" id="searchExpenseInput" placeholder="חיפוש לפי תיאור או דייר..." oninput="loadExpenses()">
     </div>
+
+    <div class="expenses-list" id="expensesListContainer"></div>
 </div>
 
 <script>
-    // זיהוי קוד הבית והתאמה למערכת הסנכרון
     const urlParams = new URLSearchParams(window.location.search);
-    let houseCode = urlParams.get('house') || 
-                    (typeof getCurrentHouseCode === 'function' ? getCurrentHouseCode() : null) || 
-                    localStorage.getItem('vidass_current_house_code') || 
-                    localStorage.getItem('vidass_current_house') || 
+    let houseCode = urlParams.get('house') ||
+                    (typeof getCurrentHouseCode === 'function' ? getCurrentHouseCode() : null) ||
+                    localStorage.getItem('vidass_current_house_code') ||
+                    localStorage.getItem('vidass_current_house') ||
                     'EILAT-33';
 
-    houseCode = houseCode.trim();
+    houseCode = String(houseCode).trim();
     localStorage.setItem('vidass_current_house_code', houseCode);
     localStorage.setItem('vidass_current_house', houseCode);
 
     window.onload = function() {
-        document.getElementById('houseBadgeDisplay').innerText = `🟢 בית: ${houseCode}`;
+        document.getElementById('houseBadgeDisplay').innerText = `🟢 בית: ${escapeHtml(houseCode)}`;
         loadExpenses();
     };
 
+    function readExpenses() {
+        if (typeof getSharedData === 'function') {
+            const data = getSharedData('expenses');
+            return Array.isArray(data) ? data : [];
+        }
+        try {
+            const raw = localStorage.getItem('vidass_expenses_' + houseCode);
+            const parsed = raw ? JSON.parse(raw) : [];
+            return Array.isArray(parsed) ? parsed : [];
+        } catch (_) {
+            return [];
+        }
+    }
+
     function loadExpenses() {
-        const expenses = (typeof getSharedData === 'function') ? getSharedData('expenses') : [];
+        const expenses = readExpenses();
         const container = document.getElementById('expensesListContainer');
         const totalDisplay = document.getElementById('totalExpensesAmount');
+        const summaryLabel = document.getElementById('summaryLabel');
+        const breakdownEl = document.getElementById('categoryBreakdown');
+        const selectedCat = document.getElementById('filterCategorySelect').value;
+        const searchTerm = (document.getElementById('searchExpenseInput').value || '').trim().toLowerCase();
 
-        if (!expenses || expenses.length === 0) {
-            container.innerHTML = `<div class="empty-state">אין הוצאות רשומות כרגע. אפשר להוסיף הוצאה חדשה למעלה!</div>`;
+        const categoryTotals = {};
+        let allSum = 0;
+
+        expenses.forEach((item) => {
+            const amt = parseFloat(item.amount) || 0;
+            const cat = item.category || 'שונות';
+            allSum += amt;
+            categoryTotals[cat] = (categoryTotals[cat] || 0) + amt;
+        });
+
+        breakdownEl.innerHTML = Object.entries(categoryTotals).map(([cat, sum]) =>
+            `<span class="cat-pill">${escapeHtml(cat)}: <strong>₪${sum.toLocaleString('he-IL', { minimumFractionDigits: 2 })}</strong></span>`
+        ).join('');
+
+        const filteredIndices = [];
+        for (let i = expenses.length - 1; i >= 0; i--) {
+            const item = expenses[i];
+            const catMatch = selectedCat === 'הכל' || (item.category || 'שונות') === selectedCat;
+            const textMatch = !searchTerm ||
+                String(item.description || '').toLowerCase().includes(searchTerm) ||
+                String(item.addedBy || '').toLowerCase().includes(searchTerm) ||
+                String(item.category || '').toLowerCase().includes(searchTerm);
+            if (catMatch && textMatch) {
+                filteredIndices.push(i);
+            }
+        }
+
+        if (filteredIndices.length === 0) {
+            container.innerHTML = `<div class="empty-state">${expenses.length === 0 ? 'אין הוצאות רשומות כרגע. אפשר להוסיף הוצאה חדשה למעלה!' : 'לא נמצאו הוצאות התואמות לסינון.'}</div>`;
             totalDisplay.innerText = "₪0.00";
+            summaryLabel.innerText = selectedCat === 'הכל' && !searchTerm
+                ? "סך כל ההוצאות הרשומות לבית"
+                : "סך ההוצאות המסוננות";
             return;
         }
 
         container.innerHTML = '';
-        let totalSum = 0;
+        let displayedSum = 0;
 
-        expenses.slice().reverse().forEach((item, index) => {
-            const actualIndex = expenses.length - 1 - index;
+        filteredIndices.forEach((actualIndex) => {
+            const item = expenses[actualIndex];
             const amountNum = parseFloat(item.amount) || 0;
-            totalSum += amountNum;
+            displayedSum += amountNum;
 
             container.innerHTML += `
                 <div class="expense-item">
                     <div class="expense-info">
                         <div class="expense-title-text">📌 ${escapeHtml(item.description)}</div>
-                        <div class="expense-meta">קטגוריה: <strong>${escapeHtml(item.category)}</strong> | נוסף ע"י: ${escapeHtml(item.addedBy || 'דייר')} | ${item.date || ''}</div>
+                        <div class="expense-meta">קטגוריה: <strong>${escapeHtml(item.category)}</strong> | נוסף ע"י: ${escapeHtml(item.addedBy || 'דייר')} | ${escapeHtml(item.date || '')}</div>
                     </div>
                     <div class="expense-right">
-                        <div class="expense-amount">₪${amountNum.toLocaleString('he-IL', {minimumFractionDigits: 2})}</div>
-                        <button class="delete-btn" onclick="deleteExpense(${actualIndex})">מחק 🗑️</button>
+                        <div class="expense-amount">₪${amountNum.toLocaleString('he-IL', { minimumFractionDigits: 2 })}</div>
+                        <button type="button" class="delete-btn" onclick="deleteExpense(${actualIndex})">מחק 🗑️</button>
                     </div>
                 </div>
             `;
         });
 
-        totalDisplay.innerText = `₪${totalSum.toLocaleString('he-IL', {minimumFractionDigits: 2})}`;
+        const isFiltered = selectedCat !== 'הכל' || Boolean(searchTerm);
+        summaryLabel.innerText = isFiltered ? "סך ההוצאות המסוננות" : "סך כל ההוצאות הרשומות לבית";
+        totalDisplay.innerText = `₪${(isFiltered ? displayedSum : allSum).toLocaleString('he-IL', { minimumFractionDigits: 2 })}`;
     }
 
     function addExpense() {
         const descInput = document.getElementById('expenseDescInput');
         const amountInput = document.getElementById('expenseAmountInput');
         const categoryInput = document.getElementById('expenseCategoryInput');
-        
+
         const description = descInput.value.trim();
         const amount = parseFloat(amountInput.value);
         const category = categoryInput.value;
-        
+
         if (!description || isNaN(amount) || amount <= 0) {
             alert("נא להזין תיאור תקין וסכום כספי חיובי.");
             return;
         }
 
-        let expenses = (typeof getSharedData === 'function') ? getSharedData('expenses') : [];
-        const currentUser = (typeof getCurrentUser === 'function' ? getCurrentUser() : null) || 
-                            localStorage.getItem('vidass_current_user') || 
+        const expenses = readExpenses();
+        const currentUser = (typeof getCurrentUser === 'function' ? getCurrentUser() : null) ||
+                            localStorage.getItem('vidass_current_user') ||
                             'דייר';
 
         expenses.push({
@@ -302,7 +408,7 @@
     }
 
     function deleteExpense(index) {
-        let expenses = (typeof getSharedData === 'function') ? getSharedData('expenses') : [];
+        const expenses = readExpenses();
         if (expenses[index] !== undefined) {
             expenses.splice(index, 1);
             saveAndRefresh(expenses);
@@ -319,8 +425,25 @@
     }
 
     function escapeHtml(str) {
-        return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        return String(str || '')
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
     }
+
+    window.addEventListener('vidass:data-updated', function(e) {
+        if (!e || !e.detail || !e.detail.module || e.detail.module === 'expenses' || e.detail.module === 'all') {
+            loadExpenses();
+        }
+    });
+
+    window.addEventListener('storage', function(event) {
+        if (event.key === 'vidass_expenses_' + houseCode) {
+            loadExpenses();
+        }
+    });
 </script>
 
 </body>

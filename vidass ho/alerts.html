@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VIDASS Micro-App - התראות מערכת</title>
-    <!-- קישור לקובץ הסנכרון המשותף בין דיירי הבית -->
     <script src="storage-sync.js"></script>
     <style>
         :root {
@@ -31,7 +30,7 @@
         .input-group label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
         .input-group input { width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; color: white; font-size: 13px; outline: none; text-align: right; }
         .btn { width: 100%; padding: 11px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 5px; }
-        .alert-row { background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 10px; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+        .alert-row { background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 10px; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; gap: 10px; }
         .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: white; padding: 10px 20px; border-radius: 10px; font-size: 13px; transition: transform 0.3s; z-index: 1000; }
         .toast.show { transform: translateX(-50%) translateY(0); }
     </style>
@@ -47,8 +46,8 @@
         <div class="badge" id="houseBadge">🟢 טוען בית...</div>
     </div>
 
-    <div class="status-box">
-        📱 מצב דחיפה לטלפון: <strong>פעיל (Push Notifications Enabled)</strong>
+    <div class="status-box" id="syncStatusBox">
+        🔄 סנכרון חי פעיל לכל דיירי הבית
     </div>
 
     <div class="input-group">
@@ -63,38 +62,50 @@
 <div class="toast" id="toastMsg">הפעולה בוצעה בהצלחה!</div>
 
 <script>
-    // מנגנון זיהוי והצמדת קוד הבית בצורה בטוחה
     const urlParams = new URLSearchParams(window.location.search);
-    let houseCode = urlParams.get('house') || 
-                    (typeof getCurrentHouseCode === 'function' ? getCurrentHouseCode() : null) || 
-                    localStorage.getItem('vidass_current_house_code') || 
-                    localStorage.getItem('vidass_current_house') || 
+    let houseCode = urlParams.get('house') ||
+                    (typeof getCurrentHouseCode === 'function' ? getCurrentHouseCode() : null) ||
+                    localStorage.getItem('vidass_current_house_code') ||
+                    localStorage.getItem('vidass_current_house') ||
                     'EILAT-33';
 
     houseCode = houseCode.trim();
     localStorage.setItem('vidass_current_house_code', houseCode);
     localStorage.setItem('vidass_current_house', houseCode);
 
+    function escapeHtml(str) {
+        return String(str || '')
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
     window.onload = function() {
-        document.getElementById('houseBadge').innerText = `🟢 בית: ${houseCode}`;
+        document.getElementById('houseBadge').innerText = `🟢 בית: ${escapeHtml(houseCode)}`;
         loadAlerts();
     };
 
     function loadAlerts() {
-        // שימוש בפונקציית הסנכרון המשותפת לכל דיירי הבית
         const data = (typeof getSharedData === 'function') ? getSharedData('alerts') : [];
         const container = document.getElementById('alertsList');
-        
-        container.innerHTML = data.length === 0 ? '<p style="text-align:center; font-size:12px; color:var(--text-muted);">אין התראות פעילות כרגע.</p>' : '';
+
+        if (!Array.isArray(data) || data.length === 0) {
+            container.innerHTML = '<p style="text-align:center; font-size:12px; color:var(--text-muted);">אין התראות פעילות כרגע.</p>';
+            return;
+        }
+
+        container.innerHTML = '';
         data.slice().reverse().forEach((item, index) => {
             const actualIndex = data.length - 1 - index;
             container.innerHTML += `
                 <div class="alert-row">
                     <div>
-                        <span>🔔 <strong>${item.text}</strong></span>
-                        <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">נוסף ע"י: ${item.addedBy || 'דייר'} | זמן: ${item.time} (${item.date})</div>
+                        <span>🔔 <strong>${escapeHtml(item.text)}</strong></span>
+                        <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">נוסף ע"י: ${escapeHtml(item.addedBy || 'דייר')} | זמן: ${escapeHtml(item.time || '')} (${escapeHtml(item.date || '')})</div>
                     </div>
-                    <button onclick="removeAlert(${actualIndex})" style="background:rgba(239,68,68,0.1); color:var(--danger); border:1px solid rgba(239,68,68,0.3); padding:5px 10px; border-radius:6px; cursor:pointer; font-size:11px;">אישור ומחיקה</button>
+                    <button onclick="removeAlert(${actualIndex})" style="background:rgba(239,68,68,0.1); color:var(--danger); border:1px solid rgba(239,68,68,0.3); padding:5px 10px; border-radius:6px; cursor:pointer; font-size:11px; flex-shrink:0;">אישור ומחיקה</button>
                 </div>`;
         });
     }
@@ -102,22 +113,22 @@
     function addAlert() {
         const input = document.getElementById('alertInput');
         const text = input.value.trim();
-        if(!text) { showToast("נא להזין תוכן התראה", true); return; }
+        if (!text) { showToast("נא להזין תוכן התראה", true); return; }
 
         let data = (typeof getSharedData === 'function') ? getSharedData('alerts') : [];
-        
-        const currentUser = (typeof getCurrentUser === 'function' ? getCurrentUser() : null) || 
-                            localStorage.getItem('vidass_current_user') || 
+
+        const currentUser = (typeof getCurrentUser === 'function' ? getCurrentUser() : null) ||
+                            localStorage.getItem('vidass_current_user') ||
                             'דייר';
 
-        data.push({ 
-            text, 
+        data.push({
+            text,
             addedBy: currentUser,
-            time: new Date().toLocaleTimeString('he-IL'), 
-            date: new Date().toLocaleDateString('he-IL') 
+            time: new Date().toLocaleTimeString('he-IL'),
+            date: new Date().toLocaleDateString('he-IL')
         });
-        
-        if(typeof saveSharedData === 'function') {
+
+        if (typeof saveSharedData === 'function') {
             saveSharedData('alerts', data);
         } else {
             localStorage.setItem('vidass_alerts_' + houseCode, JSON.stringify(data));
@@ -131,13 +142,13 @@
     function removeAlert(index) {
         let data = (typeof getSharedData === 'function') ? getSharedData('alerts') : [];
         data.splice(index, 1);
-        
-        if(typeof saveSharedData === 'function') {
+
+        if (typeof saveSharedData === 'function') {
             saveSharedData('alerts', data);
         } else {
             localStorage.setItem('vidass_alerts_' + houseCode, JSON.stringify(data));
         }
-        
+
         loadAlerts();
         showToast("ההתראה אושרה והוסרה.");
     }
@@ -149,6 +160,18 @@
         toast.classList.add('show');
         setTimeout(() => toast.classList.remove('show'), 3000);
     }
+
+    window.addEventListener('vidass:data-updated', function(e) {
+        if (!e || !e.detail || !e.detail.module || e.detail.module === 'alerts' || e.detail.module === 'all') {
+            loadAlerts();
+        }
+    });
+
+    window.addEventListener('storage', function(event) {
+        if (event.key === 'vidass_alerts_' + houseCode) {
+            loadAlerts();
+        }
+    });
 </script>
 
 </body>

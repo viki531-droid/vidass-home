@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VIDASS - ניהול דיירים והזמנות</title>
-    <!-- קישור לקובץ הסנכרון והאחסון האחיד -->
     <script src="storage-sync.js"></script>
     <style>
         :root {
@@ -51,16 +50,81 @@
             border-bottom: 1px solid rgba(255,255,255,0.1);
             padding-bottom: 16px;
             margin-bottom: 20px;
+            gap: 10px;
+            flex-wrap: wrap;
         }
 
         .header h1 { font-size: 20px; color: var(--accent); display: flex; align-items: center; gap: 8px; }
         .house-badge { background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: var(--success); padding: 5px 12px; border-radius: 10px; font-size: 11px; font-weight: bold; }
 
+        .invite-box {
+            background: rgba(216, 67, 112, 0.08);
+            border: 1px solid rgba(216, 67, 112, 0.3);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .invite-title {
+            font-size: 13px;
+            font-weight: bold;
+            color: var(--gold);
+            margin-bottom: 10px;
+        }
+
+        .invite-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .invite-link-input {
+            flex: 1;
+            min-width: 210px;
+            padding: 10px 12px;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            border-radius: 10px;
+            color: var(--text-main);
+            font-size: 12px;
+            outline: none;
+            direction: ltr;
+            text-align: left;
+        }
+
+        .invite-btn {
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            transition: opacity 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .invite-btn:hover { opacity: 0.9; }
+
+        .copy-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .wa-btn {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.45);
+        }
+
         .input-section {
             display: grid;
             grid-template-columns: 1.5fr 1fr 1.2fr auto;
             gap: 10px;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
         }
 
         @media (max-width: 700px) {
@@ -97,6 +161,7 @@
             font-size: 13px;
             cursor: pointer;
             transition: 0.2s;
+            min-height: 42px;
         }
 
         .add-btn:hover { opacity: 0.9; }
@@ -118,6 +183,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
         }
 
         .member-info {
@@ -135,6 +202,25 @@
         .member-meta {
             font-size: 11px;
             color: var(--text-muted);
+        }
+
+        .member-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .small-btn {
+            background: rgba(16, 185, 129, 0.14);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            padding: 6px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: bold;
+            text-decoration: none;
         }
 
         .delete-btn {
@@ -157,6 +243,21 @@
             color: var(--text-muted);
             font-size: 13px;
         }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--success);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 13px;
+            transition: transform 0.3s;
+            z-index: 1000;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); }
     </style>
 </head>
 <body>
@@ -167,6 +268,15 @@
         <div class="house-badge" id="houseBadgeDisplay">🟢 בית: טוען...</div>
     </div>
 
+    <div class="invite-box">
+        <div class="invite-title">🔗 הזמנת דיירים חדשים לבית</div>
+        <div class="invite-row">
+            <input type="text" class="invite-link-input" id="houseInviteLinkInput" readonly>
+            <button type="button" class="invite-btn copy-btn" onclick="copyInviteLink()">העתק קישור 📋</button>
+            <a class="invite-btn wa-btn" id="whatsappInviteBtn" href="#" target="_blank" rel="noopener noreferrer">שלח בוואטסאפ 💬</a>
+        </div>
+    </div>
+
     <div class="input-section">
         <input type="text" id="memberNameInput" placeholder="שם הדייר/ת (לדוגמה: דוד)..." onkeypress="if(event.key==='Enter') addMember()">
         <input type="text" id="memberPhoneInput" placeholder="מספר טלפון (אופציונלי)..." onkeypress="if(event.key==='Enter') addMember()">
@@ -175,51 +285,122 @@
             <option value="דייר משפחה">🏡 דייר משפחה</option>
             <option value="אורח / צופה">👁️ אורח / צופה</option>
         </select>
-        <button class="add-btn" onclick="addMember()">הוסף דייר ➕</button>
+        <button type="button" class="add-btn" onclick="addMember()">הוסף דייר ➕</button>
     </div>
 
-    <div class="members-list" id="membersListContainer">
-        <!-- רשימת הדיירים תטען לכאן דינמית -->
-    </div>
+    <div class="members-list" id="membersListContainer"></div>
 </div>
 
+<div class="toast" id="toastMsg">הקישור הועתק!</div>
+
 <script>
-    // זיהוי קוד הבית והתאמה למערכת הסנכרון
     const urlParams = new URLSearchParams(window.location.search);
-    let houseCode = urlParams.get('house') || 
-                    (typeof getCurrentHouseCode === 'function' ? getCurrentHouseCode() : null) || 
-                    localStorage.getItem('vidass_current_house_code') || 
-                    localStorage.getItem('vidass_current_house') || 
+    let houseCode = urlParams.get('house') ||
+                    (typeof getCurrentHouseCode === 'function' ? getCurrentHouseCode() : null) ||
+                    localStorage.getItem('vidass_current_house_code') ||
+                    localStorage.getItem('vidass_current_house') ||
                     'EILAT-33';
 
-    houseCode = houseCode.trim();
+    houseCode = String(houseCode).trim().toUpperCase();
     localStorage.setItem('vidass_current_house_code', houseCode);
     localStorage.setItem('vidass_current_house', houseCode);
 
+    function buildHouseInviteUrl(memberName = '') {
+        const baseUrl = new URL('login.html', window.location.href);
+        baseUrl.searchParams.set('house', houseCode);
+        if (memberName) {
+            baseUrl.searchParams.set('user', memberName);
+        }
+        return baseUrl.toString();
+    }
+
+    function buildWhatsappUrl(inviteUrl, memberName = '') {
+        const greeting = memberName ? `היי ${memberName}, ` : 'היי, ';
+        const msg = `${greeting}הוזמנת להצטרף לבית ${houseCode} במערכת VIDASS.\nקוד הבית: ${houseCode}\nקישור לכניסה: ${inviteUrl}`;
+        return `https://wa.me/?text=${encodeURIComponent(msg)}`;
+    }
+
+    function refreshInviteBox() {
+        const link = buildHouseInviteUrl();
+        document.getElementById('houseInviteLinkInput').value = link;
+        document.getElementById('whatsappInviteBtn').href = buildWhatsappUrl(link);
+    }
+
+    function copyInviteLink(customUrl = '') {
+        const targetLink = customUrl || document.getElementById('houseInviteLinkInput').value;
+        if (!targetLink) return;
+        if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+            navigator.clipboard.writeText(targetLink).then(() => {
+                showToast("קישור ההזמנה לבית הועתק ללוח!");
+            }).catch(() => {
+                fallbackCopy(targetLink);
+            });
+        } else {
+            fallbackCopy(targetLink);
+        }
+    }
+
+    function fallbackCopy(text) {
+        const temp = document.createElement('input');
+        temp.value = text;
+        document.body.appendChild(temp);
+        temp.select();
+        document.execCommand('copy');
+        document.body.removeChild(temp);
+        showToast("קישור ההזמנה לבית הועתק ללוח!");
+    }
+
+    function showToast(msg) {
+        const toast = document.getElementById('toastMsg');
+        toast.innerText = msg;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2600);
+    }
+
     window.onload = function() {
-        document.getElementById('houseBadgeDisplay').innerText = `🟢 בית: ${houseCode}`;
+        document.getElementById('houseBadgeDisplay').innerText = `🟢 בית: ${escapeHtml(houseCode)}`;
+        refreshInviteBox();
         loadMembers();
     };
 
+    function readMembers() {
+        if (typeof getSharedData === 'function') {
+            const d = getSharedData('members');
+            return Array.isArray(d) ? d : [];
+        }
+        try {
+            const raw = localStorage.getItem('vidass_members_' + houseCode);
+            const parsed = raw ? JSON.parse(raw) : [];
+            return Array.isArray(parsed) ? parsed : [];
+        } catch (_) {
+            return [];
+        }
+    }
+
     function loadMembers() {
-        // ניהול דיירים נשמר בתוך מערך המנוהל תחת מפתח members
-        const members = (typeof getSharedData === 'function') ? getSharedData('members') : [];
+        const members = readMembers();
         const container = document.getElementById('membersListContainer');
 
-        if (!members || members.length === 0) {
+        if (members.length === 0) {
             container.innerHTML = `<div class="empty-state">אין דיירים רשומים כרגע. אפשר להוסיף דייר חדש למעלה!</div>`;
             return;
         }
 
         container.innerHTML = '';
         members.forEach((member, index) => {
+            const memberInvite = buildHouseInviteUrl(member.name || '');
+            const waMemberLink = buildWhatsappUrl(memberInvite, member.name || '');
             container.innerHTML += `
                 <div class="member-item">
                     <div class="member-info">
                         <div class="member-name">👤 ${escapeHtml(member.name)}</div>
                         <div class="member-meta">תפקיד: <strong>${escapeHtml(member.role || 'דייר')}</strong> | טלפון: ${escapeHtml(member.phone || 'לא צוין')}</div>
                     </div>
-                    <button class="delete-btn" onclick="deleteMember(${index})">הסר דייר 🗑️</button>
+                    <div class="member-actions">
+                        <button type="button" class="small-btn" onclick="copyInviteLink('${escapeHtml(memberInvite)}')">העתק קישור</button>
+                        <a class="small-btn" href="${escapeHtml(waMemberLink)}" target="_blank" rel="noopener noreferrer">וואטסאפ 💬</a>
+                        <button type="button" class="delete-btn" onclick="deleteMember(${index})">הסר דייר 🗑️</button>
+                    </div>
                 </div>
             `;
         });
@@ -229,18 +410,17 @@
         const nameInput = document.getElementById('memberNameInput');
         const phoneInput = document.getElementById('memberPhoneInput');
         const roleInput = document.getElementById('memberRoleInput');
-        
+
         const name = nameInput.value.trim();
         const phone = phoneInput.value.trim() || 'לא צוין';
         const role = roleInput.value;
-        
+
         if (!name) {
             alert("נא להזין את שם הדייר/ת.");
             return;
         }
 
-        let members = (typeof getSharedData === 'function') ? getSharedData('members') : [];
-
+        const members = readMembers();
         members.push({
             name: name,
             phone: phone,
@@ -254,7 +434,7 @@
     }
 
     function deleteMember(index) {
-        let members = (typeof getSharedData === 'function') ? getSharedData('members') : [];
+        const members = readMembers();
         if (members[index] !== undefined) {
             members.splice(index, 1);
             saveAndRefresh(members);
@@ -271,8 +451,25 @@
     }
 
     function escapeHtml(str) {
-        return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        return String(str || '')
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
     }
+
+    window.addEventListener('vidass:data-updated', function(e) {
+        if (!e || !e.detail || !e.detail.module || e.detail.module === 'members' || e.detail.module === 'all') {
+            loadMembers();
+        }
+    });
+
+    window.addEventListener('storage', function(event) {
+        if (event.key === 'vidass_members_' + houseCode) {
+            loadMembers();
+        }
+    });
 </script>
 
 </body>

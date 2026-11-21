@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIDASS Micro-App - דמי כיס</title>
-    <!-- קישור לקובץ הסנכרון המשותף בין דיירי הבית -->
+    <title>VIDASS Micro-App - ספר מתכונים משפחתי</title>
     <script src="storage-sync.js"></script>
     <style>
         :root {
@@ -18,18 +17,59 @@
             --text-muted: #9ca3af;
             --success: #10b981;
             --danger: #ef4444;
+            --gold: #f59e0b;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background: var(--bg-gradient); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .app-container { width: 100%; max-width: 600px; background: var(--card-bg); backdrop-filter: blur(14px); border: 1px solid var(--card-border); border-radius: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.8); padding: 24px; }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 16px; }
+        .app-container { width: 100%; max-width: 740px; background: var(--card-bg); backdrop-filter: blur(14px); border: 1px solid var(--card-border); border-radius: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.8); padding: 24px; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 18px; gap: 10px; flex-wrap: wrap; }
         .header h1 { font-size: 20px; color: var(--accent); }
         .badge { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--success); padding: 4px 10px; border-radius: 8px; font-size: 11px; }
+
+        .section-card { background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 16px; margin-bottom: 14px; }
+        .section-title { font-size: 13px; color: var(--gold); margin-bottom: 10px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+        .row-inputs { display: flex; gap: 10px; flex-wrap: wrap; }
+        .row-inputs .input-group { flex: 1; min-width: 150px; }
+
         .input-group { margin-bottom: 12px; text-align: right; }
         .input-group label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
-        .input-group input { width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; color: white; font-size: 13px; outline: none; text-align: right; }
-        .btn { width: 100%; padding: 11px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 5px; }
-        .item-row { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+        .input-group input, .input-group select, .input-group textarea { width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; color: white; font-size: 13px; outline: none; text-align: right; }
+        .input-group option { background: #1a1622; color: white; }
+        .input-group textarea { resize: vertical; min-height: 76px; }
+        .input-group input:focus, .input-group select:focus, .input-group textarea:focus { border-color: var(--primary); }
+
+        .ing-row { display: flex; gap: 8px; align-items: center; background: rgba(0,0,0,0.22); border: 1px solid rgba(255,255,255,0.07); border-radius: 10px; padding: 8px 10px; margin-bottom: 8px; flex-wrap: wrap; }
+        .ing-row input { padding: 7px 9px; font-size: 12px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; color: white; outline: none; text-align: right; }
+        .ing-row input.grow { flex: 2; min-width: 150px; }
+        .ing-row input.qty { width: 115px; }
+
+        .btn { width: 100%; padding: 11px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 4px; font-size: 13px; }
+        .btn:hover { opacity: 0.92; }
+        .btn-small { width: auto; padding: 6px 12px; font-size: 12px; margin-top: 0; }
+        .btn-secondary { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18); color: var(--text-main); }
+        .btn-remove-mini { background: rgba(239,68,68,0.15); color: var(--danger); border: 1px solid rgba(239,68,68,0.35); border-radius: 7px; padding: 5px 8px; cursor: pointer; font-size: 11px; }
+
+        .filter-bar { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+        .filter-bar input, .filter-bar select { flex: 1; min-width: 160px; padding: 9px 12px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; color: white; font-size: 12px; outline: none; text-align: right; }
+        .filter-bar option { background: #1a1622; color: white; }
+
+        .recipe-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(216, 67, 112, 0.28); border-radius: 16px; padding: 16px; margin-bottom: 12px; }
+        .recipe-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+        .pill { display: inline-block; padding: 3px 9px; border-radius: 8px; font-size: 11px; font-weight: bold; background: rgba(216, 67, 112, 0.16); color: var(--accent); border: 1px solid rgba(216, 67, 112, 0.35); margin-left: 6px; margin-top: 4px; }
+        .pill-gold { background: rgba(245, 158, 11, 0.16); color: var(--gold); border-color: rgba(245, 158, 11, 0.35); }
+        .recipe-meta { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+        .recipe-sub { margin-top: 8px; font-size: 12px; }
+        .recipe-sub h4 { color: var(--accent); font-size: 12px; margin-bottom: 6px; }
+        .ing-line { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.04); flex-wrap: wrap; }
+        .prep-box { background: rgba(0,0,0,0.22); border-radius: 10px; padding: 10px 12px; white-space: pre-line; line-height: 1.55; color: var(--text-main); margin-top: 4px; }
+
+        .card-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+        .btn-shop { background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.35); padding: 5px 9px; border-radius: 7px; cursor: pointer; font-size: 11px; font-weight: bold; }
+        .btn-edit { background: rgba(245, 158, 11, 0.14); color: var(--gold); border: 1px solid rgba(245, 158, 11, 0.35); padding: 6px 10px; border-radius: 8px; cursor: pointer; font-size: 11px; font-weight: bold; }
+        .btn-del { background: rgba(239, 68, 68, 0.12); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.35); padding: 6px 10px; border-radius: 8px; cursor: pointer; font-size: 11px; font-weight: bold; }
+
         .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: white; padding: 10px 20px; border-radius: 10px; font-size: 13px; transition: transform 0.3s; z-index: 1000; }
         .toast.show { transform: translateX(-50%) translateY(0); }
     </style>
@@ -39,83 +79,392 @@
 <div class="app-container">
     <div class="header">
         <div>
-            <h1>💵 דפדפן דמי כיס</h1>
-            <p style="font-size: 11px; color: var(--text-muted);">ניהול הקצבות משותף לכל דיירי הבית</p>
+            <h1>🍲 ספר מתכונים משפחתי</h1>
+            <p style="font-size: 11px; color: var(--text-muted);">ניהול מתכונים, מצרכים והעברה מהירה לרשימת הקניות</p>
         </div>
         <div class="badge" id="houseBadge">🟢 מחובר לבית המשותף</div>
     </div>
 
-    <div class="input-group">
-        <label>שם הילד / מקבל ההקצבה</label>
-        <input type="text" id="childName" placeholder="לדוגמה: אגם...">
-    </div>
-    <div class="input-group">
-        <label>סכום (₪) ומטרה</label>
-        <input type="text" id="pocketDetails" placeholder="לדוגמה: 50 ₪ - דמי כיס חודשיים" onkeypress="if(event.key==='Enter') addPocketRecord()">
-    </div>
-    <button class="btn" onclick="addPocketRecord()">שמור רישום דמי כיס 💵</button>
+    <div class="section-card">
+        <div class="section-title">
+            <span id="recipeFormTitle">📝 הוספת מתכון חדש</span>
+            <button type="button" id="cancelRecipeEditBtn" class="btn btn-small btn-secondary" style="display:none;" onclick="cancelRecipeEdit()">ביטול עריכה</button>
+        </div>
 
-    <div style="margin-top: 20px; max-height: 260px; overflow-y: auto;" id="pocketList"></div>
+        <div class="row-inputs">
+            <div class="input-group">
+                <label for="recipeTitleInput">שם המנה / המתכון</label>
+                <input type="text" id="recipeTitleInput" placeholder="לדוגמה: עוף בתנור עם תפוחי אדמה, מרק עדשים...">
+            </div>
+            <div class="input-group">
+                <label for="recipeCategoryInput">קטגוריה</label>
+                <select id="recipeCategoryInput">
+                    <option value="עיקריות">🍽️ עיקריות</option>
+                    <option value="תוספות">🥔 תוספות</option>
+                    <option value="מרקים וסלטים">🥗 מרקים וסלטים</option>
+                    <option value="מאפים וקינוחים">🍰 מאפים וקינוחים</option>
+                    <option value="ארוחות בוקר ומהיר">🍳 ארוחות בוקר ומהיר</option>
+                </select>
+            </div>
+            <div class="input-group" style="max-width: 150px;">
+                <label for="recipePrepTimeInput">זמן הכנה</label>
+                <input type="text" id="recipePrepTimeInput" placeholder="לדוגמה: 45 דק'">
+            </div>
+        </div>
+
+        <div class="section-title" style="margin-top: 6px;">
+            <span>🥕 מצרכים</span>
+            <button type="button" class="btn btn-small btn-secondary" onclick="addIngredientRow()">+ הוסף מצרך</button>
+        </div>
+        <div id="ingredientsDraftContainer"></div>
+
+        <div class="input-group" style="margin-top: 10px;">
+            <label for="recipeStepsInput">אופן ההכנה והערות</label>
+            <textarea id="recipeStepsInput" placeholder="שלבי ההכנה, חום תנור, טיפים להגשה..."></textarea>
+        </div>
+
+        <button type="button" id="saveRecipeBtn" class="btn" onclick="saveRecipe()">שמור מתכון בספר הבית 🍲</button>
+    </div>
+
+    <div class="filter-bar">
+        <select id="filterRecipeCat" onchange="loadRecipes()">
+            <option value="הכל">כל הקטגוריות</option>
+            <option value="עיקריות">🍽️ עיקריות</option>
+            <option value="תוספות">🥔 תוספות</option>
+            <option value="מרקים וסלטים">🥗 מרקים וסלטים</option>
+            <option value="מאפים וקינוחים">🍰 מאפים וקינוחים</option>
+            <option value="ארוחות בוקר ומהיר">🍳 ארוחות בוקר ומהיר</option>
+        </select>
+        <input type="text" id="searchRecipeInput" placeholder="חיפוש מתכון, מצרך או יוצר..." oninput="loadRecipes()">
+    </div>
+
+    <div id="recipesList"></div>
 </div>
 
 <div class="toast" id="toastMsg">הפעולה בוצעה בהצלחה!</div>
 
 <script>
-    window.onload = function() {
-        const houseCode = getCurrentHouseCode();
-        if(houseCode) {
-            document.getElementById('houseBadge').innerText = `🟢 בית: ${houseCode}`;
+    let editingRecipeIndex = null;
+
+    function escapeHtml(str) {
+        return String(str || '')
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function getActiveHouse() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = (
+            urlParams.get('house') ||
+            (typeof getCurrentHouseCode === 'function' ? getCurrentHouseCode() : null) ||
+            localStorage.getItem('vidass_current_house_code') ||
+            localStorage.getItem('vidass_current_house') ||
+            'EILAT-33'
+        ).trim();
+        localStorage.setItem('vidass_current_house_code', code);
+        localStorage.setItem('vidass_current_house', code);
+        return code;
+    }
+
+    function getActiveUser() {
+        return (typeof getCurrentUser === 'function' ? getCurrentUser() : null) ||
+               localStorage.getItem('vidass_current_user') ||
+               'דייר';
+    }
+
+    function readModuleList(mod) {
+        const houseCode = getActiveHouse();
+        if (typeof getSharedData === 'function') {
+            const d = getSharedData(mod);
+            return Array.isArray(d) ? d : [];
         }
-        loadPocketRecords();
-    };
+        try {
+            const raw = localStorage.getItem(`vidass_${mod}_${houseCode}`);
+            const parsed = raw ? JSON.parse(raw) : [];
+            return Array.isArray(parsed) ? parsed : [];
+        } catch (_) {
+            return [];
+        }
+    }
 
-    function loadPocketRecords() {
-        const data = getSharedData('pocket');
-        const container = document.getElementById('pocketList');
-        
-        container.innerHTML = data.length === 0 ? '<p style="text-align:center; font-size:12px; color:var(--text-muted);">אין רשומות דמי כיס פעילות.</p>' : '';
-        data.slice().reverse().forEach((item, index) => {
-            const actualIndex = data.length - 1 - index;
-            container.innerHTML += `
-                <div class="item-row">
-                    <div>
-                        <strong style="color:var(--accent);">👤 ${item.name}</strong>
-                        <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">${item.details} (הוסף ע"י: ${item.addedBy || 'דייר'} | ${item.date})</div>
+    function writeModuleList(mod, arr) {
+        const houseCode = getActiveHouse();
+        if (typeof saveSharedData === 'function') {
+            saveSharedData(mod, arr);
+        } else {
+            localStorage.setItem(`vidass_${mod}_${houseCode}`, JSON.stringify(arr));
+        }
+    }
+
+    function addIngredientRow(defaults = {}) {
+        const container = document.getElementById('ingredientsDraftContainer');
+        const row = document.createElement('div');
+        row.className = 'ing-row draft-ing-row';
+        row.innerHTML = `
+            <input type="text" class="grow ing-name" placeholder="שם המצרך (למשל: בצל, עגבניות, קמח)..." value="${escapeHtml(defaults.name || '')}">
+            <input type="text" class="qty ing-qty" placeholder="כמות (למשל: 2 יח', 500 גרם)" value="${escapeHtml(defaults.qty || '')}">
+            <button type="button" class="btn-remove-mini" onclick="this.parentElement.remove()">✕</button>
+        `;
+        container.appendChild(row);
+    }
+
+    function collectIngredients() {
+        const list = [];
+        document.querySelectorAll('.draft-ing-row').forEach(row => {
+            const name = row.querySelector('.ing-name').value.trim();
+            const qty = row.querySelector('.ing-qty').value.trim();
+            if (name) {
+                list.push({ name, qty });
+            }
+        });
+        return list;
+    }
+
+    function setRecipeEditUI(isEditing) {
+        document.getElementById('recipeFormTitle').innerText = isEditing
+            ? '✏️ עריכת מתכון קיים'
+            : '📝 הוספת מתכון חדש';
+        document.getElementById('saveRecipeBtn').innerText = isEditing
+            ? 'עדכן מתכון 💾'
+            : 'שמור מתכון בספר הבית 🍲';
+        document.getElementById('cancelRecipeEditBtn').style.display = isEditing ? 'inline-block' : 'none';
+    }
+
+    function resetRecipeForm() {
+        editingRecipeIndex = null;
+        setRecipeEditUI(false);
+
+        document.getElementById('recipeTitleInput').value = '';
+        document.getElementById('recipeCategoryInput').value = 'עיקריות';
+        document.getElementById('recipePrepTimeInput').value = '';
+        document.getElementById('recipeStepsInput').value = '';
+
+        document.getElementById('ingredientsDraftContainer').innerHTML = '';
+        addIngredientRow();
+        addIngredientRow();
+    }
+
+    function startEditRecipe(index) {
+        const recipes = readModuleList('recipes');
+        const recipe = recipes[index];
+        if (!recipe) return;
+
+        editingRecipeIndex = index;
+        setRecipeEditUI(true);
+
+        document.getElementById('recipeTitleInput').value = recipe.title || '';
+        document.getElementById('recipeCategoryInput').value = recipe.category || 'עיקריות';
+        document.getElementById('recipePrepTimeInput').value = recipe.prepTime || '';
+        document.getElementById('recipeStepsInput').value = recipe.steps || '';
+
+        document.getElementById('ingredientsDraftContainer').innerHTML = '';
+        const ings = Array.isArray(recipe.ingredients) && recipe.ingredients.length
+            ? recipe.ingredients
+            : [{}];
+        ings.forEach(ing => addIngredientRow(ing));
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        showToast("מצב עריכת מתכון פעיל.");
+    }
+
+    function cancelRecipeEdit() {
+        resetRecipeForm();
+        showToast("העריכה בוטלה.");
+    }
+
+    function addIngredientToShoppingList(rawText) {
+        const text = String(rawText || '').trim();
+        if (!text) return false;
+
+        const shopping = readModuleList('shopping');
+        const normalized = text.toLowerCase();
+        const exists = shopping.some(item =>
+            String((item && (item.text || item.name)) || '').trim().toLowerCase() === normalized &&
+            !(item && item.completed)
+        );
+
+        if (exists) return false;
+
+        shopping.push({
+            text,
+            completed: false,
+            addedBy: getActiveUser(),
+            date: new Date().toLocaleDateString('he-IL')
+        });
+        writeModuleList('shopping', shopping);
+        return true;
+    }
+
+    function sendSingleIngredientToShopping(recipeIndex, ingIndex) {
+        const recipes = readModuleList('recipes');
+        const recipe = recipes[recipeIndex];
+        const ing = recipe && Array.isArray(recipe.ingredients) ? recipe.ingredients[ingIndex] : null;
+        if (!ing || !ing.name) return;
+
+        const label = ing.qty ? `${ing.name} (${ing.qty})` : ing.name;
+        const added = addIngredientToShoppingList(label);
+        if (added) {
+            showToast(`"${label}" נוסף לרשימת הקניות! 🛒`);
+        } else {
+            showToast(`"${label}" כבר קיים ברשימת הקניות.`, true);
+        }
+    }
+
+    function sendAllRecipeIngredientsToShopping(recipeIndex) {
+        const recipes = readModuleList('recipes');
+        const recipe = recipes[recipeIndex];
+        const ings = recipe && Array.isArray(recipe.ingredients) ? recipe.ingredients : [];
+        if (ings.length === 0) {
+            showToast("אין מצרכים במתכון זה.", true);
+            return;
+        }
+
+        let addedCount = 0;
+        ings.forEach(ing => {
+            if (ing && ing.name) {
+                const label = ing.qty ? `${ing.name} (${ing.qty})` : ing.name;
+                if (addIngredientToShoppingList(label)) {
+                    addedCount += 1;
+                }
+            }
+        });
+
+        if (addedCount > 0) {
+            showToast(`נוספו ${addedCount} מצרכים לרשימת הקניות! 🛒`);
+        } else {
+            showToast("כל המצרכים כבר קיימים ברשימת הקניות.", true);
+        }
+    }
+
+    function saveRecipe() {
+        const title = document.getElementById('recipeTitleInput').value.trim();
+        const category = document.getElementById('recipeCategoryInput').value;
+        const prepTime = document.getElementById('recipePrepTimeInput').value.trim();
+        const steps = document.getElementById('recipeStepsInput').value.trim();
+        const ingredients = collectIngredients();
+
+        if (!title) {
+            showToast("נא להזין שם מתכון.", true);
+            return;
+        }
+
+        const recipes = readModuleList('recipes');
+        const isEditing = editingRecipeIndex !== null && recipes[editingRecipeIndex];
+        const currentUser = getActiveUser();
+
+        const entry = {
+            title,
+            category,
+            prepTime,
+            ingredients,
+            steps,
+            addedBy: isEditing ? (recipes[editingRecipeIndex].addedBy || currentUser) : currentUser,
+            date: isEditing ? (recipes[editingRecipeIndex].date || new Date().toLocaleDateString('he-IL')) : new Date().toLocaleDateString('he-IL')
+        };
+
+        if (isEditing) {
+            recipes[editingRecipeIndex] = entry;
+        } else {
+            recipes.push(entry);
+        }
+
+        writeModuleList('recipes', recipes);
+        resetRecipeForm();
+        loadRecipes();
+        showToast(isEditing ? "המתכון עודכן בהצלחה!" : "המתכון נשמר בספר הבית!");
+    }
+
+    function deleteRecipe(index) {
+        const recipes = readModuleList('recipes');
+        if (recipes[index] !== undefined) {
+            recipes.splice(index, 1);
+            writeModuleList('recipes', recipes);
+            if (editingRecipeIndex === index) {
+                resetRecipeForm();
+            }
+            loadRecipes();
+            showToast("המתכון הוסר מספר המתכונים.");
+        }
+    }
+
+    function loadRecipes() {
+        const recipes = readModuleList('recipes');
+        const container = document.getElementById('recipesList');
+        const selectedCat = document.getElementById('filterRecipeCat').value;
+        const searchTerm = (document.getElementById('searchRecipeInput').value || '').trim().toLowerCase();
+
+        const filteredIndices = [];
+        for (let i = recipes.length - 1; i >= 0; i--) {
+            const r = recipes[i];
+            const catMatch = selectedCat === 'הכל' || (r.category || 'עיקריות') === selectedCat;
+            const ingText = Array.isArray(r.ingredients)
+                ? r.ingredients.map(x => `${x.name || ''} ${x.qty || ''}`).join(' ')
+                : '';
+            const textMatch = !searchTerm ||
+                String(r.title || '').toLowerCase().includes(searchTerm) ||
+                String(r.steps || '').toLowerCase().includes(searchTerm) ||
+                String(r.addedBy || '').toLowerCase().includes(searchTerm) ||
+                ingText.toLowerCase().includes(searchTerm);
+
+            if (catMatch && textMatch) {
+                filteredIndices.push(i);
+            }
+        }
+
+        if (filteredIndices.length === 0) {
+            container.innerHTML = `<p style="text-align:center; font-size:12px; color:var(--text-muted); padding: 18px;">${recipes.length === 0 ? 'אין מתכונים שמורים עדיין. אפשר להוסיף מתכון ראשון למעלה!' : 'לא נמצאו מתכונים התואמים לסינון.'}</p>`;
+            return;
+        }
+
+        container.innerHTML = '';
+        filteredIndices.forEach((actualIndex) => {
+            const r = recipes[actualIndex];
+            const ings = Array.isArray(r.ingredients) ? r.ingredients : [];
+
+            const ingsHtml = ings.length
+                ? ings.map((ing, ingIdx) => `
+                    <div class="ing-line">
+                        <span>• <strong>${escapeHtml(ing.name)}</strong> ${ing.qty ? '— ' + escapeHtml(ing.qty) : ''}</span>
+                        <button type="button" class="btn-shop" onclick="sendSingleIngredientToShopping(${actualIndex}, ${ingIdx})">+ לקניות</button>
                     </div>
-                    <button onclick="removePocketRecord(${actualIndex})" style="background:rgba(239,68,68,0.1); color:var(--danger); border:1px solid rgba(239,68,68,0.3); padding:5px 10px; border-radius:6px; cursor:pointer; font-size:11px;">מחק</button>
-                </div>`;
+                `).join('')
+                : '<div style="color:var(--text-muted);">לא הוזנו מצרכים</div>';
+
+            container.innerHTML += `
+                <div class="recipe-card">
+                    <div class="recipe-top">
+                        <div>
+                            <strong style="color:var(--accent); font-size:16px;">🍲 ${escapeHtml(r.title)}</strong>
+                            <div>
+                                ${r.category ? `<span class="pill">${escapeHtml(r.category)}</span>` : ''}
+                                ${r.prepTime ? `<span class="pill pill-gold">⏱️ ${escapeHtml(r.prepTime)}</span>` : ''}
+                            </div>
+                            <div class="recipe-meta">נוסף ע"י: ${escapeHtml(r.addedBy || 'דייר')} | ${escapeHtml(r.date || '')}</div>
+                        </div>
+                        <div class="card-actions">
+                            ${ings.length ? `<button type="button" class="btn-shop" onclick="sendAllRecipeIngredientsToShopping(${actualIndex})">העבר מצרכים לקניות 🛒</button>` : ''}
+                            <button type="button" class="btn-edit" onclick="startEditRecipe(${actualIndex})">ערוך</button>
+                            <button type="button" class="btn-del" onclick="deleteRecipe(${actualIndex})">מחק</button>
+                        </div>
+                    </div>
+
+                    <div class="recipe-sub">
+                        <h4>🥕 מצרכים</h4>
+                        ${ingsHtml}
+                    </div>
+
+                    ${r.steps ? `
+                        <div class="recipe-sub">
+                            <h4>👩‍🍳 אופן ההכנה</h4>
+                            <div class="prep-box">${escapeHtml(r.steps)}</div>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
         });
-    }
-
-    function addPocketRecord() {
-        const nameInput = document.getElementById('childName');
-        const detailsInput = document.getElementById('pocketDetails');
-        const name = nameInput.value.trim();
-        const details = detailsInput.value.trim();
-
-        if(!name || !details) { showToast("נא למלא את כל השדות", true); return; }
-
-        let data = getSharedData('pocket');
-        data.push({ 
-            name, 
-            details, 
-            addedBy: getCurrentUser(),
-            date: new Date().toLocaleDateString('he-IL') 
-        });
-        saveSharedData('pocket', data);
-
-        nameInput.value = '';
-        detailsInput.value = '';
-        loadPocketRecords();
-        showToast("רישום דמי הכיס נשמר ושותף לכל דיירי הבית!");
-    }
-
-    function removePocketRecord(index) {
-        let data = getSharedData('pocket');
-        data.splice(index, 1);
-        saveSharedData('pocket', data);
-        loadPocketRecords();
-        showToast("הרישום הוסר בהצלחה.");
     }
 
     function showToast(msg, isError = false) {
@@ -125,6 +474,26 @@
         toast.classList.add('show');
         setTimeout(() => toast.classList.remove('show'), 3000);
     }
+
+    window.onload = function() {
+        const houseCode = getActiveHouse();
+        document.getElementById('houseBadge').innerText = `🟢 בית: ${escapeHtml(houseCode)}`;
+        resetRecipeForm();
+        loadRecipes();
+    };
+
+    window.addEventListener('vidass:data-updated', function(e) {
+        if (!e || !e.detail || !e.detail.module || e.detail.module === 'recipes' || e.detail.module === 'all') {
+            loadRecipes();
+        }
+    });
+
+    window.addEventListener('storage', function(event) {
+        const houseCode = getActiveHouse();
+        if (event.key === 'vidass_recipes_' + houseCode) {
+            loadRecipes();
+        }
+    });
 </script>
 
 </body>
