@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIDASS - ניהול הוצאות ותקציב הבית</title>
+    <script src="storage-sync.js"></script>
+    <style>
+        :root {
+            --primary: #d84370;
+            --primary-dark: #ad1457;
+            --accent: #ff80ab;
+            --bg-gradient: linear-gradient(135deg, #0d0d0f 0%, #1a1622 100%);
+            --card-bg: rgba(26, 23, 33, 0.96);
+            --card-border: rgba(216, 67, 112, 0.4);
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --success: #10b981;
+            --danger: #ef4444;
+            --gold: #f59e0b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 750px;
+            background: var(--card-bg);
+            backdrop-filter: blur(14px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.8);
+            padding: 28px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 16px;
+            margin-bottom: 20px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .header h1 { font-size: 20px; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+        .house-badge { background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: var(--success); padding: 5px 12px; border-radius: 10px; font-size: 11px; font-weight: bold; }
+
+        .summary-card {
+            background: rgba(216, 67, 112, 0.1);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 18px;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .summary-title { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+        .summary-amount { font-size: 26px; font-weight: bold; color: var(--accent); }
+
+        .category-breakdown {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 12px;
+        }
+
+        .cat-pill {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 999px;
+            padding: 4px 10px;
+            font-size: 11px;
+            color: var(--text-main);
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .filter-bar select, .filter-bar input {
+            flex: 1;
+            min-width: 160px;
+            padding: 9px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            color: white;
+            font-size: 12px;
+            outline: none;
+            text-align: right;
+        }
+
+        .filter-bar option {
+            background: #1a1622;
+            color: white;
+        }
+
+        .input-section {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1.2fr auto;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+
+        @media (max-width: 650px) {
+            .input-section { grid-template-columns: 1fr; }
+        }
+
+        .input-section input, .input-section select {
+            padding: 12px 14px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            color: white;
+            font-size: 13px;
+            outline: none;
+            text-align: right;
+        }
+
+        .input-section option {
+            background: #1a1622;
+            color: white;
+        }
+
+        .input-section input:focus, .input-section select:focus {
+            border-color: var(--primary);
+        }
+
+        .add-btn {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            padding: 0 20px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 13px;
+            cursor: pointer;
+            transition: 0.2s;
+            min-height: 42px;
+        }
+
+        .add-btn:hover { opacity: 0.9; }
+
+        .expenses-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 45vh;
+            overflow-y: auto;
+            padding-left: 4px;
+        }
+
+        .expense-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 14px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .expense-info {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .expense-title-text {
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--text-main);
+        }
+
+        .expense-meta {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .expense-right {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-shrink: 0;
+        }
+
+        .expense-amount {
+            font-size: 15px;
+            font-weight: bold;
+            color: var(--gold);
+        }
+
+        .delete-btn {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 6px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .delete-btn:hover { background: rgba(239, 68, 68, 0.2); }
+
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="header">
+        <h1>💵 ניהול הוצאות ותקציב הבית</h1>
+        <div class="house-badge" id="houseBadgeDisplay">🟢 בית: טוען...</div>
+    </div>
+
+    <div class="summary-card">
+        <div class="summary-title" id="summaryLabel">סך כל ההוצאות הרשומות לבית</div>
+        <div class="summary-amount" id="totalExpensesAmount">₪0.00</div>
+        <div class="category-breakdown" id="categoryBreakdown"></div>
+    </div>
+
+    <div class="input-section">
+        <input type="text" id="expenseDescInput" placeholder="תיאור ההוצאה (לדוגמה: קניות בסופר)..." onkeypress="if(event.key==='Enter') addExpense()">
+        <input type="number" id="expenseAmountInput" min="0.01" step="0.01" placeholder="סכום בשקלים (₪)..." onkeydown="if(['e','E','+','-'].includes(event.key)) event.preventDefault()" onkeypress="if(event.key==='Enter') addExpense()">
+        <select id="expenseCategoryInput">
+            <option value="מזון וסופר">🛒 מזון וסופר</option>
+            <option value="חשבונות ובית">💡 חשבונות ובית</option>
+            <option value="ילדים וחינוך">🧸 ילדים וחינוך</option>
+            <option value="תחבורה ורכב">🚗 תחבורה ורכב</option>
+            <option value="שונות">📌 שונות</option>
+        </select>
+        <button type="button" class="add-btn" onclick="addExpense()">הוסף הוצאה ➕</button>
+    </div>
+
+    <div class="filter-bar">
+        <select id="filterCategorySelect" onchange="loadExpenses()">
+            <option value="הכל">כל הקטגוריות</option>
+            <option value="מזון וסופר">🛒 מזון וסופר</option>
+            <option value="חשבונות ובית">💡 חשבונות ובית</option>
+            <option value="ילדים וחינוך">🧸 ילדים וחינוך</option>
+            <option value="תחבורה ורכב">🚗 תחבורה ורכב</option>
+            <option value="שונות">📌 שונות</option>
+        </select>
+        <input type="text" id="searchExpenseInput" placeholder="חיפוש לפי תיאור או דייר..." oninput="loadExpenses()">
+    </div>
+
+    <div class="expenses-list" id="expensesListContainer"></div>
+</div>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    let houseCode = urlParams.get('house') ||
+                    (typeof getCurrentHouseCode === 'function' ? getCurrentHouseCode() : null) ||
+                    localStorage.getItem('vidass_current_house_code') ||
+                    localStorage.getItem('vidass_current_house') ||
+                    'EILAT-33';
+
+    houseCode = String(houseCode).trim();
+    localStorage.setItem('vidass_current_house_code', houseCode);
+    localStorage.setItem('vidass_current_house', houseCode);
+
+    window.onload = function() {
+        document.getElementById('houseBadgeDisplay').innerText = `🟢 בית: ${escapeHtml(houseCode)}`;
+        loadExpenses();
+    };
+
+    function readExpenses() {
+        if (typeof getSharedData === 'function') {
+            const data = getSharedData('expenses');
+            return Array.isArray(data) ? data : [];
+        }
+        try {
+            const raw = localStorage.getItem('vidass_expenses_' + houseCode);
+            const parsed = raw ? JSON.parse(raw) : [];
+            return Array.isArray(parsed) ? parsed : [];
+        } catch (_) {
+            return [];
+        }
+    }
+
+    function loadExpenses() {
+        const expenses = readExpenses();
+        const container = document.getElementById('expensesListContainer');
+        const totalDisplay = document.getElementById('totalExpensesAmount');
+        const summaryLabel = document.getElementById('summaryLabel');
+        const breakdownEl = document.getElementById('categoryBreakdown');
+        const selectedCat = document.getElementById('filterCategorySelect').value;
+        const searchTerm = (document.getElementById('searchExpenseInput').value || '').trim().toLowerCase();
+
+        const categoryTotals = {};
+        let allSum = 0;
+
+        expenses.forEach((item) => {
+            const amt = parseFloat(item.amount) || 0;
+            const cat = item.category || 'שונות';
+            allSum += amt;
+            categoryTotals[cat] = (categoryTotals[cat] || 0) + amt;
+        });
+
+        breakdownEl.innerHTML = Object.entries(categoryTotals).map(([cat, sum]) =>
+            `<span class="cat-pill">${escapeHtml(cat)}: <strong>₪${sum.toLocaleString('he-IL', { minimumFractionDigits: 2 })}</strong></span>`
+        ).join('');
+
+        const filteredIndices = [];
+        for (let i = expenses.length - 1; i >= 0; i--) {
+            const item = expenses[i];
+            const catMatch = selectedCat === 'הכל' || (item.category || 'שונות') === selectedCat;
+            const textMatch = !searchTerm ||
+                String(item.description || '').toLowerCase().includes(searchTerm) ||
+                String(item.addedBy || '').toLowerCase().includes(searchTerm) ||
+                String(item.category || '').toLowerCase().includes(searchTerm);
+            if (catMatch && textMatch) {
+                filteredIndices.push(i);
+            }
+        }
+
+        if (filteredIndices.length === 0) {
+            container.innerHTML = `<div class="empty-state">${expenses.length === 0 ? 'אין הוצאות רשומות כרגע. אפשר להוסיף הוצאה חדשה למעלה!' : 'לא נמצאו הוצאות התואמות לסינון.'}</div>`;
+            totalDisplay.innerText = "₪0.00";
+            summaryLabel.innerText = selectedCat === 'הכל' && !searchTerm
+                ? "סך כל ההוצאות הרשומות לבית"
+                : "סך ההוצאות המסוננות";
+            return;
+        }
+
+        container.innerHTML = '';
+        let displayedSum = 0;
+
+        filteredIndices.forEach((actualIndex) => {
+            const item = expenses[actualIndex];
+            const amountNum = parseFloat(item.amount) || 0;
+            displayedSum += amountNum;
+
+            container.innerHTML += `
+                <div class="expense-item">
+                    <div class="expense-info">
+                        <div class="expense-title-text">📌 ${escapeHtml(item.description)}</div>
+                        <div class="expense-meta">קטגוריה: <strong>${escapeHtml(item.category)}</strong> | נוסף ע"י: ${escapeHtml(item.addedBy || 'דייר')} | ${escapeHtml(item.date || '')}</div>
+                    </div>
+                    <div class="expense-right">
+                        <div class="expense-amount">₪${amountNum.toLocaleString('he-IL', { minimumFractionDigits: 2 })}</div>
+                        <button type="button" class="delete-btn" onclick="deleteExpense(${actualIndex})">מחק 🗑️</button>
+                    </div>
+                </div>
+            `;
+        });
+
+        const isFiltered = selectedCat !== 'הכל' || Boolean(searchTerm);
+        summaryLabel.innerText = isFiltered ? "סך ההוצאות המסוננות" : "סך כל ההוצאות הרשומות לבית";
+        totalDisplay.innerText = `₪${(isFiltered ? displayedSum : allSum).toLocaleString('he-IL', { minimumFractionDigits: 2 })}`;
+    }
+
+    function addExpense() {
+        const descInput = document.getElementById('expenseDescInput');
+        const amountInput = document.getElementById('expenseAmountInput');
+        const categoryInput = document.getElementById('expenseCategoryInput');
+
+        const description = descInput.value.trim();
+        const amount = parseFloat(amountInput.value);
+        const category = categoryInput.value;
+
+        if (!description || isNaN(amount) || amount <= 0) {
+            alert("נא להזין תיאור תקין וסכום כספי חיובי.");
+            return;
+        }
+
+        const expenses = readExpenses();
+        const currentUser = (typeof getCurrentUser === 'function' ? getCurrentUser() : null) ||
+                            localStorage.getItem('vidass_current_user') ||
+                            'דייר';
+
+        expenses.push({
+            description: description,
+            amount: amount,
+            category: category,
+            addedBy: currentUser,
+            date: new Date().toLocaleDateString('he-IL')
+        });
+
+        saveAndRefresh(expenses);
+        descInput.value = '';
+        amountInput.value = '';
+        descInput.focus();
+    }
+
+    function deleteExpense(index) {
+        const expenses = readExpenses();
+        if (expenses[index] !== undefined) {
+            expenses.splice(index, 1);
+            saveAndRefresh(expenses);
+        }
+    }
+
+    function saveAndRefresh(expensesArray) {
+        if (typeof saveSharedData === 'function') {
+            saveSharedData('expenses', expensesArray);
+        } else {
+            localStorage.setItem('vidass_expenses_' + houseCode, JSON.stringify(expensesArray));
+        }
+        loadExpenses();
+    }
+
+    function escapeHtml(str) {
+        return String(str || '')
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    window.addEventListener('vidass:data-updated', function(e) {
+        if (!e || !e.detail || !e.detail.module || e.detail.module === 'expenses' || e.detail.module === 'all') {
+            loadExpenses();
+        }
+    });
+
+    window.addEventListener('storage', function(event) {
+        if (event.key === 'vidass_expenses_' + houseCode) {
+            loadExpenses();
+        }
+    });
+</script>
+
+</body>
+</html>

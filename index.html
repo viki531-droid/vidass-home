@@ -1,550 +1,425 @@
 <!DOCTYPE html>
-<html lang="he" dir="rtl" id="html-root">
+<html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIDASS Home - מרכז שליטה משפחתי מושלם</title>
+    <title>VIDASS - מרכז בקרה וניהול משפחתי חכם</title>
+    <script src="storage-sync.js"></script>
     <style>
         :root {
-            --primary-color: #d84373;
-            --bg-color: #fff5f7;
-            --card-bg: #ffffff;
-            --text-color: #2b2b2b;
-            --border-color: #fce4ec;
+            --primary: #d84370;
+            --primary-dark: #ad1457;
+            --accent: #ff80ab;
+            --bg-gradient: linear-gradient(135deg, #0d0d0f 0%, #1a1622 100%);
+            --card-bg: rgba(26, 23, 33, 0.96);
+            --card-border: rgba(216, 67, 112, 0.4);
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
             --success: #10b981;
             --danger: #ef4444;
             --gold: #f59e0b;
         }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
         body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 15px;
-            direction: rtl;
-            text-align: right;
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
-        .container { max-width: 700px; margin: 0 auto; }
-        .header-card, .card {
+
+        .hub-container {
+            width: 100%;
+            max-width: 950px;
             background: var(--card-bg);
-            padding: 18px;
-            border-radius: 20px;
-            box-shadow: 0 4px 15px rgba(216, 67, 115, 0.1);
-            margin-bottom: 15px;
-            border: 2px solid var(--border-color);
+            backdrop-filter: blur(14px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.8);
+            padding: 28px;
         }
-        .btn {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 14px;
-            padding: 12px 18px;
-            font-size: 14px;
-            font-weight: bold;
-            width: 100%;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            margin-bottom: 8px;
-            transition: 0.3s;
-        }
-        .btn:hover { opacity: 0.9; }
-        .grid-buttons {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-            margin-bottom: 15px;
-        }
-        @media (max-width: 600px) {
-            .grid-buttons { grid-template-columns: repeat(2, 1fr); }
-        }
-        .module-btn {
-            background-color: #f8bbd0;
-            color: #880e4f;
-            border: none;
-            border-radius: 14px;
-            padding: 12px 8px;
-            font-size: 13px;
-            font-weight: bold;
-            cursor: pointer;
-            text-align: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            transition: 0.2s;
-        }
-        .module-btn:hover { background-color: #f48fb1; }
-        input, select, textarea {
-            width: 100%;
-            padding: 10px;
-            border-radius: 12px;
-            border: 1px solid #ccc;
-            margin-bottom: 10px;
-            box-sizing: border-box;
-            font-family: inherit;
-            background: white;
-        }
-        h1, h2, h3 { color: var(--primary-color); }
-        .section-view { display: none; }
-        .section-view.active { display: block; }
-        .coach-tip {
-            background: #e8f5e9;
-            color: #2e7d32;
-            padding: 10px;
-            border-radius: 10px;
-            font-size: 13px;
-            margin-bottom: 12px;
-            border-right: 4px solid #4caf50;
-        }
-        .item-row {
-            background: white;
-            padding: 10px 12px;
-            margin: 6px 0;
-            border-radius: 12px;
+
+        .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border: 1px solid rgba(0,0,0,0.05);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 16px;
+            margin-bottom: 20px;
+            gap: 12px;
+            flex-wrap: wrap;
         }
+
+        .header h1 { font-size: 22px; color: var(--accent); }
+        .header p { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+        .badges-bar {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: var(--success);
+            padding: 6px 12px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .badge-user {
+            background: rgba(216, 67, 112, 0.15);
+            border: 1px solid var(--card-border);
+            color: var(--accent);
+        }
+
+        .switch-btn {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            color: var(--text-main);
+            padding: 6px 12px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .switch-btn:hover {
+            background: rgba(216, 67, 112, 0.2);
+            border-color: var(--primary);
+        }
+
+        .snapshot-strip {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 22px;
+        }
+
+        .snap-box {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 12px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .snap-label { font-size: 11px; color: var(--text-muted); }
+        .snap-val { font-size: 15px; font-weight: bold; color: var(--gold); }
+
+        .section-title {
+            font-size: 15px;
+            color: var(--gold);
+            margin-bottom: 14px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 18px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+            text-align: right;
+        }
+
+        .card:hover, .card:focus-visible {
+            background: rgba(216, 67, 112, 0.08);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            outline: none;
+        }
+
+        .card-icon { font-size: 28px; margin-bottom: 8px; }
+        .card-name { font-size: 15px; font-weight: bold; color: var(--text-main); margin-bottom: 4px; }
+        .card-desc { font-size: 12px; color: var(--text-muted); line-height: 1.4; margin-bottom: 12px; }
+        .card-action { font-size: 11px; color: var(--accent); font-weight: bold; }
+
+        .iframe-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .iframe-content {
+            width: 100%;
+            max-width: 860px;
+            height: 85vh;
+            background: #1a1622;
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.9);
+        }
+
+        .iframe-header {
+            background: rgba(0,0,0,0.4);
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            gap: 10px;
+        }
+
+        .close-btn {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            padding: 6px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        iframe { width: 100%; height: 100%; border: none; background: transparent; }
     </style>
 </head>
 <body>
 
-<div class="container">
-
-    <!-- מסך כניסה מאובטח -->
-    <div id="welcome-screen" class="header-card" style="text-align: center; border: 2px solid #1e88e5;">
-        <h1 style="margin:0; color:#1e88e5;">🏦 VIDASS Home - כניסה מאובטחת</h1>
-        <p style="color:#666; font-size:13px;">מרכז שליטה משפחתי מוצפן ומהיר</p>
-        
-        <div style="background:#f0f4f8; padding:15px; border-radius:14px; margin-top:15px; text-align:right;">
-            <label style="font-weight:bold; font-size:13px; color:#333;">קוד בית משותף:</label>
-            <input type="text" id="auto-house-input" value="EILAT-33" placeholder="למשל: EILAT-33">
-
-            <label style="font-weight:bold; font-size:13px; color:#333;">שם משתמש אישי:</label>
-            <input type="text" id="auth-username" placeholder="הקלידי את שמך האישי (למשל: ויקי)...">
-
-            <label style="font-weight:bold; font-size:13px; color:#333;">סיסמת הבית:</label>
-            <input type="password" id="auth-password" placeholder="הקלידי סיסמת גישה...">
-
-            <button class="btn" style="background:#1e88e5; margin-top:10px;" onclick="executeAuth()">🔑 כניסה מאובטחת למערכת</button>
+<div class="hub-container">
+    <div class="header">
+        <div>
+            <h1 id="greetingTitle">VIDASS - מרכז בקרה וניהול משפחתי חכם</h1>
+            <p>מערכת ענן פרטית מסונכרנת בזמן אמת</p>
+        </div>
+        <div class="badges-bar">
+            <div class="badge badge-user" id="userBadge">👤 משתמש: טוען...</div>
+            <div class="badge" id="houseBadge">🟢 בית: טוען...</div>
+            <button type="button" class="switch-btn" onclick="goToLogin()">החלפת משתמש / בית</button>
         </div>
     </div>
 
-    <!-- מסך ראשי של הבית -->
-    <div id="main-screen" class="section-view">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: white; padding: 12px 16px; border-radius: 16px; border: 1px solid var(--border-color);">
-            <div>
-                <span style="font-size:12px; color:#666;">ברוכה הבאה, <strong id="display-user" style="color:var(--primary-color);"></strong></span>
-                <div style="font-size:14px; font-weight:bold; color:#2e7d32;">🟢 בית פעיל: <span id="display-house"></span></div>
-            </div>
-            <button class="btn" style="background: #d32f2f; width: auto; margin:0; padding: 8px 14px; font-size:12px;" onclick="logout()">🔒 נעילה</button>
+    <div class="snapshot-strip" id="snapshotStrip">
+        <div class="snap-box"><span class="snap-label">פריטים בקניות</span><span class="snap-val" id="snapShopping">0</span></div>
+        <div class="snap-box"><span class="snap-label">פריטים במלאי</span><span class="snap-val" id="snapInventory">0</span></div>
+        <div class="snap-box"><span class="snap-label">סה"כ הוצאות</span><span class="snap-val" id="snapExpenses">₪0.00</span></div>
+        <div class="snap-box"><span class="snap-label">מכשירי IoT פעילים</span><span class="snap-val" id="snapIot">0</span></div>
+    </div>
+
+    <div class="section-title">📂 דפדפני הניהול והבית</div>
+    <div class="grid" id="modulesGrid">
+        <div class="card" tabindex="0" role="button" onclick="loadInternalApp('members.html', 'ניהול דיירים והרשאות')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();loadInternalApp('members.html', 'ניהול דיירים והרשאות');}">
+            <div class="card-icon">👥</div>
+            <div class="card-name">ניהול דיירים והרשאות</div>
+            <div class="card-desc">צפייה בדיירים מחוברים והוספת בני משפחה לבית.</div>
+            <div class="card-action">הכנס למערכת ↗</div>
         </div>
 
-        <div class="card">
-            <h3>🗂️ תפריט מודולים מרכזי</h3>
-            <div class="grid-buttons">
-                <button class="module-btn" onclick="showSection('sec-members')">👥 ניהול דיירים</button>
-                <button class="module-btn" onclick="showSection('sec-inventory')">📦 מלאי ומיקומים</button>
-                <button class="module-btn" onclick="showSection('sec-shop')">🛒 רשימת קניות</button>
-                <button class="module-btn" onclick="showSection('sec-tasks')">📌 משימות ומטלות</button>
-                <button class="module-btn" onclick="showSection('sec-expenses')">💵 הוצאות ותקציב</button>
-                <button class="module-btn" onclick="showSection('sec-travel')">🚗 טיולים וחופשות</button>
-                <button class="module-btn" onclick="showSection('sec-recipes')">🍲 מתכונים והמרות</button>
-                <button class="module-btn" onclick="showSection('sec-vouchers')">📄 מסמכים ותלושים</button>
-                <button class="module-btn" onclick="showSection('sec-music')">🎵 מוזיקה וקישורים</button>
-            </div>
+        <div class="card" tabindex="0" role="button" onclick="loadInternalApp('shopping.html', 'רשימת קניות')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();loadInternalApp('shopping.html', 'רשימת קניות');}">
+            <div class="card-icon">🛒</div>
+            <div class="card-name">רשימת קניות</div>
+            <div class="card-desc">ניהול רשימת מוצרים משותפת לכל דיירי הבית.</div>
+            <div class="card-action">הכנס למערכת ↗</div>
         </div>
 
-        <!-- 1. מודול ניהול דיירים -->
-        <div id="sec-members" class="card section-view" style="border: 2px solid #d84373;">
-            <h3>👥 ניהול דיירי הבית והרשאות</h3>
-            <div class="coach-tip">💡 הוסיפי את בני הבית כדי שכולם יופיעו במערכת המשותפת.</div>
-            <input type="text" id="member-name" placeholder="שם הדייר/ת (למשל: דוד)...">
-            <select id="member-role">
-                <option value="מנהל הבית">👑 מנהל הבית</option>
-                <option value="דייר משפחה">🏡 דייר משפחה</option>
-                <option value="אורח / צופה">👁️ אורח / צופה</option>
-            </select>
-            <button class="btn" onclick="saveMember()">➕ הוסף דייר לבית</button>
-            <div id="members-container" style="margin-top:10px;"></div>
+        <div class="card" tabindex="0" role="button" onclick="loadInternalApp('inventory.html', 'מלאי הבית')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();loadInternalApp('inventory.html', 'מלאי הבית');}">
+            <div class="card-icon">📦</div>
+            <div class="card-name">מלאי הבית</div>
+            <div class="card-desc">מעקב מוצרים ושליחה אוטומטית לקניות.</div>
+            <div class="card-action">הכנס למערכת ↗</div>
         </div>
 
-        <!-- 2. מודול מלאי לפי אזורים -->
-        <div id="sec-inventory" class="card section-view" style="border: 2px solid #8e24aa;">
-            <h3>📦 מלאי הבית לפי אזורים ומיקומים</h3>
-            <div class="coach-tip">💡 הזיני פריט לפי אזור. אם נגמר, לחצי על "חסר - לקניות" והוא יעבור אוטומטית לקניות!</div>
-            <select id="inv-area">
-                <option value="מזווה">🥫 מזווה</option>
-                <option value="מטבח">🍳 מטבח וארונות</option>
-                <option value="מקרר">❄️ מקרר / מקפיא</option>
-                <option value="שירות">🧺 מחסן / שירות</option>
-            </select>
-            <input type="text" id="inv-item-name" placeholder="שם הפריט (למשל: שמן זית, קמח)...">
-            <input type="text" id="inv-item-qty" placeholder="כמות (למשל: 2 יחידות)...">
-            <button class="btn" style="background:#8e24aa;" onclick="saveInventoryItem()">➕ הוסף פריט למלאי</button>
-            <div id="inventory-by-area-container" style="margin-top:10px;"></div>
+        <div class="card" tabindex="0" role="button" onclick="loadInternalApp('tasks.html', 'משימות ומטלות בית')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();loadInternalApp('tasks.html', 'משימות ומטלות בית');}">
+            <div class="card-icon">📌</div>
+            <div class="card-name">משימות ומטלות בית</div>
+            <div class="card-desc">ניהול ומעקב משימות משותף לכל הדיירים.</div>
+            <div class="card-action">הכנס למערכת ↗</div>
         </div>
 
-        <!-- 3. מודול קניות -->
-        <div id="sec-shop" class="card section-view" style="border: 2px solid #e91e63;">
-            <h3>🛒 רשימת קניות משותפת</h3>
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 12px;">
-                <button class="btn" style="background: #ff6f00; margin:0; font-size:13px;" onclick="window.open('https://www.wolt.com', '_blank')">🍔 הזמנת אוכל (Wolt)</button>
-                <button class="btn" style="background: #3f51b5; margin:0; font-size:13px;" onclick="window.open('https://www.terminalx.com', '_blank')">👕 חנויות (Terminal X)</button>
-            </div>
-            <input type="text" id="shop-input" placeholder="הוסף מוצר ידני לרשימת הקניות...">
-            <button class="btn" style="background:#e91e63;" onclick="addShopManual()">➕ הוסף לקניות</button>
-            <div id="shop-container" style="margin-top:10px;"></div>
+        <div class="card" tabindex="0" role="button" onclick="loadInternalApp('expenses.html', 'הוצאות ותקציב הבית')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();loadInternalApp('expenses.html', 'הוצאות ותקציב הבית');}">
+            <div class="card-icon">💵</div>
+            <div class="card-name">הוצאות ותקציב הבית</div>
+            <div class="card-desc">ניהול הוצאות כספיות ומעקב תקציבי חודשי.</div>
+            <div class="card-action">הכנס למערכת ↗</div>
         </div>
 
-        <!-- 4. מודול משימות בית -->
-        <div id="sec-tasks" class="card section-view" style="border: 2px solid #10b981;">
-            <h3>📌 משימות ומטלות בית</h3>
-            <input type="text" id="task-input" placeholder="הוסף משימה חדשה (למשל: לתקן את הדלת)...">
-            <button class="btn" style="background:#10b981;" onclick="saveTask()">➕ הוסף משימה</button>
-            <div id="tasks-container" style="margin-top:10px;"></div>
+        <div class="card" tabindex="0" role="button" onclick="loadInternalApp('travel.html', 'מארגן טיולים וחופשות')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();loadInternalApp('travel.html', 'מארגן טיולים וחופשות');}">
+            <div class="card-icon">🚗</div>
+            <div class="card-name">מארגן טיולים וחופשות</div>
+            <div class="card-desc">ניהול מסלולים, קישורי מפות ורשימות ציוד.</div>
+            <div class="card-action">הכנס למערכת ↗</div>
         </div>
 
-        <!-- 5. מודול הוצאות ותקציב -->
-        <div id="sec-expenses" class="card section-view" style="border: 2px solid #f59e0b;">
-            <h3>💵 הוצאות ותקציב הבית</h3>
-            <div style="background: rgba(245, 158, 11, 0.1); padding: 12px; border-radius: 12px; text-align: center; margin-bottom: 12px;">
-                <div style="font-size: 12px; color: #666;">סך כל ההוצאות הרשומות לבית</div>
-                <div id="total-expenses-display" style="font-size: 22px; font-weight: bold; color: #f59e0b;">₪0.00</div>
-            </div>
-            <input type="text" id="exp-desc" placeholder="תיאור ההוצאה (למשל: סופרמרקט)...">
-            <input type="number" id="exp-amount" placeholder="סכום בשקלים (₪)...">
-            <select id="exp-category">
-                <option value="מזון וסופר">🛒 מזון וסופר</option>
-                <option value="חשבונות ובית">💡 חשבונות ובית</option>
-                <option value="ילדים וחינוך">🧸 ילדים וחינוך</option>
-                <option value="תחבורה ורכב">🚗 תחבורה ורכב</option>
-                <option value="שונות">📌 שונות</option>
-            </select>
-            <button class="btn" style="background:#f59e0b;" onclick="saveExpense()">➕ הוסף הוצאה</button>
-            <div id="expenses-container" style="margin-top:10px;"></div>
+        <div class="card" tabindex="0" role="button" onclick="loadInternalApp('where_is_child.html', 'איפה הילד — שעון ומדדים')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();loadInternalApp('where_is_child.html', 'איפה הילד — שעון ומדדים');}">
+            <div class="card-icon">📍</div>
+            <div class="card-name">איפה הילד — שעון ומדדים</div>
+            <div class="card-desc">סימון אזורים מותרים/אסורים (כולל גן), שעון, דופק ואווטאר AI.</div>
+            <div class="card-action">הכנס למערכת ↗</div>
         </div>
 
-        <!-- 6. מודול טיולים וחופשות -->
-        <div id="sec-travel" class="card section-view" style="border: 2px solid #3b82f6;">
-            <h3>🚗 מארגן טיולים וחופשות</h3>
-            <input type="text" id="travel-dest" placeholder="יעד או שם הטיול (למשל: פארק שחמון)...">
-            <input type="text" id="travel-date" placeholder="תאריך (למשל: 15.06.2026)...">
-            <input type="text" id="travel-map" placeholder="קישור למפה (אופציונלי)...">
-            <button class="btn" style="background:#3b82f6;" onclick="saveTravel()">➕ הוסף טיול</button>
-            <div id="travel-container" style="margin-top:10px;"></div>
+        <div class="card" tabindex="0" role="button" onclick="loadInternalApp('alerts.html', 'התראות מערכת')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();loadInternalApp('alerts.html', 'התראות מערכת');}">
+            <div class="card-icon">🔔</div>
+            <div class="card-name">התראות מערכת</div>
+            <div class="card-desc">מרכז התראות ועדכונים חיים לכל בני הבית.</div>
+            <div class="card-action">הכנס למערכת ↗</div>
         </div>
 
-        <!-- 7. מתכונים והמרות -->
-        <div id="sec-recipes" class="card section-view" style="border: 2px solid #ff9800;">
-            <h3>🍲 מתכונים ומחשבון המרות</h3>
-            <input type="text" id="recipe-title" placeholder="שם המתכון...">
-            <textarea id="recipe-ingredients" placeholder="מצרכים..." rows="2"></textarea>
-            <button class="btn" style="background:#ff9800;" onclick="saveRecipe()">💾 שמור מתכון</button>
-            <div id="recipes-container" style="margin-top:10px;"></div>
+        <div class="card" tabindex="0" role="button" onclick="loadInternalApp('ai_assistant.html', 'עוזר חכם VIDASS')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();loadInternalApp('ai_assistant.html', 'עוזר חכם VIDASS');}">
+            <div class="card-icon">🤖</div>
+            <div class="card-name">עוזר חכם VIDASS</div>
+            <div class="card-desc">שיחה עם העוזר החכם של משפחתכם בניהול הבית.</div>
+            <div class="card-action">הכנס למערכת ↗</div>
         </div>
+    </div>
+</div>
 
-        <!-- 8. תלושים ומסמכים -->
-        <div id="sec-vouchers" class="card section-view" style="border: 2px solid #1e88e5;">
-            <h3>📄 תלושי שכר ומסמכים</h3>
-            <input type="text" id="voucher-title" placeholder="כותרת המסמך...">
-            <button class="btn" style="background:#1e88e5;" onclick="saveVoucher()">🔍 שמור מסמך</button>
-            <div id="vouchers-container" style="margin-top:10px;"></div>
+<div class="iframe-modal" id="appModal" onclick="if(event.target === this) closeInternalApp()">
+    <div class="iframe-content">
+        <div class="iframe-header">
+            <strong id="modalTitle" style="color: var(--accent); font-size: 14px;">ניהול מערכת</strong>
+            <button type="button" class="close-btn" onclick="closeInternalApp()">סגור ✖</button>
         </div>
-
-        <!-- 9. מוזיקה -->
-        <div id="sec-music" class="card section-view" style="border: 2px solid #ab47bc;">
-            <h3>🎵 מוזיקה וקישורים</h3>
-            <input type="text" id="music-song-name" placeholder="שם השיר או הפלייליסט...">
-            <button class="btn" style="background:#ab47bc;" onclick="addMusicSong()">🎵 שמור שיר</button>
-            <div id="music-container" style="margin-top:10px;"></div>
-        </div>
-
-        <button class="btn" style="background:#666; margin-top:20px;" onclick="location.reload()">🏠 חזרה לתפריט הראשי</button>
+        <iframe id="appFrame" src="" onload="onFrameLoaded()"></iframe>
     </div>
 </div>
 
 <script>
-    let currentHouse = 'EILAT-33';
-    let currentUser = 'דייר';
+    let activeAppName = '';
 
-    function executeAuth() {
-        let h = document.getElementById('auto-house-input').value.trim();
-        let u = document.getElementById('auth-username').value.trim();
-        let p = document.getElementById('auth-password').value;
-        
-        if(!h || !u) { alert('נא למלא קוד בית ושם משתמש!'); return; }
-        
-        currentHouse = h.toUpperCase();
-        currentUser = u;
-        
-        document.getElementById('display-house').innerText = currentHouse;
-        document.getElementById('display-user').innerText = currentUser;
-        
-        document.getElementById('welcome-screen').style.display = 'none';
-        document.getElementById('main-screen').style.display = 'block';
-        
-        loadAllData();
+    function getActiveHouseCode() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = (
+            urlParams.get('house') ||
+            (typeof getCurrentHouseCode === 'function' ? getCurrentHouseCode() : null) ||
+            localStorage.getItem('vidass_current_house_code') ||
+            localStorage.getItem('vidass_current_house') ||
+            'EILAT-33'
+        ).trim();
+        localStorage.setItem('vidass_current_house_code', code);
+        localStorage.setItem('vidass_current_house', code);
+        return code;
     }
 
-    function logout() { location.reload(); }
-
-    function showSection(id) {
-        document.querySelectorAll('.section-view').forEach(el => el.classList.remove('active'));
-        let target = document.getElementById(id);
-        if(target) { target.classList.add('active'); target.scrollIntoView({behavior: 'smooth'}); }
+    function getActiveUserName() {
+        return (typeof getCurrentUser === 'function' ? getCurrentUser() : null) ||
+               localStorage.getItem('vidass_current_user') ||
+               'משתמש';
     }
 
-    function getData(key) {
-        let d = localStorage.getItem(currentHouse + "_" + key);
-        return d ? JSON.parse(d) : [];
+    function readModuleList(mod) {
+        const houseCode = getActiveHouseCode();
+        if (typeof getSharedData === 'function') {
+            const d = getSharedData(mod);
+            return Array.isArray(d) ? d : [];
+        }
+        try {
+            const raw = localStorage.getItem(`vidass_${mod}_${houseCode}`);
+            const parsed = raw ? JSON.parse(raw) : [];
+            return Array.isArray(parsed) ? parsed : [];
+        } catch (_) {
+            return [];
+        }
     }
 
-    function saveData(key, data) {
-        localStorage.setItem(currentHouse + "_" + key, JSON.stringify(data));
+    function refreshSnapshot() {
+        const shopping = readModuleList('shopping');
+        const inventory = readModuleList('inventory');
+        const expenses = readModuleList('expenses');
+        const iot = readModuleList('iot_devices');
+
+        const openShopping = shopping.filter(i => !(i && i.completed)).length;
+        const expensesSum = expenses.reduce((acc, item) => acc + (parseFloat(item && item.amount) || 0), 0);
+        const activeIot = iot.filter(d => d && d.status === 'מופעל').length;
+
+        document.getElementById('snapShopping').innerText = String(openShopping);
+        document.getElementById('snapInventory').innerText = String(inventory.length);
+        document.getElementById('snapExpenses').innerText = `₪${expensesSum.toLocaleString('he-IL', { minimumFractionDigits: 2 })}`;
+        document.getElementById('snapIot').innerText = String(activeIot);
     }
 
-    // --- מודול דיירים ---
-    function saveMember() {
-        let name = document.getElementById('member-name').value.trim();
-        let role = document.getElementById('member-role').value;
-        if(!name) { alert('נא להזין שם דייר'); return; }
-        let l = getData('members');
-        l.push({name, role});
-        saveData('members', l);
-        document.getElementById('member-name').value = '';
-        renderMembers();
-    }
-    function renderMembers() {
-        let l = getData('members');
-        let h = '';
-        l.forEach((m, i) => {
-            h += `<div class="item-row"><span>👤 <b>${m.name}</b> (${m.role})</span><button onclick="delItem('members', ${i}); renderMembers();" style="background:none; border:none; color:red; cursor:pointer;">❌</button></div>`;
-        });
-        document.getElementById('members-container').innerHTML = h || '<div style="color:#888; font-size:12px;">אין דיירים רשומים.</div>';
-    }
+    window.onload = function() {
+        const houseCode = getActiveHouseCode();
+        const currentUser = getActiveUserName();
 
-    // --- מודול מלאי וקניות ---
-    function saveInventoryItem() {
-        let area = document.getElementById('inv-area').value;
-        let name = document.getElementById('inv-item-name').value.trim();
-        let qty = document.getElementById('inv-item-qty').value.trim();
-        if(!name) { alert('נא להזין שם פריט'); return; }
-        let l = getData('inventory');
-        l.push({area, name, qty: qty || 'קיים'});
-        saveData('inventory', l);
-        document.getElementById('inv-item-name').value = '';
-        document.getElementById('inv-item-qty').value = '';
-        renderInventory();
-    }
-    function sendToShop(name) {
-        let shop = getData('shop');
-        if(!shop.includes(name)) {
-            shop.push(name);
-            saveData('shop', shop);
-            renderShop();
-            alert(`🛒 הפריט "${name}" הועבר לקניות!`);
+        document.getElementById('houseBadge').innerText = `🟢 בית: ${houseCode}`;
+        document.getElementById('userBadge').innerText = `👤 משתמש: ${currentUser}`;
+
+        if (typeof getPersonalizedGreeting === 'function') {
+            document.getElementById('greetingTitle').innerText = getPersonalizedGreeting();
         } else {
-            alert(`הפריט "${name}" כבר קיים ברשימת הקניות.`);
+            document.getElementById('greetingTitle').innerText = `שלום, ${currentUser} (בית: ${houseCode})`;
+        }
+
+        refreshSnapshot();
+    };
+
+    function goToLogin() {
+        const houseCode = getActiveHouseCode();
+        window.location.href = `login.html?house=${encodeURIComponent(houseCode)}`;
+    }
+
+    function loadInternalApp(pageUrl, appName) {
+        activeAppName = appName;
+        document.getElementById('modalTitle').innerText = `טוען: ${appName}...`;
+
+        const houseCode = getActiveHouseCode();
+        const separator = pageUrl.includes('?') ? '&' : '?';
+        const fullUrl = `${pageUrl}${separator}house=${encodeURIComponent(houseCode)}`;
+
+        document.getElementById('appFrame').src = fullUrl;
+        document.getElementById('appModal').style.display = 'flex';
+    }
+
+    function onFrameLoaded() {
+        const frameSrc = document.getElementById('appFrame').getAttribute('src') || '';
+        if (frameSrc && activeAppName) {
+            document.getElementById('modalTitle').innerText = activeAppName;
         }
     }
-    function renderInventory() {
-        let l = getData('inventory');
-        let h = '';
-        l.forEach((item, i) => {
-            h += `<div class="item-row">
-                <span>📍 <b>${item.area}</b>: ${item.name} (${item.qty})</span>
-                <div>
-                    <button onclick="sendToShop('${item.name}')" style="background:#ff9800; color:white; border:none; padding:4px 8px; border-radius:6px; cursor:pointer; font-size:11px; margin-left:5px;">🛒 חסר - לקניות</button>
-                    <button onclick="delItem('inventory', ${i}); renderInventory();" style="background:none; border:none; color:red; cursor:pointer;">❌</button>
-                </div>
-            </div>`;
-        });
-        document.getElementById('inventory-by-area-container').innerHTML = h || '<div style="color:#888; font-size:12px;">המלבי ריק.</div>';
-    }
 
-    function addShopManual() {
-        let val = document.getElementById('shop-input').value.trim();
-        if(val) {
-            let l = getData('shop');
-            l.push(val);
-            saveData('shop', l);
-            document.getElementById('shop-input').value = '';
-            renderShop();
+    function closeInternalApp() {
+        activeAppName = '';
+        document.getElementById('appModal').style.display = 'none';
+        document.getElementById('appFrame').src = '';
+        refreshSnapshot();
+
+        if (typeof fetchHouseDataFromServer === 'function') {
+            fetchHouseDataFromServer(true);
         }
     }
-    function renderShop() {
-        let l = getData('shop');
-        let h = '';
-        l.forEach((it, i) => {
-            h += `<div class="item-row">🛒 ${it} <button onclick="delItem('shop', ${i}); renderShop();" style="background:none; border:none; color:red; cursor:pointer;">❌</button></div>`;
-        });
-        document.getElementById('shop-container').innerHTML = h || '<div style="color:#888; font-size:12px;">רשימת הקניות ריקה.</div>';
-    }
 
-    // --- מודול משימות ---
-    function saveTask() {
-        let text = document.getElementById('task-input').value.trim();
-        if(!text) { alert('נא להזין משימה'); return; }
-        let l = getData('tasks');
-        l.push({text, completed: false, addedBy: currentUser});
-        saveData('tasks', l);
-        document.getElementById('task-input').value = '';
-        renderTasks();
-    }
-    function toggleTask(i) {
-        let l = getData('tasks');
-        if(l[i]) { l[i].completed = !l[i].completed; saveData('tasks', l); renderTasks(); }
-    }
-    function renderTasks() {
-        let l = getData('tasks');
-        let h = '';
-        l.forEach((t, i) => {
-            h += `<div class="item-row" style="${t.completed?'opacity:0.6; background:#f9f9f9;':''}">
-                <div style="display:flex; align-items:center; gap:8px;">
-                    <input type="checkbox" ${t.completed?'checked':''} onclick="toggleTask(${i})">
-                    <span style="${t.completed?'text-decoration:line-through;':''}">📌 ${t.text} <small style="color:#888;">(${t.addedBy})</small></span>
-                </div>
-                <button onclick="delItem('tasks', ${i}); renderTasks();" style="background:none; border:none; color:red; cursor:pointer;">❌</button>
-            </div>`;
-        });
-        document.getElementById('tasks-container').innerHTML = h || '<div style="color:#888; font-size:12px;">אין משימות פעילות.</div>';
-    }
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && document.getElementById('appModal').style.display === 'flex') {
+            closeInternalApp();
+        }
+    });
 
-    // --- מודול הוצאות ---
-    function saveExpense() {
-        let desc = document.getElementById('exp-desc').value.trim();
-        let amount = parseFloat(document.getElementById('exp-amount').value);
-        let category = document.getElementById('exp-category').value;
-        if(!desc || isNaN(amount) || amount <= 0) { alert('נא להזין תיאור וסכום תקין'); return; }
-        let l = getData('expenses');
-        l.push({desc, amount, category, addedBy: currentUser});
-        saveData('expenses', l);
-        document.getElementById('exp-desc').value = '';
-        document.getElementById('exp-amount').value = '';
-        renderExpenses();
-    }
-    function renderExpenses() {
-        let l = getData('expenses');
-        let h = '';
-        let total = 0;
-        l.forEach((e, i) => {
-            total += e.amount;
-            h += `<div class="item-row">
-                <span>📌 <b>${e.desc}</b> (${e.category})</span>
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <strong style="color:#f59e0b;">₪${e.amount.toLocaleString()}</strong>
-                    <button onclick="delItem('expenses', ${i}); renderExpenses();" style="background:none; border:none; color:red; cursor:pointer;">❌</button>
-                </div>
-            </div>`;
-        });
-        document.getElementById('expenses-container').innerHTML = h || '<div style="color:#888; font-size:12px;">אין הוצאות רשומות.</div>';
-        document.getElementById('total-expenses-display').innerText = `₪${total.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
-    }
-
-    // --- מודול טיולים ---
-    function saveTravel() {
-        let dest = document.getElementById('travel-dest').value.trim();
-        let date = document.getElementById('travel-date').value.trim();
-        let mapLink = document.getElementById('travel-map').value.trim();
-        if(!dest) { alert('נא להזין יעד טיול'); return; }
-        let l = getData('travel');
-        l.push({dest, date: date || 'קרוב', mapLink});
-        saveData('travel', l);
-        document.getElementById('travel-dest').value = '';
-        document.getElementById('travel-date').value = '';
-        document.getElementById('travel-map').value = '';
-        renderTravel();
-    }
-    function renderTravel() {
-        let l = getData('travel');
-        let h = '';
-        l.forEach((t, i) => {
-            let mapBtn = t.mapLink ? `<a href="${t.mapLink}" target="_blank" style="background:#3b82f6; color:white; padding:3px 8px; border-radius:6px; text-decoration:none; font-size:11px; margin-left:5px;">🗺️ מפה</a>` : '';
-            h += `<div class="item-row">
-                <span>📍 <b>${t.dest}</b> (${t.date})</span>
-                <div>
-                    ${mapBtn}
-                    <button onclick="delItem('travel', ${i}); renderTravel();" style="background:none; border:none; color:red; cursor:pointer;">❌</button>
-                </div>
-            </div>`;
-        });
-        document.getElementById('travel-container').innerHTML = h || '<div style="color:#888; font-size:12px;">אין טיולים מתוכננים.</div>';
-    }
-
-    // --- שאר המודולים הקיימים ---
-    function saveRecipe() {
-        let title = document.getElementById('recipe-title').value.trim();
-        let ingredients = document.getElementById('recipe-ingredients').value.trim();
-        if(!title) { alert('נא להזין שם מתכון'); return; }
-        let l = getData('recipes');
-        l.push({title, ingredients});
-        saveData('recipes', l);
-        document.getElementById('recipe-title').value = '';
-        document.getElementById('recipe-ingredients').value = '';
-        renderRecipes();
-    }
-    function renderRecipes() {
-        let l = getData('recipes');
-        let h = '';
-        l.forEach((r, i) => {
-            h += `<div class="item-row">🍲 <b>${r.title}</b>: ${r.ingredients} <button onclick="delItem('recipes', ${i}); renderRecipes();" style="background:none; border:none; color:red; cursor:pointer;">❌</button></div>`;
-        });
-        document.getElementById('recipes-container').innerHTML = h || '<div style="color:#888; font-size:12px;">אין מתכונים שמורים.</div>';
-    }
-
-    function saveVoucher() {
-        let title = document.getElementById('voucher-title').value.trim();
-        if(!title) { alert('נא להזין כותרת'); return; }
-        let l = getData('vouchers');
-        l.push(title);
-        saveData('vouchers', l);
-        document.getElementById('voucher-title').value = '';
-        renderVouchers();
-    }
-    function renderVouchers() {
-        let l = getData('vouchers');
-        let h = '';
-        l.forEach((v, i) => {
-            h += `<div class="item-row">📄 ${v} <button onclick="delItem('vouchers', ${i}); renderVouchers();" style="background:none; border:none; color:red; cursor:pointer;">❌</button></div>`;
-        });
-        document.getElementById('vouchers-container').innerHTML = h || '<div style="color:#888; font-size:12px;">אין מסמכים שמורים.</div>';
-    }
-
-    function addMusicSong() {
-        let name = document.getElementById('music-song-name').value.trim();
-        if(!name) { alert('נא להזין שם שיר'); return; }
-        let l = getData('music');
-        l.push(name);
-        saveData('music', l);
-        document.getElementById('music-song-name').value = '';
-        renderMusic();
-    }
-    function renderMusic() {
-        let l = getData('music');
-        let h = '';
-        l.forEach((m, i) => {
-            h += `<div class="item-row">🎵 ${m} <button onclick="delItem('music', ${i}); renderMusic();" style="background:none; border:none; color:red; cursor:pointer;">❌</button></div>`;
-        });
-        document.getElementById('music-container').innerHTML = h || '<div style="color:#888; font-size:12px;">אין שירים שמורים.</div>';
-    }
-
-    function delItem(key, index) {
-        let l = getData(key);
-        l.splice(index, 1);
-        saveData(key, l);
-    }
-
-    function loadAllData() {
-        renderMembers();
-        renderInventory();
-        renderShop();
-        renderTasks();
-        renderExpenses();
-        renderTravel();
-        renderRecipes();
-        renderVouchers();
-        renderMusic();
-    }
+    window.addEventListener('vidass:data-updated', refreshSnapshot);
+    window.addEventListener('storage', refreshSnapshot);
 </script>
 
 </body>

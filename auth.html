@@ -1,0 +1,38 @@
+<script>
+    function escapeHouseHtml(str) {
+        return String(str || '')
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function houseCodeDisplay(code) {
+        return `<span style="color:var(--accent); font-weight:bold;">${escapeHouseHtml(code)}</span>`;
+    }
+
+    window.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const rawHouse = urlParams.get('house');
+        const houseFromUrl = rawHouse ? rawHouse.trim() : '';
+
+        if (houseFromUrl) {
+            localStorage.setItem('vidass_current_house_code', houseFromUrl);
+            localStorage.setItem('vidass_current_house', houseFromUrl);
+
+            const joinInput = document.getElementById('joinHouseCode');
+            if (joinInput) {
+                joinInput.value = houseFromUrl;
+            }
+
+            if (typeof switchTab === 'function') {
+                switchTab('join');
+            }
+
+            if (typeof showSuccess === 'function') {
+                showSuccess(`🏠 זוהה קישור הצטרפות אוטומטי לבית: ${houseCodeDisplay(houseFromUrl)}<br>הכנס את שמך וקוד ה-PIN האישי שלך כדי להיכנס!`);
+            }
+        }
+    });
+</script>

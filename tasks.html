@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIDASS - ניהול משימות ומטלות בית</title>
+    <script src="storage-sync.js"></script>
+    <style>
+        :root {
+            --primary: #d84370;
+            --primary-dark: #ad1457;
+            --accent: #ff80ab;
+            --bg-gradient: linear-gradient(135deg, #0d0d0f 0%, #1a1622 100%);
+            --card-bg: rgba(26, 23, 33, 0.96);
+            --card-border: rgba(216, 67, 112, 0.4);
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --success: #10b981;
+            --danger: #ef4444;
+            --gold: #f59e0b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 720px;
+            background: var(--card-bg);
+            backdrop-filter: blur(14px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.8);
+            padding: 28px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 16px;
+            margin-bottom: 18px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .header h1 { font-size: 20px; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+        .house-badge { background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: var(--success); padding: 5px 12px; border-radius: 10px; font-size: 11px; font-weight: bold; }
+
+        .summary-bar {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+            background: rgba(216, 67, 112, 0.08);
+            border: 1px solid rgba(216, 67, 112, 0.25);
+            border-radius: 12px;
+            padding: 10px 14px;
+            margin-bottom: 16px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        .summary-bar strong { color: var(--accent); }
+
+        .input-section {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr auto;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        @media (max-width: 680px) {
+            .input-section { grid-template-columns: 1fr; }
+        }
+
+        .input-section input, .input-section select, .filter-bar input, .filter-bar select {
+            padding: 12px 14px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            color: white;
+            font-size: 13px;
+            outline: none;
+            text-align: right;
+        }
+
+        .input-section option, .filter-bar option {
+            background: #1a1622;
+            color: white;
+        }
+
+        .input-section input:focus, .input-section select:focus, .filter-bar input:focus, .filter-bar select:focus {
+            border-color: var(--primary);
+        }
+
+        .add-btn {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            padding: 0 20px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 13px;
+            cursor: pointer;
+            transition: 0.2s;
+            min-height: 42px;
+        }
+
+        .add-btn:hover { opacity: 0.9; }
+
+        .filter-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .filter-bar input { flex: 1; min-width: 150px; padding: 8px 12px; font-size: 12px; }
+        .filter-bar select { padding: 8px 10px; font-size: 12px; }
+
+        .mode-btn {
+            padding: 7px 11px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.14);
+            background: rgba(255,255,255,0.04);
+            color: var(--text-muted);
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .mode-btn.active {
+            background: rgba(216, 67, 112, 0.2);
+            border-color: var(--primary);
+            color: var(--accent);
+        }
+
+        .clear-done-btn {
+            padding: 7px 11px;
+            border-radius: 8px;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .tasks-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 50vh;
+            overflow-y: auto;
+            padding-left: 4px;
+        }
+
+        .task-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 14px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: 0.2s;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .task-item.completed {
+            background: rgba(16, 185, 129, 0.05);
+            border-color: rgba(16, 185, 129, 0.2);
+            opacity: 0.78;
+        }
+
+        .task-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+            min-width: 220px;
+        }
+
+        .task-checkbox {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--success);
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .task-text {
+            font-size: 14px;
+            color: var(--text-main);
+            word-break: break-word;
+        }
+
+        .task-item.completed .task-text {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        .prio-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 7px;
+            font-size: 10px;
+            font-weight: bold;
+            margin-right: 6px;
+        }
+        .prio-גבוהה { background: rgba(239, 68, 68, 0.16); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.35); }
+        .prio-רגילה { background: rgba(245, 158, 11, 0.14); color: var(--gold); border: 1px solid rgba(245, 158, 11, 0.3); }
+        .prio-נמוכה { background: rgba(16, 185, 129, 0.14); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); }
+
+        .task-meta {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 3px;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .edit-btn {
+            background: rgba(245, 158, 11, 0.14);
+            color: var(--gold);
+            border: 1px solid rgba(245, 158, 11, 0.35);
+            padding: 6px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .delete-btn {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 6px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .delete-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--success);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 13px;
+            transition: transform 0.3s;
+            z-index: 1000;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="header">
+        <h1>📌 משימות ומטלות בית</h1>
+        <div class="house-badge" id="houseBadgeDisplay">🟢 בית: טוען...</div>
+    </div>
+
+    <div class="summary-bar" id="tasksSummary">
+        <span>משימות פתוחות: <strong>0</strong></span>
+        <span>משימות שהושלמו: <strong>0</strong></span>
+    </div>
+
+    <div class="input-section">
+        <input type="text" id="taskInput" placeholder="הוסף משימה חדשה (לדוגמה: לסדר סלון, לתקן ברז)..." onkeypress="if(event.key==='Enter') addTask()">
+        <input type="text" id="assigneeInput" placeholder="אחראי/ת (אופציונלי)" onkeypress="if(event.key==='Enter') addTask()">
+        <select id="priorityInput">
+            <option value="רגילה">עדיפות רגילה</option>
+            <option value="גבוהה">עדיפות גבוהה</option>
+            <option value="נמוכה">עדיפות נמוכה</option>
+        </select>
+        <button type="button" class="add-btn" onclick="addTask()">הוסף משימה ➕</button>
+    </div>
+
+    <div class="filter-bar">
+        <input type="text" id="searchTaskInput" placeholder="חיפוש משימה או אחראי..." oninput="loadTasks()">
+        <select id="filterPrioSelect" onchange="loadTasks()">
+            <option value="הכל">כל העדיפויות</option>
+            <option value="גבוהה">גבוהה</option>
+            <option value="רגילה">רגילה</option>
+            <option value="נמוכה">נמוכה</option>
+        </select>
+        <button type="button" class="mode-btn active" id="modeAllBtn" onclick="setTaskMode('all')">הכל</button>
+        <button type="button" class="mode-btn" id="modeOpenBtn" onclick="setTaskMode('open')">פתוחות</button>
+        <button type="button" class="mode-btn" id="modeDoneBtn" onclick="setTaskMode('done')">הושלמו</button>
+        <button type="button" class="clear-done-btn" onclick="clearCompletedTasks()">נקה שהושלמו</button>
+    </div>
+
+    <div class="tasks-list" id="tasksListContainer"></div>
+</div>
+
+<div class="toast" id="toastMsg">הפעולה בוצעה בהצלחה!</div>
+
+<script>
+    let currentTaskMode = 'all';
+
+    function escapeHtml(str) {
+        return String(str || '')
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function getActiveHouseCode() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = (
+            urlParams.get('house') ||
+            (typeof getCurrentHouseCode === 'function' ? getCurrentHouseCode() : null) ||
+            localStorage.getItem('vidass_current_house_code') ||
+            localStorage.getItem('vidass_current_house') ||
+            'EILAT-33'
+        ).trim();
+        localStorage.setItem('vidass_current_house_code', code);
+        localStorage.setItem('vidass_current_house', code);
+        return code;
+    }
+
+    function getActiveUserName() {
+        return (typeof getCurrentUser === 'function' ? getCurrentUser() : null) ||
+               localStorage.getItem('vidass_current_user') ||
+               'דייר';
+    }
+
+    function readTasks() {
+        const houseCode = getActiveHouseCode();
+        if (typeof getSharedData === 'function') {
+            const d = getSharedData('tasks');
+            return Array.isArray(d) ? d : [];
+        }
+        try {
+            const raw = localStorage.getItem('vidass_tasks_' + houseCode);
+            const parsed = raw ? JSON.parse(raw) : [];
+            return Array.isArray(parsed) ? parsed : [];
+        } catch (_) {
+            return [];
+        }
+    }
+
+    function setTaskMode(mode) {
+        currentTaskMode = mode;
+        document.getElementById('modeAllBtn').classList.toggle('active', mode === 'all');
+        document.getElementById('modeOpenBtn').classList.toggle('active', mode === 'open');
+        document.getElementById('modeDoneBtn').classList.toggle('active', mode === 'done');
+        loadTasks();
+    }
+
+    window.onload = function() {
+        const houseCode = getActiveHouseCode();
+        document.getElementById('houseBadgeDisplay').innerText = `🟢 בית: ${escapeHtml(houseCode)}`;
+        loadTasks();
+    };
+
+    function loadTasks() {
+        const tasks = readTasks();
+        const container = document.getElementById('tasksListContainer');
+        const summaryEl = document.getElementById('tasksSummary');
+        const searchTerm = (document.getElementById('searchTaskInput').value || '').trim().toLowerCase();
+        const prioFilter = document.getElementById('filterPrioSelect').value;
+
+        const openCount = tasks.filter(t => !(t && t.completed)).length;
+        const doneCount = tasks.filter(t => Boolean(t && t.completed)).length;
+        summaryEl.innerHTML = `
+            <span>משימות פתוחות: <strong>${openCount}</strong></span>
+            <span>משימות שהושלמו: <strong>${doneCount}</strong></span>
+        `;
+
+        const matchedIndices = [];
+        for (let i = tasks.length - 1; i >= 0; i--) {
+            const t = tasks[i];
+            const isDone = Boolean(t && t.completed);
+            const prio = t && t.priority ? t.priority : 'רגילה';
+
+            const modeMatch = currentTaskMode === 'all' ||
+                (currentTaskMode === 'open' && !isDone) ||
+                (currentTaskMode === 'done' && isDone);
+            const prioMatch = prioFilter === 'הכל' || prio === prioFilter;
+            const textMatch = !searchTerm ||
+                String(t.text || '').toLowerCase().includes(searchTerm) ||
+                String(t.assignee || '').toLowerCase().includes(searchTerm) ||
+                String(t.addedBy || '').toLowerCase().includes(searchTerm);
+
+            if (modeMatch && prioMatch && textMatch) {
+                matchedIndices.push(i);
+            }
+        }
+
+        if (matchedIndices.length === 0) {
+            container.innerHTML = `<div class="empty-state">${tasks.length === 0 ? 'אין משימות פעילות כרגע. אפשר להוסיף משימה חדשה למעלה!' : 'לא נמצאו משימות התואמות לסינון.'}</div>`;
+            return;
+        }
+
+        container.innerHTML = '';
+        matchedIndices.forEach((actualIndex) => {
+            const task = tasks[actualIndex];
+            const prio = task.priority || 'רגילה';
+            const prioClass = ['גבוהה', 'רגילה', 'נמוכה'].includes(prio) ? `prio-${prio}` : 'prio-רגילה';
+
+            container.innerHTML += `
+                <div class="task-item ${task.completed ? 'completed' : ''}">
+                    <div class="task-info">
+                        <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask(${actualIndex})">
+                        <div>
+                            <div class="task-text">
+                                ${escapeHtml(task.text)}
+                                <span class="prio-badge ${prioClass}">${escapeHtml(prio)}</span>
+                            </div>
+                            <div class="task-meta">
+                                ${task.assignee ? 'אחראי/ת: <strong>' + escapeHtml(task.assignee) + '</strong> | ' : ''}
+                                נוסף ע"י: ${escapeHtml(task.addedBy || 'דייר')} ${task.date ? '| ' + escapeHtml(task.date) : ''}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="task-actions">
+                        <button type="button" class="edit-btn" onclick="editTask(${actualIndex})">ערוך</button>
+                        <button type="button" class="delete-btn" onclick="deleteTask(${actualIndex})">מחק 🗑️</button>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function addTask() {
+        const input = document.getElementById('taskInput');
+        const assigneeInput = document.getElementById('assigneeInput');
+        const priorityInput = document.getElementById('priorityInput');
+
+        const text = input.value.trim();
+        const assignee = assigneeInput.value.trim();
+        const priority = priorityInput.value;
+
+        if (!text) return;
+
+        const tasks = readTasks();
+        tasks.push({
+            text,
+            assignee,
+            priority,
+            completed: false,
+            addedBy: getActiveUserName(),
+            date: new Date().toLocaleDateString('he-IL')
+        });
+
+        saveAndRefresh(tasks);
+        input.value = '';
+        assigneeInput.value = '';
+        input.focus();
+        showToast("המשימה נוספה לרשימה.");
+    }
+
+    function editTask(index) {
+        const tasks = readTasks();
+        const task = tasks[index];
+        if (!task) return;
+
+        const updatedText = prompt("עדכן את תוכן המשימה:", task.text || "");
+        if (updatedText === null) return;
+        const cleanText = updatedText.trim();
+        if (!cleanText) return;
+
+        const updatedAssignee = prompt("עדכן אחראי/ת (או השאר ריק):", task.assignee || "");
+        if (updatedAssignee === null) return;
+
+        tasks[index].text = cleanText;
+        tasks[index].assignee = updatedAssignee.trim();
+        saveAndRefresh(tasks);
+        showToast("המשימה עודכנה.");
+    }
+
+    function toggleTask(index) {
+        const tasks = readTasks();
+        if (tasks[index]) {
+            tasks[index].completed = !tasks[index].completed;
+            saveAndRefresh(tasks);
+        }
+    }
+
+    function clearCompletedTasks() {
+        const tasks = readTasks();
+        const remaining = tasks.filter(t => !(t && t.completed));
+        if (remaining.length === tasks.length) {
+            showToast("אין משימות שהושלמו לניקוי", true);
+            return;
+        }
+        saveAndRefresh(remaining);
+        showToast("המשימות שהושלמו נוקו.");
+    }
+
+    function deleteTask(index) {
+        const tasks = readTasks();
+        if (tasks[index] !== undefined) {
+            tasks.splice(index, 1);
+            saveAndRefresh(tasks);
+            showToast("המשימה הוסרה.");
+        }
+    }
+
+    function saveAndRefresh(tasksArray) {
+        const houseCode = getActiveHouseCode();
+        if (typeof saveSharedData === 'function') {
+            saveSharedData('tasks', tasksArray);
+        } else {
+            localStorage.setItem('vidass_tasks_' + houseCode, JSON.stringify(tasksArray));
+        }
+        loadTasks();
+    }
+
+    function showToast(msg, isError = false) {
+        const toast = document.getElementById('toastMsg');
+        toast.innerText = msg;
+        toast.style.background = isError ? 'var(--danger)' : 'var(--success)';
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    window.addEventListener('vidass:data-updated', function(e) {
+        if (!e || !e.detail || !e.detail.module || e.detail.module === 'tasks' || e.detail.module === 'all') {
+            loadTasks();
+        }
+    });
+
+    window.addEventListener('storage', function(event) {
+        const houseCode = getActiveHouseCode();
+        if (event.key === 'vidass_tasks_' + houseCode) {
+            loadTasks();
+        }
+    });
+</script>
+
+</body>
+</html>

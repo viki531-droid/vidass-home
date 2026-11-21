@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIDASS - כניסה למערכת הבית</title>
+    <script src="storage-sync.js"></script>
+    <style>
+        :root {
+            --primary: #d84370;
+            --primary-dark: #ad1457;
+            --accent: #ff80ab;
+            --bg-gradient: linear-gradient(135deg, #0d0d0f 0%, #1a1622 100%);
+            --card-bg: rgba(26, 23, 33, 0.96);
+            --card-border: rgba(216, 67, 112, 0.4);
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --success: #10b981;
+            --danger: #ef4444;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 420px;
+            background: var(--card-bg);
+            backdrop-filter: blur(14px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.8);
+            padding: 32px;
+            text-align: center;
+        }
+
+        .logo-area h1 {
+            font-size: 26px;
+            color: var(--accent);
+            margin-bottom: 6px;
+            letter-spacing: 1px;
+        }
+
+        .logo-area p {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+        }
+
+        .input-group {
+            margin-bottom: 16px;
+            text-align: right;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+
+        .password-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            color: white;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+            text-align: right;
+        }
+
+        .password-wrap input {
+            padding-left: 56px;
+        }
+
+        .toggle-pass-btn {
+            position: absolute;
+            left: 10px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: var(--text-muted);
+            border-radius: 8px;
+            padding: 4px 8px;
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        .toggle-pass-btn:hover {
+            color: var(--text-main);
+        }
+
+        .input-group input:focus {
+            border-color: var(--primary);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: opacity 0.2s;
+        }
+
+        .login-btn:hover:not(:disabled) {
+            opacity: 0.9;
+        }
+
+        .login-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .error-msg {
+            margin-top: 16px;
+            padding: 10px;
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: var(--danger);
+            border-radius: 10px;
+            font-size: 12px;
+            display: none;
+        }
+
+        .success-msg {
+            margin-top: 16px;
+            padding: 10px;
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: var(--success);
+            border-radius: 10px;
+            font-size: 12px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-card">
+    <div class="logo-area">
+        <h1>VIDASS</h1>
+        <p>מערכת ניהול ענן משפחתית פרטית</p>
+    </div>
+
+    <form id="loginForm" onsubmit="event.preventDefault(); handleLogin();">
+        <div class="input-group">
+            <label for="userNameInput">שם הדייר/ת</label>
+            <input type="text" id="userNameInput" placeholder="לדוגמה: ויקי" autocomplete="username">
+        </div>
+
+        <div class="input-group">
+            <label for="houseCodeInput">קוד הבית (House Code)</label>
+            <input type="text" id="houseCodeInput" placeholder="לדוגמה: EILAT-33" value="EILAT-33" autocomplete="organization">
+        </div>
+
+        <div class="input-group">
+            <label for="passwordInput">סיסמת הבית</label>
+            <div class="password-wrap">
+                <input type="password" id="passwordInput" placeholder="הקש סיסמת גישה לבית" autocomplete="current-password">
+                <button type="button" class="toggle-pass-btn" id="togglePassBtn" onclick="togglePasswordVisibility()">הצג</button>
+            </div>
+        </div>
+
+        <button type="submit" class="login-btn" id="loginSubmitBtn">התחבר למרכז הניהול ➔</button>
+    </form>
+
+    <div class="error-msg" id="errorBox"></div>
+    <div class="success-msg" id="successBox"></div>
+</div>
+
+<script>
+    window.onload = function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const queryUser = (urlParams.get('user') || '').trim();
+        const queryHouse = (urlParams.get('house') || '').trim().toUpperCase();
+
+        const savedUser = localStorage.getItem('vidass_current_user');
+        const savedHouse = localStorage.getItem('vidass_current_house_code') || localStorage.getItem('vidass_current_house');
+
+        if (queryUser) {
+            document.getElementById('userNameInput').value = queryUser;
+        } else if (savedUser) {
+            document.getElementById('userNameInput').value = savedUser;
+        }
+
+        if (queryHouse) {
+            document.getElementById('houseCodeInput').value = queryHouse;
+        } else if (savedHouse) {
+            document.getElementById('houseCodeInput').value = savedHouse;
+        }
+    };
+
+    function togglePasswordVisibility() {
+        const input = document.getElementById('passwordInput');
+        const btn = document.getElementById('togglePassBtn');
+        const isHidden = input.type === 'password';
+        input.type = isHidden ? 'text' : 'password';
+        btn.innerText = isHidden ? 'הסתר' : 'הצג';
+    }
+
+    function persistSession(userName, houseCode, extra = {}) {
+        localStorage.setItem('vidass_current_user', userName);
+        localStorage.setItem('vidass_current_house_code', houseCode);
+        localStorage.setItem('vidass_current_house', houseCode);
+        if (extra.sessionMode) {
+            localStorage.setItem('vidass_session_mode', extra.sessionMode);
+        }
+        if (extra.token) {
+            localStorage.setItem('vidass_auth_token', extra.token);
+        }
+    }
+
+    async function handleLogin() {
+        const userName = document.getElementById('userNameInput').value.trim();
+        const houseCode = document.getElementById('houseCodeInput').value.trim().toUpperCase();
+        const password = document.getElementById('passwordInput').value;
+        const submitBtn = document.getElementById('loginSubmitBtn');
+
+        const errorBox = document.getElementById('errorBox');
+        const successBox = document.getElementById('successBox');
+
+        errorBox.style.display = 'none';
+        successBox.style.display = 'none';
+
+        if (!userName) {
+            showError("נא להזין את שם הדייר/ת.");
+            return;
+        }
+        if (!houseCode) {
+            showError("נא להזין קוד בית תקין.");
+            return;
+        }
+        if (!password.trim()) {
+            showError("נא להזין את סיסמת הבית.");
+            return;
+        }
+
+        submitBtn.disabled = true;
+
+        try {
+            const response = await fetch('/api/auth', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ house_code: houseCode, password: password })
+            });
+
+            let result = {};
+            try {
+                result = await response.json();
+            } catch (_) {
+                result = {};
+            }
+
+            if (response.ok && result.status === 'success') {
+                persistSession(userName, houseCode, {
+                    sessionMode: 'server',
+                    token: result.token || ''
+                });
+                showSuccess("האימות הצליח! מעבר למרכז הבקרה...");
+                setTimeout(() => {
+                    window.location.href = `main_hub.html?house=${encodeURIComponent(houseCode)}`;
+                }, 600);
+            } else {
+                submitBtn.disabled = false;
+                showError(result.message || "שגיאה באימות הנתונים מול השרת.");
+            }
+        } catch (err) {
+            console.warn("שרת הענן אינו זמין, מבצע התחברות מקומית.");
+            persistSession(userName, houseCode, { sessionMode: 'local' });
+            showSuccess("התחברות מקומית הופעלה. מעבר למרכז הבקרה...");
+            setTimeout(() => {
+                window.location.href = `main_hub.html?house=${encodeURIComponent(houseCode)}`;
+            }, 400);
+        }
+    }
+
+    function showError(msg) {
+        const box = document.getElementById('errorBox');
+        box.innerText = msg;
+        box.style.display = 'block';
+    }
+
+    function showSuccess(msg) {
+        const box = document.getElementById('successBox');
+        box.innerText = msg;
+        box.style.display = 'block';
+    }
+</script>
+
+</body>
+</html>

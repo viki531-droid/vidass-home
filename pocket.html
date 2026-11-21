@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIDASS Micro-App - דמי כיס</title>
+    <script src="storage-sync.js"></script>
+    <style>
+        :root {
+            --primary: #d84370;
+            --primary-dark: #ad1457;
+            --accent: #ff80ab;
+            --bg-gradient: linear-gradient(135deg, #0d0d0f 0%, #1a1622 100%);
+            --card-bg: rgba(26, 23, 33, 0.96);
+            --card-border: rgba(216, 67, 112, 0.4);
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --success: #10b981;
+            --danger: #ef4444;
+            --gold: #f59e0b;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: var(--bg-gradient); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .app-container { width: 100%; max-width: 640px; background: var(--card-bg); backdrop-filter: blur(14px); border: 1px solid var(--card-border); border-radius: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.8); padding: 24px; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 16px; gap: 10px; flex-wrap: wrap; }
+        .header h1 { font-size: 20px; color: var(--accent); }
+        .badge { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--success); padding: 4px 10px; border-radius: 8px; font-size: 11px; }
+
+        .summary-bar { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; background: rgba(216, 67, 112, 0.1); border: 1px solid var(--card-border); border-radius: 14px; padding: 12px 14px; margin-bottom: 14px; font-size: 12px; }
+        .summary-bar strong { color: var(--gold); font-size: 14px; }
+
+        .row-inputs { display: flex; gap: 10px; flex-wrap: wrap; }
+        .row-inputs .input-group { flex: 1; min-width: 150px; }
+
+        .input-group { margin-bottom: 12px; text-align: right; }
+        .input-group label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+        .input-group input { width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; color: white; font-size: 13px; outline: none; text-align: right; }
+        .input-group input:focus { border-color: var(--primary); }
+
+        .filter-input { width: 100%; padding: 9px 12px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; color: white; font-size: 12px; outline: none; text-align: right; margin-bottom: 14px; }
+        .filter-input:focus { border-color: var(--primary); }
+
+        .btn { width: 100%; padding: 11px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 5px; }
+        .btn:hover { opacity: 0.92; }
+
+        .item-row { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; gap: 10px; flex-wrap: wrap; }
+        .item-actions { display: flex; gap: 6px; flex-shrink: 0; }
+        .btn-edit { background: rgba(245, 158, 11, 0.14); color: var(--gold); border: 1px solid rgba(245, 158, 11, 0.35); padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 11px; }
+        .btn-del { background: rgba(239,68,68,0.1); color: var(--danger); border: 1px solid rgba(239,68,68,0.3); padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 11px; }
+
+        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: white; padding: 10px 20px; border-radius: 10px; font-size: 13px; transition: transform 0.3s; z-index: 1000; }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="header">
+        <div>
+            <h1>💵 דפדפן דמי כיס</h1>
+            <p style="font-size: 11px; color: var(--text-muted);">ניהול הקצבות משותף לכל דיירי הבית</p>
+        </div>
+        <div class="badge" id="houseBadge">🟢 מחובר לבית המשותף</div>
+    </div>
+
+    <div class="summary-bar" id="pocketSummary">
+        <span>סה"כ הקצבות מספריות: <strong>₪0.00</strong></span>
+        <span>רשומות מוצגות: <strong>0</strong></span>
+    </div>
+
+    <div class="row-inputs">
+        <div class="input-group">
+            <label for="childName">שם הילד / מקבל ההקצבה</label>
+            <input type="text" id="childName" placeholder="לדוגמה: אגם...">
+        </div>
+        <div class="input-group" style="max-width: 150px;">
+            <label for="pocketAmount">סכום (₪)</label>
+            <input type="number" id="pocketAmount" min="0" step="0.01" placeholder="50" onkeydown="if(['e','E','+','-'].includes(event.key)) event.preventDefault()" onkeypress="if(event.key==='Enter') addPocketRecord()">
+        </div>
+    </div>
+
+    <div class="input-group">
+        <label for="pocketDetails">מטרה או פירוט ההקצבה</label>
+        <input type="text" id="pocketDetails" placeholder="לדוגמה: דמי כיס חודשיים, עזרה במטלות..." onkeypress="if(event.key==='Enter') addPocketRecord()">
+    </div>
+
+    <button type="button" class="btn" onclick="addPocketRecord()">שמור רישום דמי כיס 💵</button>
+
+    <div style="margin-top: 18px;">
+        <input type="text" class="filter-input" id="filterPocketInput" placeholder="חיפוש לפי שם, מטרה או מוסיף..." oninput="loadPocketRecords()">
+        <div style="max-height: 260px; overflow-y: auto;" id="pocketList"></div>
+    </div>
+</div>
+
+<div class="toast" id="toastMsg">הפעולה בוצעה בהצלחה!</div>
+
+<script>
+    function escapeHtml(str) {
+        return String(str || '')
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function getActiveHouse() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = (
+            urlParams.get('house') ||
+            (typeof getCurrentHouseCode === 'function' ? getCurrentHouseCode() : null) ||
+            localStorage.getItem('vidass_current_house_code') ||
+            localStorage.getItem('vidass_current_house') ||
+            'EILAT-33'
+        ).trim();
+        localStorage.setItem('vidass_current_house_code', code);
+        localStorage.setItem('vidass_current_house', code);
+        return code;
+    }
+
+    function getActiveUser() {
+        return (typeof getCurrentUser === 'function' ? getCurrentUser() : null) ||
+               localStorage.getItem('vidass_current_user') ||
+               'דייר';
+    }
+
+    function readPocketData() {
+        const houseCode = getActiveHouse();
+        if (typeof getSharedData === 'function') {
+            const d = getSharedData('pocket');
+            return Array.isArray(d) ? d : [];
+        }
+        try {
+            const raw = localStorage.getItem('vidass_pocket_' + houseCode);
+            const parsed = raw ? JSON.parse(raw) : [];
+            return Array.isArray(parsed) ? parsed : [];
+        } catch (_) {
+            return [];
+        }
+    }
+
+    function writePocketData(arr) {
+        const houseCode = getActiveHouse();
+        if (typeof saveSharedData === 'function') {
+            saveSharedData('pocket', arr);
+        } else {
+            localStorage.setItem('vidass_pocket_' + houseCode, JSON.stringify(arr));
+        }
+    }
+
+    function extractNumericAmount(item) {
+        if (item && item.amount !== undefined && item.amount !== null && item.amount !== '') {
+            const parsed = parseFloat(item.amount);
+            if (!isNaN(parsed)) return parsed;
+        }
+        const match = String((item && item.details) || '').match(/\d+(?:[.,]\d+)?/);
+        if (match) {
+            const parsed = parseFloat(match[0].replace(',', '.'));
+            if (!isNaN(parsed)) return parsed;
+        }
+        return null;
+    }
+
+    window.onload = function() {
+        const houseCode = getActiveHouse();
+        document.getElementById('houseBadge').innerText = `🟢 בית: ${escapeHtml(houseCode)}`;
+        loadPocketRecords();
+    };
+
+    function loadPocketRecords() {
+        const data = readPocketData();
+        const container = document.getElementById('pocketList');
+        const summaryEl = document.getElementById('pocketSummary');
+        const searchTerm = (document.getElementById('filterPocketInput').value || '').trim().toLowerCase();
+
+        const matchedIndices = [];
+        let sumAmount = 0;
+
+        for (let i = data.length - 1; i >= 0; i--) {
+            const item = data[i];
+            const matches = !searchTerm ||
+                String(item.name || '').toLowerCase().includes(searchTerm) ||
+                String(item.details || '').toLowerCase().includes(searchTerm) ||
+                String(item.addedBy || '').toLowerCase().includes(searchTerm);
+            if (matches) {
+                matchedIndices.push(i);
+                const num = extractNumericAmount(item);
+                if (num !== null) sumAmount += num;
+            }
+        }
+
+        summaryEl.innerHTML = `
+            <span>סה"כ הקצבות מספריות: <strong>₪${sumAmount.toLocaleString('he-IL', { minimumFractionDigits: 2 })}</strong></span>
+            <span>רשומות מוצגות: <strong>${matchedIndices.length}</strong></span>
+        `;
+
+        if (matchedIndices.length === 0) {
+            container.innerHTML = `<p style="text-align:center; font-size:12px; color:var(--text-muted);">${data.length === 0 ? 'אין רשומות דמי כיס פעילות.' : 'לא נמצאו רשומות התואמות לחיפוש.'}</p>`;
+            return;
+        }
+
+        container.innerHTML = '';
+        matchedIndices.forEach((actualIndex) => {
+            const item = data[actualIndex];
+            const amt = extractNumericAmount(item);
+            const amtBadge = amt !== null ? ` | <strong>₪${amt.toLocaleString('he-IL', { minimumFractionDigits: 2 })}</strong>` : '';
+
+            container.innerHTML += `
+                <div class="item-row">
+                    <div>
+                        <strong style="color:var(--accent);">👤 ${escapeHtml(item.name)}</strong>${amtBadge}
+                        <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">${escapeHtml(item.details || '')} (הוסף ע"י: ${escapeHtml(item.addedBy || 'דייר')} | ${escapeHtml(item.date || '')})</div>
+                    </div>
+                    <div class="item-actions">
+                        <button type="button" class="btn-edit" onclick="editPocketRecord(${actualIndex})">ערוך</button>
+                        <button type="button" class="btn-del" onclick="removePocketRecord(${actualIndex})">מחק</button>
+                    </div>
+                </div>`;
+        });
+    }
+
+    function addPocketRecord() {
+        const nameInput = document.getElementById('childName');
+        const amountInput = document.getElementById('pocketAmount');
+        const detailsInput = document.getElementById('pocketDetails');
+
+        const name = nameInput.value.trim();
+        const rawAmt = amountInput.value.trim();
+        const amount = rawAmt ? parseFloat(rawAmt) : null;
+        const details = detailsInput.value.trim();
+
+        if (!name || (!details && (amount === null || isNaN(amount)))) {
+            showToast("נא להזין שם ומטרה או סכום", true);
+            return;
+        }
+
+        const formattedDetails = details || (amount !== null ? `${amount} ₪` : '');
+        const data = readPocketData();
+        data.push({
+            name,
+            amount: amount !== null && !isNaN(amount) ? amount : null,
+            details: formattedDetails,
+            addedBy: getActiveUser(),
+            date: new Date().toLocaleDateString('he-IL')
+        });
+        writePocketData(data);
+
+        nameInput.value = '';
+        amountInput.value = '';
+        detailsInput.value = '';
+        loadPocketRecords();
+        showToast("רישום דמי הכיס נשמר ושותף לכל דיירי הבית!");
+    }
+
+    function editPocketRecord(index) {
+        const data = readPocketData();
+        const item = data[index];
+        if (!item) return;
+
+        const newDetails = prompt(`עדכן פירוט עבור ${item.name}:`, item.details || '');
+        if (newDetails === null) return;
+        const cleanDetails = newDetails.trim();
+        if (!cleanDetails) return;
+
+        data[index].details = cleanDetails;
+        const match = cleanDetails.match(/\d+(?:[.,]\d+)?/);
+        if (match) {
+            const parsed = parseFloat(match[0].replace(',', '.'));
+            if (!isNaN(parsed)) data[index].amount = parsed;
+        }
+        data[index].date = new Date().toLocaleDateString('he-IL');
+
+        writePocketData(data);
+        loadPocketRecords();
+        showToast("הרישום עודכן בהצלחה.");
+    }
+
+    function removePocketRecord(index) {
+        const data = readPocketData();
+        data.splice(index, 1);
+        writePocketData(data);
+        loadPocketRecords();
+        showToast("הרישום הוסר בהצלחה.");
+    }
+
+    function showToast(msg, isError = false) {
+        const toast = document.getElementById('toastMsg');
+        toast.innerText = msg;
+        toast.style.background = isError ? 'var(--danger)' : 'var(--success)';
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    window.addEventListener('vidass:data-updated', function(e) {
+        if (!e || !e.detail || !e.detail.module || e.detail.module === 'pocket' || e.detail.module === 'all') {
+            loadPocketRecords();
+        }
+    });
+
+    window.addEventListener('storage', function(event) {
+        const houseCode = getActiveHouse();
+        if (event.key === 'vidass_pocket_' + houseCode) {
+            loadPocketRecords();
+        }
+    });
+</script>
+
+</body>
+</html>
