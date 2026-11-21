@@ -3,32 +3,31 @@
  * מנהל את הסנכרון בין ה-localStorage, הדפדפנים השונים ושרת ה-Flask המרכזי.
  */
 
-// זיהוי אוטומטי של קוד הבית מתוך ה-URL, הזיכרון המקומי או ברירת מחדל
+const VIDASS_SYNC_INTERVAL_MS = 4000; // בדיקת עדכונים מהשרת כל 4 שניות
+
 function getCurrentHouseCode() {
     const urlParams = new URLSearchParams(window.location.search);
-    let house = urlParams.get('house') || 
-                localStorage.getItem('vidass_current_house_code') || 
-                localStorage.getItem('vidass_current_house') || 
+    let house = urlParams.get('house') ||
+                localStorage.getItem('vidass_current_house_code') ||
+                localStorage.getItem('vidass_current_house') ||
                 'EILAT-33';
-    
+
     house = house.trim();
     localStorage.setItem('vidass_current_house_code', house);
     localStorage.setItem('vidass_current_house', house);
     return house;
 }
 
-// זיהוי שם המשתמש הנוכחי
 function getCurrentUser() {
     return localStorage.getItem('vidass_current_user') || 'ויקי';
 }
 
-// ברכת שלום מותאמת אישית
 function getPersonalizedGreeting() {
     const user = getCurrentUser();
     const house = getCurrentHouseCode();
     const hours = new Date().getHours();
     let timeGreeting = "שלום";
-    
+
     if (hours >= 5 && hours < 12) timeGreeting = "בוקר טוב";
     else if (hours >= 12 && hours < 17) timeGreeting = "צהריים טובים";
     else if (hours >= 17 && hours < 21) timeGreeting = "ערב טוב";
@@ -37,11 +36,10 @@ function getPersonalizedGreeting() {
     return `${timeGreeting}, ${user} (בית: ${house})`;
 }
 
-// שליפת נתונים של מודול מסוים (למשל 'shopping', 'tasks', 'alerts')
 function getSharedData(moduleName) {
     const houseCode = getCurrentHouseCode();
     const storageKey = `vidass_${moduleName}_${houseCode}`;
-    
+
     try {
         const localData = localStorage.getItem(storageKey);
         if (localData) {
@@ -50,23 +48,52 @@ function getSharedData(moduleName) {
     } catch (e) {
         console.error(`שגיאה בקריאת נתונים מקומיים עבור ${moduleName}:`, e);
     }
-    
+
     return [];
 }
 
-// שמירת נתונים מקומית ושיגורם לשרת ה-Flask בזמן אמת
+function notifyPageModules(moduleName) {
+    window.dispatchEvent(new CustomEvent('vidass:data-updated', {
+        detail: { module: moduleName, houseCode: getCurrentHouseCode() }
+    }));
+
+    const refreshers = [
+        window.loadAlerts,
+        window.loadShoppingList,
+        window.loadExpenses,
+        window.loadInventory,
+        window.loadCalendarEvents,
+        window.loadBirthdays,
+        window.loadEvents,
+        window.loadGoals
+    ];
+
+    refreshers.forEach((fn) => {
+        if (typeof fn === 'function') {
+            try { fn(); } catch (_) {}
+        }
+    });
+}
+
 async function saveSharedData(moduleName, dataArray) {
     const houseCode = getCurrentHouseCode();
     const storageKey = `vidass_${moduleName}_${houseCode}`;
 
-    // 1. שמירה מיידית ב-localStorage לחוויית משתמש חלקה (Offline-first)
+    // 1. שמירה מיידית ב-localStorage (Offline-first)
     try {
         localStorage.setItem(storageKey, JSON.stringify(dataArray));
     } catch (e) {
         console.error("שגיאה בשמירה ל-localStorage:", e);
     }
 
-    // 2. שליחה ברקע לשרת ה-Flask המרכזי
+    // עדכון מיידי של התצוגה בעמוד הנוכחי
+    notifyPageModules(moduleName);
+
+    // 2. שליחה ברקע לשרת ה-Flask המרכזי (רק אם רצים דרך HTTP/HTTPS)
+    if (window.location.protocol === 'file:') {
+        return;
+    }
+
     try {
         const payload = {
             data: {
@@ -83,48 +110,65 @@ async function saveSharedData(moduleName, dataArray) {
         });
 
         if (!response.ok) {
-            console.warn("הנתונים נשמרו מקומית, אך השרת החזיק תשובה שגوية בשמירה לענן.");
+            console.warn("הנתונים נשמרו מקומית, אך השרת החזיר תשובה שגויה בשמירה לענן.");
         }
     } catch (err) {
         console.log("שרת הענן אינו זמין כרגע – הנתונים נשמרו ויעבדו בצורה מקומית בדפדפן.");
     }
 }
 
-// פונקציית סנכרון ראשית מול שרת ה-Flask (מושכת את כל נתוני הבית מהשרת)
 async function fetchHouseDataFromServer(updateUI = false) {
+    if (window.location.protocol === 'file:') {
+        return;
+    }
+
     const houseCode = getCurrentHouseCode();
+    let anyModuleChanged = false;
+
     try {
         const response = await fetch(`/api/get/${encodeURIComponent(houseCode)}`);
         if (response.ok) {
             const housePackage = await response.json();
-            
-            // אם השרת החזיר מבנה נתונים מלא, נעדכן את ה-localStorage עבור כל מודול
+
             if (housePackage && housePackage.data) {
                 for (const [modKey, modVal] of Object.entries(housePackage.data)) {
-                    localStorage.setItem(`vidass_${modKey}_${houseCode}`, JSON.stringify(modVal));
+                    const key = `vidass_${modKey}_${houseCode}`;
+                    const nextJson = JSON.stringify(modVal);
+                    const prevJson = localStorage.getItem(key);
+
+                    if (prevJson !== nextJson) {
+                        localStorage.setItem(key, nextJson);
+                        anyModuleChanged = true;
+                    }
                 }
             }
-            
-            console.log("🟢 הנתונים סונכרנו בהצלחה מול שרת הענן עבור בית:", houseCode);
-            
-            // אם העמוד מבקש רענון תצוגה לאחר טעינה מהענן
-            if (updateUI && typeof window.loadAlerts === 'function') {
-                window.loadAlerts();
-            }
-            if (updateUI && typeof window.loadShoppingList === 'function') {
-                window.loadShoppingList();
+
+            if (updateUI && anyModuleChanged) {
+                notifyPageModules('all');
             }
         }
     } catch (e) {
-        console.log("מצב לא מקוון (Offline Mode): עובד מול הזיכרון המקומי בדפדפן.");
+        // מצב לא מקוון - ממשיך לעבוד מול localStorage
     }
 }
 
-// הפעלה אוטומטית ברגע טעינת כל קובץ במערכת
+// סנכרון מיידי בין טאבים/חלונות פתוחים באותו דפדפן
+window.addEventListener("storage", (event) => {
+    const houseCode = getCurrentHouseCode();
+    if (!event.key || !event.key.startsWith("vidass_") || !event.key.endsWith(`_${houseCode}`)) {
+        return;
+    }
+    const moduleName = event.key.slice("vidass_".length, -(`_${houseCode}`.length));
+    notifyPageModules(moduleName);
+});
+
 document.addEventListener("DOMContentLoaded", () => {
     getCurrentHouseCode();
-    // ניסיון משיכת נתונים מהענן ברקע בלי לפגוע במהירות הטעינה
     setTimeout(() => {
         fetchHouseDataFromServer(true);
     }, 300);
+
+    setInterval(() => {
+        fetchHouseDataFromServer(true);
+    }, VIDASS_SYNC_INTERVAL_MS);
 });
